@@ -1,7 +1,7 @@
 from app.models import User
 from app import db
 
-from flask import Blueprint, jsonify, abort
+from flask import Blueprint, jsonify, abort, request
 from flask.views import MethodView
 from flask_login import login_user, logout_user
 
@@ -9,28 +9,27 @@ auth_bp = Blueprint('auth_bp', __name__)
 
 class LoginView(MethodView):
   def post(self):
-    try:
-      user = User.query.filter_by(username=request.json['username']).first()
+    #try:
+    content = request.get_json()
 
-      if user and user.verify_password(request.json['password']):
-        login_user(user)
+    user = User.query.filter_by(username=content.get('username')).first()
 
-        user.is_authenticated = True
-        db.session.commit()
-        
-        response = {
-          'message': 'Logged in successfully.'
-        }
-        return make_response(jsonify(response)), 200
+    if user and user.verify_password(content.get('password')):
+      login_user(user)
 
-      else:
-        response = {
-          'message': 'Invalid username or password.'
-        }
-        return make_response(jsonify(response)), 401
+      response = {
+        'message': 'Logged in successfully.'
+      }
+      return jsonify(response), 200
 
-    except:
-      abort(400)
+    else:
+      response = {
+        'message': 'Invalid username or password.'
+      }
+      return jsonify(response), 401
+
+    #except:
+    #  abort(400)
 
 
 class LogoutView(MethodView):
@@ -41,7 +40,7 @@ class LogoutView(MethodView):
       response = {
         'message': 'Logged out successfully.'
       }
-      return make_response(jsonify(response)), 200
+      return jsonify(response), 200
 
     except:
       abort(400)

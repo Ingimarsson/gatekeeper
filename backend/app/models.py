@@ -16,7 +16,7 @@ class User(db.Model):
     is_active = True
     is_anonymous = False
 
-    def get_id():
+    def get_id(self):
         return self.id
 
     def set_password(self, plaintext):
@@ -60,4 +60,8 @@ class Activity(db.Model):
     timestamp = Column(DateTime(timezone=True), default=datetime.now, nullable=False)
     success = Column(Boolean, default=False, nullable=False)
     snapshot = Column(String(64))
+    user = Column(Integer, ForeignKey('user.id'))
+    code = Column(String(64))
+    command = Column(String(16), default='open')
+
 

@@ -24,9 +24,10 @@ class GatePage extends Component {
         <Grid>
           <Grid.Row>
             <Grid.Column width={8}>
-              <Placeholder style={{ height: 300, width: '100%', maxWidth: 1000}}>
+              <Placeholder style={{ height: 300, width: '100%', maxWidth: 1000, marginBottom: 14}}>
                 <Placeholder.Image />
               </Placeholder>
+              <Button size='tiny'>Refresh Stream</Button>
             </Grid.Column>
             <Grid.Column width={8}>
               <Button color='green'>Open</Button>
@@ -42,15 +43,26 @@ class GatePage extends Component {
                   <Table.Row>
                     <Table.Cell>Myndavél</Table.Cell>
                     <Table.Cell>OpenALPR</Table.Cell>
-                    <Table.Cell>Properties</Table.Cell>
+                    <Table.Cell><a href='#'>Properties</a></Table.Cell>
                   </Table.Row>
                   <Table.Row>
                     <Table.Cell>Talnalás</Table.Cell>
                     <Table.Cell>Keypad</Table.Cell>
-                    <Table.Cell>Properties</Table.Cell>
+                    <Table.Cell><a href='#'>Properties</a></Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell>Vefgátt</Table.Cell>
+                    <Table.Cell>Portal</Table.Cell>
+                    <Table.Cell><a href='#'>Properties</a></Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell>Hnappur</Table.Cell>
+                    <Table.Cell>Local</Table.Cell>
+                    <Table.Cell><a href='#'>Properties</a></Table.Cell>
                   </Table.Row>
                 </Table.Body>
               </Table>
+              <Button floated='right' size='tiny'>Add Method</Button>
             </Grid.Column>
           </Grid.Row>
         </Grid>
