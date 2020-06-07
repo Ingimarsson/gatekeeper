@@ -1,6 +1,6 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, DateTime
 
-from app import db
+from app import db, bcrypt
 
 from datetime import datetime
 
@@ -12,6 +12,18 @@ class User(db.Model):
     password = Column(String(128), nullable=False)
     is_admin = Column(Boolean, default=False, nullable=False)
 
+    is_authenticated = True
+    is_active = True
+    is_anonymous = False
+
+    def get_id():
+        return self.id
+
+    def set_password(self, plaintext):
+        self.password = bcrypt.generate_password_hash(plaintext).decode('utf-8')
+
+    def verify_password(self, plaintext):
+        return bcrypt.check_password_hash(self.password, plaintext)
 
 class Gate(db.Model):
     __tablename__ = 'gate'

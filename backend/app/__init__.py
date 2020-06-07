@@ -1,11 +1,8 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-
-from app.auth.auth import auth_bp
-from app.general.general import general_bp
-from app.endpoint.endpoint import endpoint_bp
-
+from flask_login import LoginManager
+from flask_bcrypt import Bcrypt
 import os
 
 app = Flask(__name__)
@@ -15,8 +12,20 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+bcrypt = Bcrypt(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 from app import models
+
+@login_manager.user_loader
+def load_ser(userid):
+    return models.User.query.filter(models.User.id==userid).first()
+
+from app.auth.auth import auth_bp
+from app.general.general import general_bp
+from app.endpoint.endpoint import endpoint_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(general_bp)
