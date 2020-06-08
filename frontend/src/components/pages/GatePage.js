@@ -21,7 +21,7 @@ class GatePage extends Component {
           </Grid.Row>
         </Grid>
         <Divider />
-        <Grid>
+        <Grid stackable>
           <Grid.Row>
             <Grid.Column width={8}>
               <Placeholder style={{ height: 300, width: '100%', maxWidth: 1000, marginBottom: 14}}>

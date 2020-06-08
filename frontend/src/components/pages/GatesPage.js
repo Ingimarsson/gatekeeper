@@ -22,7 +22,7 @@ class GatesPage extends Component {
         </Grid>
         <Divider />
         <Segment>
-          <Grid>
+          <Grid stackable>
             <Grid.Row>
               <Grid.Column width={4}>
                    <Placeholder style={{ height: 145, width: 240 }}>

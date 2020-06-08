@@ -9,8 +9,8 @@ class Navbar extends Component {
         <Container>
           <Menu.Item header>Gatekeeper</Menu.Item>
           <Menu.Item as={Link} to='/'>Gates</Menu.Item>
-          <Menu.Item as={Link} to='/flight'>Activity</Menu.Item>
-          <Menu.Item as={Link} to='/booking'>Whitelist</Menu.Item>
+          <Menu.Item as={Link} to='/access'>Access</Menu.Item>
+          <Menu.Item as={Link} to='/activity'>Activity</Menu.Item>
         </Container>
       </Menu>
     );
