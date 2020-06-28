@@ -20,6 +20,27 @@ services:
       - ./.env.prod
     depends_on:
       - db
+  streaming:
+    build: ./streaming
+    restart: always
+    volumes:
+      - gatekeeper_data:/data
+    environment:
+      SQL_HOST: db
+      SQL_USER: gk
+      SQL_PASS: gk
+      SQL_DB: gk
+    depends_on:
+      - db
+  nginx:
+    build: ./frontend
+    ports:
+      - 8080:80
+    depends_on:
+      - web
+    volumes:
+      - gatekeeper_data:/data
 
 volumes:
   postgres_data:
+  gatekeeper_data:

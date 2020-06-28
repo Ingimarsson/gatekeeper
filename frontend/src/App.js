@@ -2,23 +2,28 @@ import React from 'react';
 import { Container } from 'semantic-ui-react';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 
+import { PublicRoute, PrivateRoute } from './components/Routes';
 import Navbar from './components/Navbar';
 
+import LoginPage from './components/pages/LoginPage';
 import GatesPage from './components/pages/GatesPage';
 import GatePage from './components/pages/GatePage';
 import AccessPage from './components/pages/AccessPage';
 import ActivityPage from './components/pages/ActivityPage';
 
+import { isLogin } from './utils';
+
 function App() {
   return (
     <div className="App">
       <Router>
-        <Navbar />
+        { isLogin() && <Navbar /> }
+        <PublicRoute exact path='/login' component={LoginPage} />
         <Container style={{marginTop: '60px'}}>
-          <Route exact path='/' component={GatesPage} />
-          <Route exact path='/gate/:id' component={GatePage} />
-          <Route exact path='/access' component={AccessPage} />
-          <Route exact path='/activity' component={ActivityPage} />
+          <PrivateRoute exact path='/' component={GatesPage} />
+          <PrivateRoute exact path='/gate/:id' component={GatePage} />
+          <PrivateRoute exact path='/access' component={AccessPage} />
+          <PrivateRoute exact path='/activity' component={ActivityPage} />
         </Container>
       </Router>
     </div>
