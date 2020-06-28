@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, DateTime, JSON
 
 from app import db, bcrypt
 
@@ -31,7 +31,9 @@ class Gate(db.Model):
     name = Column(String(64), nullable=False)
     uri_open = Column(String(256))
     uri_close = Column(String(256))
+    uri_nvr = Column(String(256))
     uri_rtsp = Column(String(256))
+    settings = Column(JSON)
 
 
 class Endpoint(db.Model):
@@ -41,6 +43,7 @@ class Endpoint(db.Model):
     token = Column(String(64), nullable=False)
     type = Column(String(16), nullable=False)
     gate = Column(Integer, ForeignKey('gate.id'))
+    settings = Column(JSON)
 
 class Access(db.Model):
     __tablename__ = 'access'

@@ -6,6 +6,8 @@ from flask_login import login_required, current_user
 from app import db
 from app.models import Gate, Endpoint, Access, Activity
 
+import time
+
 general_bp = Blueprint('general_bp', __name__)
 
 class GatesView(MethodView):
@@ -49,7 +51,8 @@ class GateView(MethodView):
             'name': gate.name,
             'open_enabled': True if gate.uri_open else False,
             'close_enabled': True if gate.uri_close else False,
-            'camera_enabled': True if gate.uri_rtsp else False
+            'camera_enabled': True if gate.uri_rtsp else False,
+            'timestamp': int(time.time())-1
         }
 
         return jsonify(result), 200

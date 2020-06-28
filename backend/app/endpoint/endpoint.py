@@ -4,7 +4,7 @@ from flask.views import MethodView
 from app import db
 from app.models import Access, Endpoint, Gate, Activity
 
-import urllib
+import requests
 
 endpoint_bp = Blueprint('endpoint_bp', __name__)
 
@@ -22,22 +22,32 @@ class EndpointView(MethodView):
             .join(Gate) \
             .filter(Endpoint.token==token) \
             .add_columns(Gate.uri_open) \
+            .add_columns(Gate.uri_nvr) \
+            .add_columns(Gate.settings) \
             .first_or_404()
 
         content = request.get_json()
 
         code = ''
+        # If travel direction is within range
+        in_range = True
 
         if endpoint[0].type == 'openalpr':
             if content.get('data_type') != 'alpr_group':
                 abort(400)
 
             # Getum notað 'travel_direction' í framtíðinni
+            direction = content.get('travel_direction') 
+
+            if direction < endpoint[3]['min_dir'] or direction > endpoint[3]['max_dir']:
+              in_range = False
 
             code = content.get('best_plate_number')
+            relay = endpoint[3]['sensor_open']
 
         else:
             code = content.get('code')
+            relay = endpoint[1]
 
         access = Access.query.filter(Access.code==code, Access.endpoint==endpoint[0].id).first()
 
@@ -46,11 +56,14 @@ class EndpointView(MethodView):
         a.code = code
 
         # TODO: handle valid from/to timestamps
-        if access:
+        if access and in_range:
             # Send gate open command
-            urllib.request.urlopen(endpoint[1], timeout=5).read()
+            requests.get(relay, timeout=5)
             a.success = True
             a.access = access.id
+            
+        # Send NVR trigger
+        requests.get(endpoint[2], timeout=5)
 
         db.session.add(a)
         db.session.commit()
