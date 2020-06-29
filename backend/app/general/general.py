@@ -178,6 +178,8 @@ class ActivityView(MethodView):
         activity = Activity.query.outerjoin(Access) \
             .join(Endpoint, Activity.endpoint==Endpoint.id) \
             .join(Gate, Endpoint.gate==Gate.id) \
+            .order_by(Activity.timestamp.desc()) \
+            .limit(50) \
             .add_columns(Access.id, Access.name, Endpoint.id, Endpoint.name, Gate.id, Gate.name) \
             .all()
 
