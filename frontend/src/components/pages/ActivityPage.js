@@ -2,9 +2,30 @@ import React, { Component } from 'react';
 import { Container, Table, Grid, Divider, Segment, Header, Button } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 
+import API from '../../api';
+
 class ActivityPage extends Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      loading: true,
+      activity: []
+    }
+  }
+
+  getData() {
+    this.setState({loading: true});
+
+    var that = this;
+
+    API.get('/activity').then(function(response) {
+      that.setState({activity: response.data});
+    });
+  }
+
+  componentDidMount() {
+    this.getData();
   }
 
   render() {
@@ -31,15 +52,17 @@ class ActivityPage extends Component {
             <Table.HeaderCell>Success</Table.HeaderCell>
           </Table.Header>
           <Table.Body>
+            {this.state.activity.map(x =>
             <Table.Row>
-              <Table.Cell>May 4, 2020</Table.Cell>
-              <Table.Cell>20:23</Table.Cell>
-              <Table.Cell>Hlið - Tjaldvarðarskúr</Table.Cell>
-              <Table.Cell>OpenALPR Camera</Table.Cell>
-              <Table.Cell>Brynjar</Table.Cell>
-              <Table.Cell>RA232</Table.Cell>
-              <Table.Cell>True</Table.Cell>
+              <Table.Cell>{x.timestamp}</Table.Cell>
+              <Table.Cell></Table.Cell>
+              <Table.Cell>{x.gate_name}</Table.Cell>
+              <Table.Cell>{x.endpoint_name}</Table.Cell>
+              <Table.Cell>{x.access_name}</Table.Cell>
+              <Table.Cell>{x.code}</Table.Cell>
+              <Table.Cell>{x.success}</Table.Cell>
             </Table.Row>
+          )}
           </Table.Body>
         </Table>
       </div>

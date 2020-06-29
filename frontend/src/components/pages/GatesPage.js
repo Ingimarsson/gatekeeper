@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
-import { Container, Grid, Placeholder, Icon, Divider, Segment, Header, Dropdown, Form, Input, Button, Select } from 'semantic-ui-react';
+import { Container, Grid, Placeholder, Icon, Divider, Segment, Image, Header, Dropdown, Form, Input, Button, Select } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
+
+import API from '../../api';
 
 class GateSegment extends Component {
   constructor(props) {
@@ -13,9 +15,7 @@ class GateSegment extends Component {
         <Grid stackable>
           <Grid.Row>
             <Grid.Column width={4}>
-                 <Placeholder style={{ height: 145, width: 240 }}>
-                    <Placeholder.Image />
-                </Placeholder>
+              <Image src={this.props.image} size='small'/>
             </Grid.Column>
             <Grid.Column width={8}>
               <Link to={'/gate/'+this.props.id}>
@@ -37,9 +37,30 @@ class GateSegment extends Component {
 class GatesPage extends Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      loading: true,
+      gates: []
+    }
+  }
+
+  getData() {
+    this.setState({loading: true});
+
+    var that = this;
+
+    API.get('/gates').then(function(response) {
+      that.setState({gates: response.data});
+    });
+  }
+
+  componentDidMount() {
+    this.getData();
   }
 
   render() {
+    let timestamp = Math.floor(Date.now() / 1000) -2;
+
     return (
       <div>
         <Grid>
@@ -56,9 +77,7 @@ class GatesPage extends Component {
           </Grid.Row>
         </Grid>
         <Divider />
-        <GateSegment id={1} name='Hlið - Tjaldvarðarskúr'/>
-        <GateSegment id={2} name='Hlið - Skrifstofa'/>
-        <GateSegment id={3} name='Hiið - Þórunnarstræti'/>
+        {this.state.gates.map(x => <GateSegment id={x.id} name={x.name} image={'http://192.168.1.240:8080/live/'+x.id+'/'+timestamp+'.jpg'}/>)}
       </div>
     );
   }

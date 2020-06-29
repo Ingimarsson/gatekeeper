@@ -1,10 +1,31 @@
 import React, { Component } from 'react';
-import { Container, Grid, Table, Divider, Segment, Header, Button } from 'semantic-ui-react';
+import { Container, Grid, Icon, Table, Divider, Segment, Header, Button } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
+
+import API from '../../api';
 
 class AccessPage extends Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      loading: true,
+      access: []
+    }
+  }
+
+  getData() {
+    this.setState({loading: true});
+
+    var that = this;
+
+    API.get('/access').then(function(response) {
+      that.setState({access: response.data});
+    });
+  }
+
+  componentDidMount() {
+    this.getData();
   }
 
   render() {
@@ -16,7 +37,10 @@ class AccessPage extends Component {
               <Header as='h1'>Access</Header>
             </Grid.Column>
             <Grid.Column width={8} textAlign='right'>
-              <Button size='tiny'>Edit gate</Button>
+              <Button size='tiny' primary icon labelPosition='left'>
+                <Icon name='plus' />
+                Add access
+              </Button>
            </Grid.Column>
           </Grid.Row>
         </Grid>
@@ -31,14 +55,16 @@ class AccessPage extends Component {
             <Table.HeaderCell>Valid To</Table.HeaderCell>
           </Table.Header>
           <Table.Body>
+          {this.state.access.map(x =>
             <Table.Row>
-              <Table.Cell>Brynjar</Table.Cell>
-              <Table.Cell>Hlið - Tjaldvarðarskúr</Table.Cell>
-              <Table.Cell>OpenALPR Camera</Table.Cell>
-              <Table.Cell>RA232</Table.Cell>
-              <Table.Cell>Indefinite</Table.Cell>
-              <Table.Cell>Indefinite</Table.Cell>
+              <Table.Cell>{x.name}</Table.Cell>
+              <Table.Cell>{x.gate_name}</Table.Cell>
+              <Table.Cell>{x.endpoint_name}</Table.Cell>
+              <Table.Cell>{x.code}</Table.Cell>
+              <Table.Cell>{x.valid_from}</Table.Cell>
+              <Table.Cell>{x.valid_to}</Table.Cell>
             </Table.Row>
+          )}
           </Table.Body>
         </Table>
       </div>

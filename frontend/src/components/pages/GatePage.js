@@ -1,19 +1,48 @@
 import React, { Component } from 'react';
-import { Container, Table, Grid, Icon, Placeholder, Divider, Segment, Header, Dropdown, Form, Input, Button, Select } from 'semantic-ui-react';
+import { Container, Image, Table, Grid, Icon, Placeholder, Divider, Segment, Header, Dropdown, Form, Input, Button, Select } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
+
+import API from '../../api';
 
 class GatePage extends Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      loading: true,
+      gate: []
+    }
+  }
+
+  getData() {
+    this.setState({loading: true});
+
+    var that = this;
+
+    const { match: { params } } = this.props;
+
+    API.get('/gate/'+params.id).then(function(response) {
+      that.setState({gate: response.data});
+    });
+  }
+
+  componentDidMount() {
+    this.getData();
+    this.interval = setInterval(() => this.setState({ time: Date.now() }), 1000);
+  }
+  componentWillUnmount() {
+    clearInterval(this.interval);
   }
 
   render() {
+    let timestamp = Math.floor(Date.now() / 1000) -2;
+
     return (
       <div>
         <Grid>
           <Grid.Row>
             <Grid.Column width={8}>
-              <Header as='h1'>Hlið - Tjaldvarðarskúr</Header>
+              <Header as='h1'>{this.state.gate.name}</Header>
             </Grid.Column>
             <Grid.Column width={8} textAlign='right'>
               <Button size='tiny' icon labelPosition='left'>
@@ -25,10 +54,8 @@ class GatePage extends Component {
         </Grid>
         <Divider/>
         <Segment basic>
-        <div style={{maxWidth: 800, margin: '0 auto', marginBottom: 34, height: 480}}>
-        <Placeholder style={{ height: '100%', width: '100%', maxWidth: 800, marginBottom: 14}}>
-          <Placeholder.Image />
-        </Placeholder>
+        <div style={{maxWidth: 800, margin: '0 auto', marginBottom: 34}}>
+          <Image src={'http://192.168.1.240:8080/live/'+this.state.gate.id+'/'+timestamp+'.jpg'} style={{width: 800, marginBottom: 10}}/>
         <Button size='tiny' floated='left' color='green'>Open</Button>
 
         <Button size='tiny' floated='left'>Close</Button>
