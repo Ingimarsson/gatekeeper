@@ -59,6 +59,7 @@ class Activity(db.Model):
     __tablename__ = 'activity'
     id = Column(Integer, primary_key=True)
     endpoint = Column(Integer, ForeignKey('endpoint.id'))
+    gate = Column(Integer, ForeignKey('gate.id'))
     access = Column(Integer, ForeignKey('access.id'))
     timestamp = Column(DateTime(timezone=True), default=datetime.now, nullable=False)
     success = Column(Boolean, default=False, nullable=False)
@@ -66,5 +67,6 @@ class Activity(db.Model):
     user = Column(Integer, ForeignKey('user.id'))
     code = Column(String(64))
     command = Column(String(16), default='open')
+    meta = Column(JSON)
 
 

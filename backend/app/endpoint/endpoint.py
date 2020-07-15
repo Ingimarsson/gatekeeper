@@ -24,6 +24,7 @@ class EndpointView(MethodView):
             .add_columns(Gate.uri_open) \
             .add_columns(Gate.uri_nvr) \
             .add_columns(Gate.settings) \
+            .add_columns(Gate.id) \
             .first_or_404()
 
         content = request.get_json()
