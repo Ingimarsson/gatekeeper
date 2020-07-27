@@ -19,7 +19,9 @@ bcrypt = Bcrypt(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-from app import models, views
+from app import models, views, services
+
+gates = services.GateService()
 
 @login_manager.user_loader
 def load_ser(userid):
