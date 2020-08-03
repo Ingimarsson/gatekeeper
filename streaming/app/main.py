@@ -15,8 +15,8 @@ if not os.path.isdir(path):
   os.mkdir(path)
 
 def make_cmd(url, path):
-  return ['ffmpeg', '-rtsp_transport', 'tcp', '-i', url, '-f', 'image2', '-vf', "scale=w='min(800\, iw*3/2):h=-1' ", \
-    '-r', '1', '-strftime', '1', '{}/%s.jpg'.format(path)]
+  return ['ffmpeg', '-i', url, '-f', 'image2', '-vf', "scale=w='min(1280\, iw*3/2):h=-1' ", \
+    '-r', '2', '-strftime', '1', '{}/%s.jpg'.format(path)]
 
 
 def run():
@@ -33,7 +33,12 @@ def run():
   gates = []
 
   for g in result:
-    gates.append({'id': g[0], 'rtsp': g[1]})
+    gates.append({
+      'id': g[0], 
+      'rtsp': g[1],
+      'path': '',
+      'start_time': 0
+    })
 
   c.close()
   conn.close()
@@ -48,6 +53,7 @@ def run():
   # First time setup
   for i,gate in enumerate(gates):
     gates[i]['path'] = os.path.join(path, str(gate['id']))
+    gates[i]['start_time'] = time.time()
 
     if not os.path.isdir(gate['path']):
       os.mkdir(gate['path'])
@@ -60,12 +66,17 @@ def run():
     print("Refreshing")
 
     for i,gate in enumerate(gates):
+      if time.time() - gate['start_time'] > 60*60*6:
+        print('Stream process for gate {} reached maximum uptime, killing process')
+        gate['process'].terminate()
+
       if gate['process'].poll() is None:
         print('Stream for gate {} is running'.format(gate['id']))
 
       else:
         print('Stream for gate {} dead with exit code {}, restarting'.format(gate['id'], gate['process'].poll()))
         gates[i]['process'] = subprocess.Popen(make_cmd(gate['rtsp'], gate['path']))
+        gate['start_time'] = time.time()
 
     # Delete all snapshots older than one minute
 
