@@ -39,7 +39,7 @@ class GatePage extends Component {
 
     return (
       <div>
-        <Grid>
+        <Grid stackable>
           <Grid.Row>
             <Grid.Column width={8}>
               <Header as='h1'>{this.state.gate.name}</Header>
@@ -56,13 +56,8 @@ class GatePage extends Component {
         <Segment basic>
         <div style={{maxWidth: 800, margin: '0 auto', marginBottom: 34}}>
           <Image src={'http://192.168.1.240:8080/live/'+this.state.gate.id+'/'+timestamp+'.jpg'} style={{width: 800, marginBottom: 10}}/>
-        <Button size='tiny' floated='left' color='green'>Open</Button>
-
-        <Button size='tiny' floated='left'>Close</Button>
-        <Button size='tiny' icon labelPosition='left' floated='right'>
-          <Icon name='sync' />
-          Restart Stream
-        </Button>
+        <Button color='green'>Open</Button>
+        <Button>Close</Button>
  
         </div>
         </Segment>

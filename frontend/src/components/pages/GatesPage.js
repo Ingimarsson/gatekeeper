@@ -10,25 +10,15 @@ class GateSegment extends Component {
   }
 
   render() {
-    return (<div>
-      <Segment basic>
-        <Grid stackable>
-          <Grid.Row>
-            <Grid.Column width={4}>
-              <Image src={this.props.image} size='small'/>
-            </Grid.Column>
-            <Grid.Column width={8}>
-              <Link to={'/gate/'+this.props.id}>
-                <Header as='h2'>{this.props.name}</Header>
-              </Link>
-            </Grid.Column>
-            <Grid.Column width={4}>
-           </Grid.Column>
-          </Grid.Row>
-        </Grid>
-      </Segment>
-      <Divider/>
-    </div>
+    return (
+      <Grid.Column>
+        <Link to={'/gate/'+this.props.id}>
+          <Segment style={{minHeight: '260px'}}>
+            <Image src={this.props.image} style={{width: '100%', aspectRatio: 5/4}}/>
+            <Header as='h3'>{this.props.name}</Header>
+          </Segment>
+        </Link>
+      </Grid.Column>
     );
  
   }
@@ -77,7 +67,9 @@ class GatesPage extends Component {
           </Grid.Row>
         </Grid>
         <Divider />
+        <Grid columns={4} stackable>
         {this.state.gates.map(x => <GateSegment id={x.id} name={x.name} image={'http://192.168.1.240:8080/live/'+x.id+'/'+timestamp+'.jpg'}/>)}
+        </Grid>
       </div>
     );
   }

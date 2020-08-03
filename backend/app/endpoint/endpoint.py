@@ -1,6 +1,8 @@
 from flask import Blueprint, jsonify, abort, request
 from flask.views import MethodView
 
+from flask_login import current_user
+
 from app import db, gates
 from app.models import Access, Endpoint, Gate, Activity
 
@@ -31,10 +33,22 @@ class EndpointView(MethodView):
 
         success = gates.handle_open(endpoint, content)
 
-        if success:
-            return jsonify({"response": "success"}), 200
+        return jsonify({"response": "success" if success else "fail"}), 200
 
-        else:
-            return jsonify({"response": "fail"}), 200
+
+class GateCommandView(MethodView):
+    """
+    Endpoint for gate commands through web UI
+    """
+    def get(self, gate_id):
+        command = request.args['cmd']
+
+        gate = Gate.query.filter(Gate.id == gate_id).first_or_404()
+
+        success = gates.open_gate(gate, current_user.id, command)
+
+        return jsonify({"response": "success" if success else "fail"}), 200
+
 
 endpoint_bp.add_url_rule('/endpoint', view_func=EndpointView.as_view('endpoint'))
+endpoint_bp.add_url_rule('/gate/<gate_id>/command', view_func=GateCommandView.as_view('gate_command'))

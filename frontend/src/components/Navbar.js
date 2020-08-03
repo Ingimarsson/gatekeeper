@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Menu, Container, Dropdown } from 'semantic-ui-react';
 import { Link, withRouter } from 'react-router-dom';
-import { logout } from '../utils';
+import { logout, getName } from '../utils';
 
 class Navbar extends Component {
   render() {
@@ -13,7 +13,7 @@ class Navbar extends Component {
           <Menu.Item as={Link} to='/access'>Access</Menu.Item>
           <Menu.Item as={Link} to='/activity'>Activity</Menu.Item>
           <Menu.Menu position='right'>
-            <Dropdown item text="Administrator">
+            <Dropdown item text={getName()}>
               <Dropdown.Menu>
                 <Dropdown.Item as={Link} to='/admin/users'><i className='user icon'/> Users</Dropdown.Item>
                 <Dropdown.Item as={Link} to='/admin/settings'><i className='cog icon'/> Settings</Dropdown.Item>

@@ -11,23 +11,36 @@ import GatePage from './components/pages/GatePage';
 import AccessPage from './components/pages/AccessPage';
 import ActivityPage from './components/pages/ActivityPage';
 
-import { isLogin } from './utils';
+import { isLogin, getUser } from './utils';
 
-function App() {
-  return (
-    <div className="App">
-      <Router>
-        { isLogin() && <Navbar /> }
-        <PublicRoute exact path='/login' component={LoginPage} />
-        <Container style={{marginTop: '60px'}}>
-          <PrivateRoute exact path='/' component={GatesPage} />
-          <PrivateRoute exact path='/gate/:id' component={GatePage} />
-          <PrivateRoute exact path='/access' component={AccessPage} />
-          <PrivateRoute exact path='/activity' component={ActivityPage} />
-        </Container>
-      </Router>
-    </div>
-  );
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  componentDidMount() {
+    var that = this;
+    getUser().then((response) => {
+      that.forceUpdate();
+    });
+  }
+
+  render() {
+    return (
+      <div className="App">
+        <Router>
+          { isLogin() && <Navbar /> }
+          <PublicRoute exact path='/login' component={LoginPage} />
+          <Container style={{marginTop: '60px'}}>
+            <PrivateRoute exact path='/' component={GatesPage} />
+            <PrivateRoute exact path='/gate/:id' component={GatePage} />
+            <PrivateRoute exact path='/access' component={AccessPage} />
+            <PrivateRoute exact path='/activity' component={ActivityPage} />
+          </Container>
+        </Router>
+      </div>
+    );
+  }
 }
 
 export default App;

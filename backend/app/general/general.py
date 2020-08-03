@@ -194,7 +194,8 @@ class ActivityView(MethodView):
             'endpoint_id': a[3],
             'endpoint_name': a[4],
             'gate_id': a[5],
-            'gate_name': a[6]
+            'gate_name': a[6],
+            'tags': a[0].meta['tags'] if 'tags' in a[0].meta else []
         } for a in activity]
         
         return jsonify(result), 200
@@ -205,8 +206,31 @@ class ActivityDetailsView(MethodView):
     Get activity details
     """
     @login_required
-    def get(self, activity):
-        return "ok"
+    def get(self, activity_id):
+        a = Activity.query.outerjoin(Access) \
+            .join(Endpoint, Activity.endpoint==Endpoint.id) \
+            .join(Gate, Endpoint.gate==Gate.id) \
+            .filter(Activity.id==activity_id) \
+            .add_columns(Access.id, Access.name, Endpoint.id, Endpoint.name, Gate.id, Gate.name) \
+            .first_or_404()
+
+        result = {
+            'id': a[0].id,
+            'timestamp': a[0].timestamp,
+            'success': a[0].success,
+            'code': a[0].code,
+            'command': a[0].command,
+            'snapshot': a[0].snapshot,
+            'access_id': a[1],
+            'access_name': a[2],
+            'endpoint_id': a[3],
+            'endpoint_name': a[4],
+            'gate_id': a[5],
+            'gate_name': a[6],
+            'tags': a[0].meta['tags'] if 'tags' in a[0].meta else []
+        }
+        
+        return jsonify(result), 200
 
 
 general_bp.add_url_rule('/gates', view_func=GatesView.as_view('gates'))
@@ -219,5 +243,5 @@ general_bp.add_url_rule('/access', view_func=AccessView.as_view('access'))
 general_bp.add_url_rule('/access/<access>', view_func=AccessDetailsView.as_view('access_details'))
 
 general_bp.add_url_rule('/activity', view_func=ActivityView.as_view('activity'))
-general_bp.add_url_rule('/activity/<activity>', view_func=ActivityDetailsView.as_view('activity_details'))
+general_bp.add_url_rule('/activity/<activity_id>', view_func=ActivityDetailsView.as_view('activity_details'))
 

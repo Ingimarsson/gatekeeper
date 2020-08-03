@@ -28,6 +28,9 @@ class GateService(object):
         a.meta = meta
         a.snapshot = snapshot
 
+        if 'tags' not in a.meta:
+          a.meta['tags'] = []
+
         # TODO: handle valid from/to timestamps
         if access and success:
               # Send gate open command
@@ -52,13 +55,14 @@ class GateService(object):
             return ('', False, '')
 
         direction = content.get('travel_direction') 
+        print("Travel direction {}".format(direction))
 
         success = True
-        meta = {'direction': 'ingoing'}
+        meta = {'tags': ['ingoing']}
 
         if direction < endpoint[3]['min_dir'] or direction > endpoint[3]['max_dir']:
             success = False
-            meta['direction'] = 'outgoing'
+            meta = {'tags': ['outgoing']}
 
         code = content.get('best_plate_number')
 
@@ -95,11 +99,12 @@ class GateService(object):
         a.command = command
         a.success = True
         a.user = user_id
+        a.meta = {'tags': ['web'] if command == 'open' else ['close', 'web']}
 
         db.session.add(a)
         db.session.commit()
 
-        return
+        return a.success
 
 
     def save_snapshot(self, gate_id):
