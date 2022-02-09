@@ -1,0 +1,14 @@
+body {
+  background: #f8f8f8;
+  padding: 0;
+  margin: 0;
+  height: auto;
+}
+
+.ui.table:not(.readonly) tr {
+  cursor: pointer;
+}
+
+.ui.table:not(.readonly) tr:hover {
+  background: #fafafa;
+}
