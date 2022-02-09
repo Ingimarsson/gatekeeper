@@ -212,7 +212,7 @@ export const AddGateModal = ({
           Cancel
         </Button>
         <Button color="blue" onClick={() => validate(data) && action(data)}>
-          {edit ? "Edit" : "Add"} Gate
+          {edit ? "Save" : "Add"} Gate
         </Button>
       </Modal.Actions>
     </Modal>

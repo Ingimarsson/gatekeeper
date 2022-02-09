@@ -52,7 +52,7 @@ export const GateBox = ({ gate }: { gate: Gate }) => {
       />
       <Grid>
         <Grid.Row>
-          <Grid.Column width={8}>
+          <Grid.Column mobile={16} tablet={16} computer={8}>
             <Link href={`/gates/${gate.id}`} passHref={true}>
               <a>
                 <LiveStreamBox>
@@ -61,7 +61,7 @@ export const GateBox = ({ gate }: { gate: Gate }) => {
               </a>
             </Link>
           </Grid.Column>
-          <Grid.Column width={8}>
+          <Grid.Column mobile={16} tablet={16} computer={8}>
             <ControlsBox>
               <div>
                 <Link href={`/gates/${gate.id}`} passHref={true}>

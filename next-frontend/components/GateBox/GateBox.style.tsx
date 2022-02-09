@@ -11,6 +11,8 @@ export const LiveStreamBox = styled.div`
   align-items: center;
   height: 150px;
   width: 100%;
+  max-width: 250px;
+  margin: 0 auto;
   background: #444;
 `;
 

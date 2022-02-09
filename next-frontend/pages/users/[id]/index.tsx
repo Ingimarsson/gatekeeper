@@ -131,6 +131,7 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
         edit={action === "edit-method"}
         methodId={currentMethod}
         editData={(() => {
+          if (action !== "edit-method") return undefined;
           const u = user.methods.find((method) => method.id === currentMethod);
           return !!u
             ? {
@@ -218,14 +219,16 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
                 {method.timeLimits.startDate || method.timeLimits.startHour ? (
                   <div>
                     {method.timeLimits.startDate && (
-                      <div>
-                        {moment(method.timeLimits.startDate).format("ll")} -{" "}
-                        {moment(method.timeLimits.endDate).format("ll")}
-                      </div>
+                      <>
+                        <div>
+                          {moment(method.timeLimits.startDate).format("ll")} -{" "}
+                          {moment(method.timeLimits.endDate).format("ll")}
+                        </div>
+                      </>
                     )}
                     {method.timeLimits.startHour && (
                       <div>
-                        {method.timeLimits.startHour} -{" "}
+                        Between {method.timeLimits.startHour} -{" "}
                         {method.timeLimits.endHour}
                       </div>
                     )}

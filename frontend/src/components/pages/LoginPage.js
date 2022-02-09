@@ -33,13 +33,11 @@ class Login extends Component {
   }
 
   render() {
-    return <Grid textAlign='center' style={{ height: '90vh' }} verticalAlign='middle'>
-      <Grid.Column style={{ maxWidth: 450 }}>
-        <Header as='h1' textAlign='center' style={{marginBottom: '0px'}}>
-          Gatekeeper
-        </Header>
-        <Header as='h3' textAlign='center' style={{marginBottom: '30px', marginTop: '10px'}}>
-          Access Control System
+    return <Grid textAlign='center' style={{ height: '100vh', background: '#fafafa' }} verticalAlign='middle'>
+      <Grid.Column style={{ maxWidth: 360 }}>
+        <Header as='h1' textAlign='center' style={{marginBottom: '20px', marginTop: '50px'}}>
+          <img style={{width: 300, marginBottom:10}} src="/img/gatekeeper.svg"></img>
+          <h3 style={{fontWeight:600}}>Sign in to your account</h3>
         </Header>
         <Form size='large' onSubmit={this.handleSubmit}>
           <Segment>
@@ -67,7 +65,7 @@ class Login extends Component {
               size='large'
               disabled={this.state.disabled}
             >
-              Login
+              Sign in
             </Button>
           </Segment>
         </Form>
@@ -76,7 +74,7 @@ class Login extends Component {
           {this.state.warning}
         </Message>
         }
-        <p style={{marginTop: '40px', color: '#bbb'}}></p>
+        <p style={{marginTop: '40px', color: '#bbb'}}>Copyright &copy; 2020-2022 Brynjar Ingimarsson</p>
       </Grid.Column>
     </Grid>
   }

@@ -22,10 +22,31 @@ import {
   AddGateData,
   AddGateModal,
 } from "../../../components/modals/AddGateModal";
+import styled from "styled-components";
 
 interface GateDetailsProps {
   gate: GateDetailsType;
 }
+
+const LiveStreamBox = styled.div`
+  height: 400px;
+  width: 600px;
+  background: #444;
+
+  @media (max-width: 600px) {
+    width: 100%;
+    height: 200px;
+  }
+`;
+
+const LiveStreamSlider = styled.input`
+  width: 500px;
+  margin-bottom: 20px;
+
+  @media (max-width: 600px) {
+    width: 100%;
+  }
+`;
 
 const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
   const lastTime = useMemo(() => moment(gate.latestImage).unix(), [gate]);
@@ -113,11 +134,11 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
           flexFlow: "column",
         }}
       >
-        <div style={{ height: 400, width: 600, background: "#444" }}></div>
+        <LiveStreamBox />
         <Header as="h3">
           {moment.unix(lastTime - 90 + offset + elapsedTime).format("HH:mm:ss")}
         </Header>
-        <input
+        <LiveStreamSlider
           type="range"
           id="points"
           name="points"
@@ -125,7 +146,6 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
           max="90"
           value={offset}
           onChange={(e) => setOffset(parseInt(e.target.value))}
-          style={{ width: 500, marginBottom: 20 }}
         />
         <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>
           {gate.supportsClose && (

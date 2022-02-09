@@ -118,7 +118,6 @@ export const AddUserModal = ({
             control={Input}
             placeholder="Email"
             fluid
-            required
             error={
               errors?.email && {
                 pointing: "below",
@@ -126,11 +125,22 @@ export const AddUserModal = ({
               }
             }
           />
+          <Form.Field
+            name="webAccess"
+            checked={data.webAccess}
+            onChange={(
+              e: { target: { value: any } },
+              d: { checked: boolean }
+            ) => setData({ ...data, webAccess: d.checked })}
+            label="Web Access"
+            control={Checkbox}
+            fluid
+          />
           {!edit && (
             <>
               <Form.Field
                 name="password"
-                value={data.password}
+                value={data.webAccess ? data.password : ""}
                 onChange={(e: { target: { value: any } }) =>
                   setData({ ...data, password: e.target.value })
                 }
@@ -140,10 +150,11 @@ export const AddUserModal = ({
                 fluid
                 required
                 type="password"
+                disabled={!data.webAccess}
               />
               <Form.Field
-                name="email"
-                value={data.confirmPassword}
+                name="confirmPassword"
+                value={data.webAccess ? data.confirmPassword : ""}
                 onChange={(e: { target: { value: any } }) =>
                   setData({ ...data, confirmPassword: e.target.value })
                 }
@@ -153,6 +164,7 @@ export const AddUserModal = ({
                 fluid
                 required
                 type="password"
+                disabled={!data.webAccess}
                 error={
                   errors?.confirmPassword && {
                     pointing: "below",
@@ -174,17 +186,6 @@ export const AddUserModal = ({
             fluid
           />
           <Form.Field
-            name="webAccess"
-            checked={data.webAccess}
-            onChange={(
-              e: { target: { value: any } },
-              d: { checked: boolean }
-            ) => setData({ ...data, webAccess: d.checked })}
-            label="Web Access"
-            control={Checkbox}
-            fluid
-          />
-          <Form.Field
             name="enabled"
             checked={data.enabled}
             onChange={(
@@ -199,7 +200,7 @@ export const AddUserModal = ({
       </Modal.Content>
       <Modal.Actions>
         <Button color="blue" onClick={() => validate(data) && action(data)}>
-          {edit ? "Edit" : "Add"} User
+          {edit ? "Save" : "Add"} User
         </Button>
       </Modal.Actions>
     </Modal>

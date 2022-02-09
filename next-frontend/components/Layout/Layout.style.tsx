@@ -17,4 +17,9 @@ export const Bar = styled.div`
   h2 {
     margin-bottom: 0 !important;
   }
+
+  @media (max-width: 600px) {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
 `;

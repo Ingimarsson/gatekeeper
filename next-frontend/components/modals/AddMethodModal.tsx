@@ -52,7 +52,7 @@ export const AddMethodModal = ({
   methodId,
   editData,
 }: AddMethodModalProps) => {
-  const [data, setData] = useState<AddMethodData>({
+  const initialData = {
     type: "keypad-pin",
     code: {
       pin: "",
@@ -66,17 +66,16 @@ export const AddMethodModal = ({
     timeLimits: {},
     comment: "",
     enabled: true,
-  });
+  };
+  const [data, setData] = useState<AddMethodData>(initialData);
 
-  console.log(data);
   useEffect(() => {
-    console.log("data", editData);
     if (edit && editData) {
-      console.log("editing");
-      console.log(editData);
       setData({ ...editData });
+    } else {
+      setData(initialData);
     }
-  }, [methodId]);
+  }, [edit, methodId]);
 
   const [errors, setErrors] = useState<AddMethodErrors>();
 
@@ -364,7 +363,7 @@ export const AddMethodModal = ({
             </Button>
           )}
           <Button color="blue" onClick={() => validate(data) && action(data)}>
-            {edit ? "Edit" : "Add"} Method
+            {edit ? "Save" : "Add"} Method
           </Button>
         </Modal.Actions>
       </Modal>

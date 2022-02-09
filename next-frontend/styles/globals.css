@@ -12,3 +12,9 @@ body {
 .ui.table:not(.readonly) tr:hover {
   background: #fafafa;
 }
+
+@media (max-width: 600px) {
+  thead {
+    display: none !important;
+  }
+}

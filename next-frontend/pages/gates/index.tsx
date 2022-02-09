@@ -1,4 +1,4 @@
-import type { NextPage } from "next";
+import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import { Header, Button, Icon, Grid } from "semantic-ui-react";
 import { Layout, GateBox } from "../../components";
@@ -10,6 +10,7 @@ import {
   AddGateModal,
 } from "../../components/modals/AddGateModal";
 import { ChangePasswordModal } from "../../components/modals/ChangePasswordModal";
+import { getSession } from "next-auth/react";
 
 interface GatesProps {
   gates: Gate[];
@@ -51,7 +52,7 @@ const Gates: NextPage<GatesProps> = ({ gates }) => {
       <Grid>
         <Grid.Row>
           {gates?.map((gate) => (
-            <Grid.Column key={gate.id} width={8}>
+            <Grid.Column key={gate.id} mobile={16} tablet={16} computer={8}>
               <GateBox gate={gate} />
             </Grid.Column>
           ))}
@@ -61,7 +62,17 @@ const Gates: NextPage<GatesProps> = ({ gates }) => {
   );
 };
 
-export async function getServerSideProps() {
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await getSession(context);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
   const { data: response }: { data: Gate[] } = await axios.get("/api/gates");
 
   return {
@@ -69,6 +80,6 @@ export async function getServerSideProps() {
       gates: response,
     },
   };
-}
+};
 
 export default Gates;

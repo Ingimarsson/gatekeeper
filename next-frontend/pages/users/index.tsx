@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import { Header, Button, Icon, Table, Label } from "semantic-ui-react";
+import { Button, Icon, Table, Label } from "semantic-ui-react";
 import { Layout } from "../../components";
 import React, { useState } from "react";
 import Head from "next/head";
@@ -10,7 +10,8 @@ import {
   AddUserData,
   AddUserModal,
 } from "../../components/modals/AddUserModal";
-import { AddGateModal } from "../../components/modals/AddGateModal";
+import { getSession } from "next-auth/react";
+import { GetServerSideProps } from "next";
 
 interface UsersProps {
   users: User[];
@@ -89,7 +90,17 @@ const Users: NextPage<UsersProps> = ({ users }) => {
   );
 };
 
-export async function getServerSideProps() {
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await getSession(context);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
   const { data: response }: { data: User[] } = await axios.get("/api/users");
 
   return {
@@ -97,6 +108,6 @@ export async function getServerSideProps() {
       users: response,
     },
   };
-}
+};
 
 export default Users;

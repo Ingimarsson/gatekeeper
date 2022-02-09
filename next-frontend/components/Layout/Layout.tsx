@@ -11,6 +11,8 @@ import {
 import Link from "next/link";
 
 import * as style from "./Layout.style";
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/router";
 
 interface LayoutProps {
   title: string;
@@ -24,6 +26,9 @@ export const Layout: React.FC<LayoutProps> = ({
   buttons = null,
   children,
 }) => {
+  const router = useRouter();
+  const session = useSession();
+
   return (
     <style.Container>
       <Menu fixed="top" inverted>
@@ -49,13 +54,15 @@ export const Layout: React.FC<LayoutProps> = ({
           <Menu.Menu position="right">
             <Menu.Item>
               <Icon name="user" />
-              Brynjar Ingimarsson
+              {session.data?.user?.name}
             </Menu.Item>
-            <Link href="/users" passHref={true}>
-              <Menu.Item>
-                <Icon name="sign-out" /> Sign out
-              </Menu.Item>
-            </Link>
+            <Menu.Item
+              onClick={() =>
+                signOut({ redirect: false }).then(() => router.push("/"))
+              }
+            >
+              <Icon name="sign-out" /> Sign out
+            </Menu.Item>
           </Menu.Menu>
         </Container>
       </Menu>
