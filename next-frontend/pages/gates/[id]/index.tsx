@@ -32,11 +32,19 @@ const LiveStreamBox = styled.div`
   height: 400px;
   width: 600px;
   background: #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   @media (max-width: 600px) {
     width: 100%;
-    height: 200px;
+    height: auto;
+    aspect-ratio: 1.5;
   }
+`;
+
+export const Logo = styled.img`
+  width: 150px;
 `;
 
 const LiveStreamSlider = styled.input`
@@ -134,7 +142,10 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
           flexFlow: "column",
         }}
       >
-        <LiveStreamBox />
+        <LiveStreamBox>
+          {" "}
+          <Logo src="/logo_white.svg" />
+        </LiveStreamBox>
         <Header as="h3">
           {moment.unix(lastTime - 90 + offset + elapsedTime).format("HH:mm:ss")}
         </Header>
@@ -171,12 +182,15 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
           </Button>
         </div>
       </div>
+      <Header as="h3">History</Header>
       <LogEntryTable entries={gate.history} />
       <div style={{ display: "flex", flexFlow: "row-reverse" }}>
-        <Button size="tiny" icon labelPosition="left" color="blue">
-          <Icon name="list" />
-          See All
-        </Button>
+        <Link href={`/logs?gate=${gate.id}`} passHref={true}>
+          <Button size="tiny" icon labelPosition="right" color="blue">
+            <Icon name="arrow right" />
+            See All
+          </Button>
+        </Link>
       </div>
     </Layout>
   );

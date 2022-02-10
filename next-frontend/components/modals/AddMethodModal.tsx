@@ -9,8 +9,13 @@ import {
 } from "semantic-ui-react";
 import { useEffect, useState } from "react";
 import { CodeType, Gate } from "../../types";
-import { DateInput, TimeInput } from "semantic-ui-calendar-react";
+import {
+  DateInput,
+  DateTimeInput,
+  TimeInput,
+} from "semantic-ui-calendar-react";
 import { DeleteModal } from "./DeleteModal";
+import moment from "moment";
 
 export interface AddMethodData {
   type: string;
@@ -102,7 +107,7 @@ export const AddMethodModal = ({
         close={() => setModalAction("")}
         action={deleteMethod}
       />
-      <Modal size="mini" onClose={close} open={isOpen}>
+      <Modal size="mini" onClose={close} open={isOpen} closeIcon>
         <Header>{edit ? "Edit" : "Add"} Method</Header>
         <Modal.Content>
           <Form autoComplete="off">
@@ -251,38 +256,44 @@ export const AddMethodModal = ({
               control={Checkbox}
               fluid
             />
-            <Form.Group widths="equal">
-              <Form.Field
-                name="startDate"
-                value={data.limitDate ? data.timeLimits.startDate : ""}
-                onChange={(e: any, { name, value }: any) =>
-                  setData({
-                    ...data,
-                    timeLimits: { ...data.timeLimits, startDate: value },
-                  })
-                }
-                label="Start Date"
-                control={DateInput}
-                disabled={!data.limitDate}
-                closable
-                fluid
-              />
-              <Form.Field
-                name="endDate"
-                value={data.limitDate ? data.timeLimits.endDate : ""}
-                onChange={(e: any, { name, value }: any) =>
-                  setData({
-                    ...data,
-                    timeLimits: { ...data.timeLimits, endDate: value },
-                  })
-                }
-                label="End Date"
-                control={DateInput}
-                disabled={!data.limitDate}
-                closable
-                fluid
-              />
-            </Form.Group>
+            <Form.Field
+              name="startDate"
+              value={
+                data.limitDate
+                  ? moment(data.timeLimits.startDate).format("DD-MM-YYYY HH:mm")
+                  : ""
+              }
+              onChange={(e: any, { name, value }: any) =>
+                setData({
+                  ...data,
+                  timeLimits: { ...data.timeLimits, startDate: value },
+                })
+              }
+              label="Start Date"
+              control={DateTimeInput}
+              disabled={!data.limitDate}
+              closable
+              fluid
+            />
+            <Form.Field
+              name="endDate"
+              value={
+                data.limitDate
+                  ? moment(data.timeLimits.endDate).format("DD-MM-YYYY HH:mm")
+                  : ""
+              }
+              onChange={(e: any, { name, value }: any) =>
+                setData({
+                  ...data,
+                  timeLimits: { ...data.timeLimits, endDate: value },
+                })
+              }
+              label="End Date"
+              control={DateTimeInput}
+              disabled={!data.limitDate}
+              closable
+              fluid
+            />
             <Form.Field
               name="limitHours"
               checked={data.limitHours}

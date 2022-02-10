@@ -15,6 +15,7 @@ import {
   LiveStreamBox,
   Logo,
   ReverseButtonRow,
+  TopControlsBox,
 } from "./GateBox.style";
 import Link from "next/link";
 import { Gate } from "../../types";
@@ -56,14 +57,14 @@ export const GateBox = ({ gate }: { gate: Gate }) => {
             <Link href={`/gates/${gate.id}`} passHref={true}>
               <a>
                 <LiveStreamBox>
-                  <Logo src="logo_white.svg" />
+                  <Logo src="/logo_white.svg" />
                 </LiveStreamBox>
               </a>
             </Link>
           </Grid.Column>
           <Grid.Column mobile={16} tablet={16} computer={8}>
             <ControlsBox>
-              <div>
+              <TopControlsBox>
                 <Link href={`/gates/${gate.id}`} passHref={true}>
                   <a
                     style={{
@@ -85,7 +86,7 @@ export const GateBox = ({ gate }: { gate: Gate }) => {
                     {labelTitles[gate.cameraStatus]}
                   </Label>
                 </ButtonRow>
-              </div>
+              </TopControlsBox>
               <ReverseButtonRow>
                 <Button
                   size="tiny"

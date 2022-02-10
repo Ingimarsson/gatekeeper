@@ -221,8 +221,14 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
                     {method.timeLimits.startDate && (
                       <>
                         <div>
-                          {moment(method.timeLimits.startDate).format("ll")} -{" "}
-                          {moment(method.timeLimits.endDate).format("ll")}
+                          From{" "}
+                          {moment(method.timeLimits.startDate).format(
+                            "ll HH:mm"
+                          )}
+                        </div>
+                        <div>
+                          Until{" "}
+                          {moment(method.timeLimits.endDate).format("ll HH:mm")}
                         </div>
                       </>
                     )}
@@ -262,10 +268,12 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
       <Header as="h3">History</Header>
       <LogEntryTable entries={user.history} />
       <div style={{ display: "flex", flexFlow: "row-reverse" }}>
-        <Button size="tiny" icon labelPosition="left" color="blue">
-          <Icon name="list" />
-          See All
-        </Button>
+        <Link href={`/logs?user=${user.user.id}`} passHref={true}>
+          <Button size="tiny" icon labelPosition="right" color="blue">
+            <Icon name="arrow right" />
+            See All
+          </Button>
+        </Link>
       </div>
     </Layout>
   );

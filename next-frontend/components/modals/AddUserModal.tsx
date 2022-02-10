@@ -68,7 +68,7 @@ export const AddUserModal = ({
   };
 
   return (
-    <Modal size="mini" onClose={close} open={isOpen}>
+    <Modal size="mini" onClose={close} open={isOpen} closeIcon>
       <Header>{edit ? "Edit" : "Add"} User</Header>
       <Modal.Content>
         <Form>

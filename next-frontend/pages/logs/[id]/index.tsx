@@ -1,27 +1,64 @@
 import type { NextPage } from "next";
-import {
-  Header,
-  Button,
-  Icon,
-  Table,
-  Label,
-  Input,
-  Checkbox,
-} from "semantic-ui-react";
+import { Header, Table, Label } from "semantic-ui-react";
 import { Code, Layout } from "../../../components";
 import React, { useMemo, useState } from "react";
 import Head from "next/head";
-import Link from "next/link";
-import {
-  GateDetails as GateDetailsType,
-  LogEntryDetails,
-} from "../../../types";
+import { LogEntryDetails } from "../../../types";
 import axios from "axios";
 import moment from "moment";
+import styled from "styled-components";
 
 interface LogEntryProps {
   entry: LogEntryDetails;
 }
+
+const LiveStreamBox = styled.div`
+  height: 400px;
+  width: 600px;
+  background: #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media (max-width: 600px) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1.5;
+  }
+`;
+
+export const Logo = styled.img`
+  width: 150px;
+`;
+
+const LiveStreamSlider = styled.input`
+  width: 500px;
+  margin-bottom: 20px;
+
+  @media (max-width: 600px) {
+    width: 100%;
+  }
+`;
+
+export const Grid = styled.div`
+  display: flex;
+  flex-flow: row-reverse;
+  justify-content: center;
+  gap: 60px;
+  flex-wrap: wrap;
+
+  @media (max-width: 600px) {
+    gap: 0px;
+  }
+`;
+
+export const LiveStreamColumn = styled.div`
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  flex-flow: column;
+  flex-grow: 1;
+`;
 
 const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
   const firstTime = useMemo(
@@ -42,24 +79,11 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
       <Head>
         <title>Log Entry - Gatekeeper</title>
       </Head>
-      <div
-        style={{
-          display: "flex",
-          flexFlow: "row-reverse",
-          justifyContent: "center",
-          gap: 60,
-          flexWrap: "wrap",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            margin: "20px 0",
-            flexFlow: "column",
-          }}
-        >
-          <div style={{ height: 400, width: 600, background: "#444" }}></div>
+      <Grid>
+        <LiveStreamColumn>
+          <LiveStreamBox>
+            <Logo src="/logo_white.svg" />
+          </LiveStreamBox>
           <Header as="h3">
             {moment.unix(firstTime + offset).format("HH:mm:ss")}
           </Header>
@@ -73,7 +97,7 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
             onChange={(e) => setOffset(parseInt(e.target.value))}
             style={{ width: 300, marginBottom: 20 }}
           />
-        </div>
+        </LiveStreamColumn>
         <div
           style={{ flexGrow: 1, maxWidth: 400, minWidth: 300, paddingTop: 20 }}
         >
@@ -132,7 +156,7 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
             </Table.Row>
           </Table>
         </div>
-      </div>
+      </Grid>
     </Layout>
   );
 };

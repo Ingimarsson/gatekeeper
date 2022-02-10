@@ -60,7 +60,7 @@ export const handlers = [
       ctx.json([
         {
           id: 2,
-          timestamp: "2022-01-21 11:21:31.933123+00",
+          timestamp: "2022-01-21 11:21:31.933123",
           user: "Harrison Ford",
           gate: "Parking Barrier",
           method: "Licence Plate",
@@ -72,7 +72,7 @@ export const handlers = [
         },
         {
           id: 1,
-          timestamp: "2022-01-20 14:42:39.933123+00",
+          timestamp: "2022-01-20 14:42:39.933123",
           user: "Harrison Ford",
           gate: "Main Entrance",
           method: "Keypad",
@@ -92,18 +92,19 @@ export const handlers = [
         id: 1,
         name: "Front Entrance",
         supportsClose: true,
-        latestImage: "2022-01-21 11:21:31.933123+00",
+        latestImage: "2022-01-21 11:21:31.933123",
         settings: {
           name: "Front Entrance",
           type: "gatekeeper",
           controllerIP: "192.168.12.145",
           cameraEnabled: true,
           cameraUrl: "rtsp://192.168.10.145:4455/stream",
+          dvrTriggerUrl: "http://blueiris.local/camera/1/trigger",
         },
         history: [
           {
             id: 2,
-            timestamp: "2022-01-21 11:21:31.933123+00",
+            timestamp: "2022-01-21 11:21:31.933123",
             user: "Harrison Ford",
             gate: "Parking Barrier",
             method: "Licence Plate",
@@ -142,7 +143,7 @@ export const handlers = [
               pin: "1234",
             },
             comment: "",
-            lastUsage: "2022-01-21 11:21:31.933123+00",
+            lastUsage: "2022-01-21 11:21:31.933123",
             timeLimits: {
               startDate: "",
               endDate: "",
@@ -163,10 +164,10 @@ export const handlers = [
               card: "0024549388",
             },
             comment: "Test",
-            lastUsage: "2022-01-21 11:21:31.933123+00",
+            lastUsage: "2022-01-21 11:21:31.933123",
             timeLimits: {
-              startDate: "2022-01-10",
-              endDate: "2022-01-20",
+              startDate: "2022-01-10 12:00:00.000000",
+              endDate: "2022-01-20 14:00:00.000000",
               startHour: "7:00",
               endHour: "18:00",
             },
@@ -176,7 +177,7 @@ export const handlers = [
         history: [
           {
             id: 2,
-            timestamp: "2022-01-21 11:21:31.933123+00",
+            timestamp: "2022-01-21 11:21:31.933123",
             user: "Harrison Ford",
             gate: "Parking Barrier",
             method: "Licence Plate",
@@ -195,7 +196,7 @@ export const handlers = [
       ctx.status(200),
       ctx.json({
         id: 2,
-        timestamp: "2022-01-21 11:21:31.933123+00",
+        timestamp: "2022-01-21 11:21:31.933123",
         user: "Harrison Ford",
         gate: "Parking Barrier",
         method: "Licence Plate",
@@ -204,8 +205,8 @@ export const handlers = [
         },
         operation: "Open",
         granted: true,
-        firstImage: "2022-01-21 11:21:16.933123+00",
-        lastImage: "2022-01-21 11:21:45.933123+00",
+        firstImage: "2022-01-21 11:21:16.933123",
+        lastImage: "2022-01-21 11:21:45.933123",
       })
     )
   ),

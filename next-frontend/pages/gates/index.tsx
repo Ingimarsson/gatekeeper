@@ -1,15 +1,11 @@
 import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
-import { Header, Button, Icon, Grid } from "semantic-ui-react";
+import { Button, Icon, Grid } from "semantic-ui-react";
 import { Layout, GateBox } from "../../components";
 import React, { useState } from "react";
 import { Gate } from "../../types";
 import axios from "axios";
-import {
-  AddGateData,
-  AddGateModal,
-} from "../../components/modals/AddGateModal";
-import { ChangePasswordModal } from "../../components/modals/ChangePasswordModal";
+import { AddGateData, AddGateModal } from "../../components";
 import { getSession } from "next-auth/react";
 
 interface GatesProps {

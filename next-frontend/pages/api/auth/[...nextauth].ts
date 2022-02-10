@@ -20,9 +20,13 @@ export default NextAuth({
       },
       async authorize(credentials, req) {
         // Add logic here to look up the user from the credentials supplied
-        const user = { id: 1, name: "J Smith", email: "jsmith@example.com" };
+        const user = {
+          id: 1,
+          name: "Harrison Ford",
+          email: "harrison@example.com",
+        };
 
-        if (user) {
+        if (credentials?.username === "harrison") {
           // Any object returned will be saved in `user` property of the JWT
           return user;
         } else {

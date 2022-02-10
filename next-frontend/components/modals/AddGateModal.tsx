@@ -17,6 +17,7 @@ export interface AddGateData {
   closeUrl?: string;
   cameraEnabled: boolean;
   cameraUrl: string;
+  dvrTriggerUrl?: string;
 }
 
 type AddGateErrors = {
@@ -46,6 +47,7 @@ export const AddGateModal = ({
     closeUrl: "",
     cameraEnabled: true,
     cameraUrl: "",
+    dvrTriggerUrl: "",
   });
 
   useEffect(() => {
@@ -78,7 +80,7 @@ export const AddGateModal = ({
   };
 
   return (
-    <Modal size="mini" onClose={close} open={isOpen}>
+    <Modal size="mini" onClose={close} open={isOpen} closeIcon>
       <Header>{edit ? "Edit" : "Add"} Gate</Header>
       <Modal.Content>
         <Form>
@@ -204,6 +206,17 @@ export const AddGateModal = ({
                 content: errors?.cameraUrl,
               }
             }
+          />
+          <Form.Field
+            name="dvrTriggerURL"
+            value={data.dvrTriggerUrl}
+            onChange={(e: { target: { value: any } }) =>
+              setData({ ...data, dvrTriggerUrl: e.target.value })
+            }
+            label="DVR Trigger URL"
+            control={Input}
+            placeholder="DVR Trigger URL"
+            fluid
           />
         </Form>
       </Modal.Content>

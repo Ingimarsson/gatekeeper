@@ -37,7 +37,7 @@ export const ChangePasswordModal = ({
   };
 
   return (
-    <Modal size="mini" onClose={close} open={isOpen}>
+    <Modal size="mini" onClose={close} open={isOpen} closeIcon>
       <Header>Change Password</Header>
       <Modal.Content>
         <Form>

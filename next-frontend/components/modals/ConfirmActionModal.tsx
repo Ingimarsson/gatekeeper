@@ -11,7 +11,7 @@ export const ConfirmActionModal = ({
   close,
   action,
 }: ConfirmActionModalProps) => (
-  <Modal size="mini" basic onClose={close} open={isOpen}>
+  <Modal size="mini" basic onClose={close} open={isOpen} closeIcon>
     <Header>Confirm Action</Header>
     <Modal.Content>
       <p>Are you sure you want to execute this action?</p>

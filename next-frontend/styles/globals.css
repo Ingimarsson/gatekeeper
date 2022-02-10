@@ -13,7 +13,7 @@ body {
   background: #fafafa;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   thead {
     display: none !important;
   }

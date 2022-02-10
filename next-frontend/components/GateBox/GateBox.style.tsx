@@ -14,6 +14,12 @@ export const LiveStreamBox = styled.div`
   max-width: 250px;
   margin: 0 auto;
   background: #444;
+
+  @media (max-width: 600px) {
+    max-width: none;
+    height: auto;
+    aspect-ratio: 1.5;
+  }
 `;
 
 export const Logo = styled.img`
@@ -25,6 +31,12 @@ export const ControlsBox = styled.div`
   display: flex;
   flex-flow: column;
   justify-content: space-between;
+`;
+
+export const TopControlsBox = styled.div`
+  display: flex;
+  flex-flow: wrap;
+  align-items: center;
 `;
 
 export const ButtonRow = styled.div`

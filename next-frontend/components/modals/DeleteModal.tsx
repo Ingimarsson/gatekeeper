@@ -15,7 +15,7 @@ export const DeleteModal = ({
   type,
   name,
 }: DeleteModalProps) => (
-  <Modal size="mini" onClose={close} open={isOpen}>
+  <Modal size="mini" onClose={close} open={isOpen} closeIcon>
     <Header>Delete {type}</Header>
     <Modal.Content>
       <p>

@@ -1,6 +1,13 @@
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { Header, Segment, Form, Button } from "semantic-ui-react";
+import {
+  Header,
+  Segment,
+  Form,
+  Button,
+  Message,
+  Icon,
+} from "semantic-ui-react";
 import styled from "styled-components";
 import Head from "next/head";
 import React, { useState } from "react";
@@ -30,8 +37,10 @@ const Logo = styled.img`
   margin-bottom: 20px;
 `;
 
-const Box = styled(Segment)`
+const Box = styled.div`
   width: 340px;
+  display: flex;
+  flex-flow: column;
 `;
 
 const Footer = styled.span`
@@ -47,9 +56,11 @@ interface LoginData {
 const Login: NextPage = () => {
   const Router = useRouter();
   const [data, setData] = useState({
-    username: "",
-    password: "",
+    username: process.env.NEXT_MOCKING ? "harrison" : "",
+    password: process.env.NEXT_MOCKING ? "ford!?123" : "",
   });
+
+  const [error, setError] = useState<boolean>(false);
 
   const doSignIn = () => {
     signIn("credentials", {
@@ -57,7 +68,9 @@ const Login: NextPage = () => {
       password: data.password,
       callbackUrl: `${window.location.origin}/gates`,
       redirect: false,
-    }).then((result: any) => Router.push(result?.url));
+    }).then((result: any) => {
+      result?.ok ? Router.push("/gates") : setError(true);
+    });
   };
 
   return (
@@ -67,8 +80,8 @@ const Login: NextPage = () => {
       </Head>
       <Logo src="logo.svg"></Logo>
       <Header as="h3">Sign in to your account</Header>
-      <Form size="large">
-        <Box>
+      <Box>
+        <Form size="large">
           <Form.Input
             name="username"
             value={data.username}
@@ -95,8 +108,31 @@ const Login: NextPage = () => {
           <Button primary fluid size="large" onClick={() => doSignIn()}>
             Sign in
           </Button>
-        </Box>
-      </Form>
+        </Form>
+        {error && (
+          <Message error icon>
+            <Icon name="exclamation triangle" />
+            <Message.Content>
+              <Message.Header>Sign in failed.</Message.Header>
+              <p>
+                Make sure that your username and password are typed correctly.
+              </p>
+            </Message.Content>
+          </Message>
+        )}
+        {process.env.NEXT_MOCKING && (
+          <Message icon>
+            <Icon name="info circle" />
+            <Message.Content>
+              <Message.Header>This is a demo instance.</Message.Header>
+              <p>
+                This instance is not connected to a real backend, it displays
+                mock data instead.
+              </p>
+            </Message.Content>
+          </Message>
+        )}
+      </Box>
       <Footer>Copyright &copy; Brynjar Ingimarsson 2020-2022</Footer>
     </Container>
   );
