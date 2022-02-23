@@ -1,6 +1,8 @@
-from flask import Flask, request, json
+from flask import Flask, request, json, send_file
 import logging
+import os
 
+from config import config as configuration
 from daemon import Daemon
 
 app = Flask(__name__)
@@ -21,12 +23,35 @@ def status():
   return json.jsonify(daemon.get_status())
 
 
-@app.route("/save/<stream_id>")
-def save(stream_id: int):
+@app.route("/latest_snapshots/<int:id>")
+def latest_snapshots(id):
+  """
+  Return stream status and list of post-saves
+  """
+  global daemon
+  return json.jsonify(daemon.get_latest_snapshots(id))
+
+
+@app.route("/latest_image/<int:id>")
+def latest_jpeg(id):
+  image = None
+  for s in daemon.get_status():
+    if s['id'] == id:
+      image = s['latest_image']
+
+  if not image:
+    return "No image"
+
+  path = os.path.join(configuration['DATA_PATH'], "camera_{}/live/".format(id), image)
+
+  return send_file(path, mimetype='image/jpeg'), 200, {'Refresh': '1;url=/latest_image/{}'.format(id)}
+
+@app.route("/save/<int:id>")
+def save(id: int):
   """
   Tell a stream instance to save snapshot
   """
-  return "ok"
+  return json.jsonify({"image": daemon.save_snapshot(id)})
 
 
 @app.route("/config", methods=['POST'])

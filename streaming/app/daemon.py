@@ -2,16 +2,18 @@ from threading import Thread
 from datetime import datetime
 import time
 import json
+import os
 
+from config import config as configuration
 from stream import Stream
 
 class Daemon(Thread):
   """
   This class is the background thread that manages all the Stream instances
   """
-  config = None
-  logger = None
+  config = []
   streams = []
+  logger = None
 
   stop_signal = False
 
@@ -22,7 +24,7 @@ class Daemon(Thread):
     self.streams = []
 
     try:
-      with open('config.json') as json_file:
+      with open(os.path.join(configuration['DATA_PATH'], "config.json")) as json_file:
         self.config = json.load(json_file)
 
       self.logger.info("Started daemon with {} streams".format(len(self.config)))
@@ -42,7 +44,7 @@ class Daemon(Thread):
     """
     Write dict config to a JSON file
     """
-    with open('config.json', 'w') as outfile:
+    with open(os.path.join(configuration['DATA_PATH'], "config.json"), 'w') as outfile:
       json.dump(config, outfile)
 
 
@@ -56,28 +58,63 @@ class Daemon(Thread):
       self.logger.debug("Running loop")
       for s in self.streams:
         if counter % 5 == 0:
+          s.get_stats()
           s.remove_old_images()
+          s.complete_snapshots()
 
-        if counter % 15 == 0 and not s.is_alive():
-          s.restart()
+        if counter % 10 == 0 and counter != 0 and not s.is_alive():
+          self.logger.warning("Process for camera %d dead, restarting", s.id)
+          s.kill()
+
+          stream = Stream(self.logger, s.id, s.url)
+
+          self.streams.remove(s)
+          self.streams.append(stream)
 
       counter = (counter + 1) % 60
       time.sleep(1)
 
     self.stop_streams()
 
+  def save_snapshot(self, stream_id):
+    stream = next((s for s in self.streams if s.id == stream_id), None)
+
+    return stream.save_snapshot()
+
+  def get_latest_snapshots(self, stream_id):
+    stream = next((s for s in self.streams if s.id == stream_id), None)
+
+    snapshots = os.listdir(os.path.join(configuration['DATA_PATH'], "camera_{}/snapshots/".format(stream.id)))
+    result = []
+
+    for s in snapshots[-50:]:
+      images = sorted(os.listdir(os.path.join(configuration['DATA_PATH'], "camera_{}/snapshots/{}/".format(stream.id, s))))
+      if not images:
+        continue
+
+      result.append({
+        "snapshot": int(s), 
+        "first_image": int(images[0].split(".")[0]),
+        "last_image": int(images[-1].split(".")[0])
+      })
+
+    return result
 
   def get_status(self) -> None:
     """
     Return the status of each stream as dictionary.
     """
     return [{
+      "id": s.id,
       "url": s.url,
       "created_at": s.created_at.astimezone().isoformat(),
       "uptime": int((datetime.now() - s.created_at).total_seconds()),
-      "last_image": s.get_latest_image(),
+      "latest_image": s.get_latest_image(),
       "is_alive": s.is_alive(),
-      "pid": s.get_pid()
+      "pid": s.process.pid,
+      "cpu_percent": s.cpu_usage,
+      "memory": s.mem_usage,
+
     } for s in self.streams]
 
 
