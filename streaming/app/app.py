@@ -1,21 +1,27 @@
-from flask import Flask, request
-from tasks import uwsgi_task
+from flask import Flask, request, json
+import logging
 
 from daemon import Daemon
 
 app = Flask(__name__)
 
-daemon = None
+gunicorn_logger = logging.getLogger('gunicorn.error')
+app.logger.handlers = gunicorn_logger.handlers
+app.logger.setLevel(gunicorn_logger.level)
+
+daemon = Daemon(app.logger)
+daemon.start()
 
 @app.route("/")
 def status():
   """
   Return stream status and list of post-saves
   """
-  return "ok"
+  global daemon
+  return json.jsonify(daemon.get_status())
 
 
-@app.route("/save/<stream_id:int>")
+@app.route("/save/<stream_id>")
 def save(stream_id: int):
   """
   Tell a stream instance to save snapshot
@@ -28,22 +34,17 @@ def config():
   """
   Update config and save in file.
   """
+  global daemon
+  daemon.write_config(request.json)
+
   daemon.stop()
   daemon.join()
 
-  # Update config file
-
-  deamon = Daemon()
+  daemon = Daemon(app.logger)
   daemon.start()
 
   return "ok"
 
-@app.before_first_request
-def start_thread():
-  daemon = Daemon()
-  daemon.start()
-
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=4123)
-
+    app.run()
