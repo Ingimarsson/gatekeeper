@@ -1,26 +1,32 @@
-# Stage 0, "build-stage"
+FROM node:16.14-alpine AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
 
-FROM tiangolo/node-frontend:10 as build-stage
+FROM node:16.14-alpine AS builder
+ENV NEXT_MOCKING enabled
+WORKDIR /app
+COPY . .
+COPY --from=deps /app/node_modules ./node_modules
+RUN yarn build
 
+FROM node:16.14-alpine AS runner
 WORKDIR /app
 
-COPY ./package.json /app/
+ENV NODE_ENV production
 
-RUN npm install
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
 
-COPY ./ /app/
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+RUN chown -R nextjs:nodejs /app/.next
+USER nextjs
 
-RUN npm run build
+EXPOSE 3000
 
-# Stage 1, using NGINX
+RUN npx next telemetry disable
 
-FROM nginx:1.15
-
-COPY --from=build-stage /app/build/ /usr/share/nginx/html
-
-# Copy the default nginx.conf provided by tiangolo/node-frontend
-
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
-
-VOLUME /data
-
+CMD ["node_modules/.bin/next", "start"]
