@@ -3,6 +3,7 @@ import os
 import time
 import subprocess
 import psutil 
+import shutil
 
 from config import config
 
@@ -17,9 +18,11 @@ class Stream:
 
   cpu_usage = 0
   mem_usage = 0
+  disk_usage = 0
 
   base_path = None
   live_path = None
+  snapshot_path = None
 
   logger = None
 
@@ -33,6 +36,7 @@ class Stream:
 
     self.base_path = os.path.join(config['DATA_PATH'], 'camera_{}/'.format(id))
     self.live_path = os.path.join(self.base_path, "live/")
+    self.snapshot_path = os.path.join(self.base_path, "snapshots/")
 
     self.incomplete_snapshots = []
 
@@ -44,11 +48,12 @@ class Stream:
     logger.info("Started stream {}: {}".format(id, url))
     return
 
+
   def start_ffmpeg(self) -> None:
     """
-
+    Start an ffmpeg process that saves timestamped images to the data directory.
     """
-    command = "ffmpeg -i '{}' -f image2 -vf scale=w='min(1280\, iw*3/2):h=-1' -q:v 3 -r 1 -strftime 1 {}/%s.jpg".format(self.url, self.live_path)
+    command = "ffmpeg -i '{}' -f image2 -vf scale=w='min(1280\, iw*3/2):h=-1' -q:v 3 -r 2 -strftime 1 {}/%s.jpg".format(self.url, self.live_path)
 
     self.process = subprocess.Popen(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -56,9 +61,10 @@ class Stream:
 
     return
 
+
   def get_stats(self):
     """
-
+    Collect CPU and memory statistics for ffmpeg process.
     """
     try:
       p = psutil.Process(self.process.pid)
@@ -70,10 +76,12 @@ class Stream:
 
     self.cpu_usage = p.children()[0].cpu_percent(interval=0.5)
     self.mem_usage = p.children()[0].memory_info().rss
+    self.disk_usage = int(subprocess.check_output(['du','-bs', self.base_path]).split()[0].decode('utf-8'))
+
 
   def get_latest_image(self) -> None:
     """
-
+    Get the name of the latest live image.
     """
     images = sorted(os.listdir(self.live_path))
 
@@ -82,9 +90,14 @@ class Stream:
     else:
       return ""
     
+
   def save_snapshot(self):
     """
+    Save a snapshot.
 
+    This creates a directory under camera_<id>/snapshots/<timestamp> and saves the
+    snapshot there along with a sequence of 20 images before. Later, complete_snapshots
+    is called and the 20 images after are collected.
     """
 
     images = sorted(os.listdir(self.live_path))
@@ -94,7 +107,7 @@ class Stream:
 
     latest = int(images[-1].split(".")[0])
 
-    path = os.path.join(self.base_path, "snapshots/{}/".format(latest))
+    path = os.path.join(self.snapshot_path, "{}/".format(latest))
     os.makedirs(path)
 
     files = []
@@ -109,13 +122,14 @@ class Stream:
 
     return latest
 
+
   def complete_snapshots(self) -> None:
     """
-    Save snapshots from up to 20 seconds after the event, which did not exist at the time
+    Save snapshots from 1 to 20 seconds after the event, which did not exist at save time.
     """
     for snapshot in self.incomplete_snapshots:
       if snapshot < datetime.now().timestamp() - 30:
-        path = os.path.join(self.base_path, "snapshots/{}/".format(snapshot))
+        path = os.path.join(self.snapshot_path, "{}/".format(snapshot))
 
         for i in range(1, 20):
           src = os.path.join(self.live_path, "{}.jpg".format(snapshot + i))
@@ -126,9 +140,21 @@ class Stream:
 
     return
 
+
+  def remove_old_snapshots(self, timestamp):
+    """
+    Remove all snapshots directories older than timestamp
+    """
+    for f in os.listdir(self.snapshot_path):
+      if int(f) <= timestamp:
+        shutil.rmtree(os.path.join(self.snapshot_path, f))
+
+    return
+
+
   def remove_old_images(self) -> None:
     """
-
+    Remove live images that are older than threshold (about 60 seconds)
     """
     self.logger.debug("Removing for %s", self.url)
     for f in os.listdir(self.live_path):
@@ -139,9 +165,10 @@ class Stream:
 
     return
 
+
   def is_alive(self) -> bool:
     """
-    Check if the stream is alive by checking if latest image is less than 10 seconds old
+    Check if ffmpeg is alive by checking if latest image is less than 10 seconds old.
     """
     latest_image = self.get_latest_image()
     if not latest_image:
@@ -152,9 +179,10 @@ class Stream:
 
     return True
 
+
   def kill(self) -> None:
     """
-
+    Kill the ffmpeg process.
     """
     self.logger.info("Killing process for %d", self.id)
     self.process.kill()

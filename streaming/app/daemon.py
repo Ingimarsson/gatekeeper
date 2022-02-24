@@ -47,6 +47,8 @@ class Daemon(Thread):
     with open(os.path.join(configuration['DATA_PATH'], "config.json"), 'w') as outfile:
       json.dump(config, outfile)
 
+    return
+
 
   def run(self) -> None:
     """
@@ -75,13 +77,22 @@ class Daemon(Thread):
       time.sleep(1)
 
     self.stop_streams()
+    return
+
 
   def save_snapshot(self, stream_id):
+    """
+    Save a snapshot for stream by ID.
+    """
     stream = next((s for s in self.streams if s.id == stream_id), None)
 
     return stream.save_snapshot()
 
+
   def get_latest_snapshots(self, stream_id):
+    """
+    Get the latest snapshots for a given stream.
+    """
     stream = next((s for s in self.streams if s.id == stream_id), None)
 
     snapshots = os.listdir(os.path.join(configuration['DATA_PATH'], "camera_{}/snapshots/".format(stream.id)))
@@ -100,6 +111,7 @@ class Daemon(Thread):
 
     return result
 
+
   def get_status(self) -> None:
     """
     Return the status of each stream as dictionary.
@@ -114,13 +126,24 @@ class Daemon(Thread):
       "pid": s.process.pid,
       "cpu_percent": s.cpu_usage,
       "memory": s.mem_usage,
+      "disk_size": s.disk_usage
 
     } for s in self.streams]
 
 
+  def remove_old_snapshots(self, timestamp):
+    """
+    Tells all the streams to remove snapshots older than timestamp.
+    """
+    for s in self.streams:
+      s.remove_old_snapshots(timestamp)
+
+    return
+
+
   def stop(self):
     """
-    Raise a stop signal for the run loop
+    Raise a stop signal for the run loop.
     """
     self.stop_signal = True
 

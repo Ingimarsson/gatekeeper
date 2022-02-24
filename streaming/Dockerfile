@@ -16,5 +16,5 @@ VOLUME /data
 
 COPY ./app/ /usr/src/app/
 
-CMD ["python3", "main.py"]
+CMD ["gunicorn", "app:app"]
 

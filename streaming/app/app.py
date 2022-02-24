@@ -17,7 +17,7 @@ daemon.start()
 @app.route("/")
 def status():
   """
-  Return stream status and list of post-saves
+  Returns the status of all streams
   """
   global daemon
   return json.jsonify(daemon.get_status())
@@ -26,7 +26,7 @@ def status():
 @app.route("/latest_snapshots/<int:id>")
 def latest_snapshots(id):
   """
-  Return stream status and list of post-saves
+  Returns the latest snapshots from a stream
   """
   global daemon
   return json.jsonify(daemon.get_latest_snapshots(id))
@@ -34,6 +34,9 @@ def latest_snapshots(id):
 
 @app.route("/latest_image/<int:id>")
 def latest_jpeg(id):
+  """
+  Returns an auto refreshing image from the stream (for debugging only)
+  """
   image = None
   for s in daemon.get_status():
     if s['id'] == id:
@@ -44,14 +47,25 @@ def latest_jpeg(id):
 
   path = os.path.join(configuration['DATA_PATH'], "camera_{}/live/".format(id), image)
 
-  return send_file(path, mimetype='image/jpeg'), 200, {'Refresh': '1;url=/latest_image/{}'.format(id)}
+  return send_file(path, mimetype='image/jpeg'), 200, {'Refresh': '0.5;url=/latest_image/{}'.format(id)}
+
 
 @app.route("/save/<int:id>")
 def save(id: int):
   """
-  Tell a stream instance to save snapshot
+  Tells a stream instance to save snapshot
   """
   return json.jsonify({"image": daemon.save_snapshot(id)})
+
+
+@app.route("/remove_old_snapshots/<int:timestamp>")
+def remove_old_snapshots(timestamp: int):
+  """
+  Remove snapshots older than timestamp
+  """
+  daemon.remove_old_snapshots(timestamp)
+  
+  return json.jsonify({"status": "ok"})
 
 
 @app.route("/config", methods=['POST'])
@@ -68,7 +82,7 @@ def config():
   daemon = Daemon(app.logger)
   daemon.start()
 
-  return "ok"
+  return json.jsonify({"status": "ok"})
 
 
 if __name__ == '__main__':
