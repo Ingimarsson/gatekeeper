@@ -88,6 +88,14 @@ class Alert(db.Model):
     is_enabled = Column(Boolean, default=True, nullable=False)
 
 
+class AlertEvent(db.Model):
+    __tablename__ = 'alert_event'
+
+    id = Column(Integer, primary_key=True)
+    alert = Column(Integer, ForeignKey('alert.id'))
+    log = Column(Integer, ForeignKey('log.id'))
+
+
 class CameraStatus(db.Model):
     __tablename__ = 'camera_status'
 
