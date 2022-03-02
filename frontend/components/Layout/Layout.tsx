@@ -80,6 +80,17 @@ export const Layout: React.FC<LayoutProps> = ({
                     </Dropdown.Item>
                   </Link>
                   <Dropdown.Divider />
+                  <Link href="/alerts" passHref={true}>
+                    <Menu.Item>
+                      <Icon name="mail" /> Email Alerts
+                    </Menu.Item>
+                  </Link>
+                  <Link href="/status" passHref={true}>
+                    <Menu.Item>
+                      <Icon name="hdd" /> System Status
+                    </Menu.Item>
+                  </Link>
+                  <Dropdown.Divider />
                   <Dropdown.Item
                     onClick={() =>
                       signOut({ redirect: false }).then(() => router.push("/"))
@@ -108,17 +119,42 @@ export const Layout: React.FC<LayoutProps> = ({
                 </Menu.Item>
               </Link>
               <Menu.Menu position="right">
-                <Menu.Item>
-                  <Icon name="user" />
-                  {session.data?.user?.name}
-                </Menu.Item>
-                <Menu.Item
-                  onClick={() =>
-                    signOut({ redirect: false }).then(() => router.push("/"))
-                  }
+                {/*
+                <Link href="/logs" passHref={true}>
+                  <Menu.Item>
+                    <Icon name="desktop" /> Live View
+                  </Menu.Item>
+                </Link>
+                */}
+                <Dropdown
+                  item
+                  icon="user"
+                  text={session.data?.user?.name ?? ""}
+                  style={{ display: "flex", flexDirection: "row-reverse" }}
                 >
-                  <Icon name="sign-out" /> Sign out
-                </Menu.Item>
+                  <Dropdown.Menu>
+                    <Link href="/alerts" passHref={true}>
+                      <Menu.Item>
+                        <Icon name="mail" /> Email Alerts
+                      </Menu.Item>
+                    </Link>
+                    <Link href="/status" passHref={true}>
+                      <Menu.Item>
+                        <Icon name="hdd" /> System Status
+                      </Menu.Item>
+                    </Link>
+                    <Dropdown.Divider />
+                    <Dropdown.Item
+                      onClick={() =>
+                        signOut({ redirect: false }).then(() =>
+                          router.push("/")
+                        )
+                      }
+                    >
+                      <Icon name="sign-out" /> Sign out
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
               </Menu.Menu>
             </>
           )}

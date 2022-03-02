@@ -32,6 +32,11 @@ export const ButtonBox = styled.div`
   align-items: center;
 
   @media (max-width: 600px) {
-    gap: 14px;
+    gap: 4px;
+
+    .button {
+      margin-top: 2px;
+      margin-bottom: 2px;
+    }
   }
 `;

@@ -19,6 +19,8 @@ const LiveStreamBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  margin-bottom: 20px;
 
   @media (max-width: 600px) {
     width: 100%;
@@ -60,6 +62,21 @@ export const LiveStreamColumn = styled.div`
   flex-grow: 1;
 `;
 
+const TimeLabel = styled.div`
+  color: white;
+  font-family: sans;
+  font-size: 22px;
+  font-weight: 900;
+  position: absolute;
+  bottom: 14px;
+  background: #00000044;
+  padding: 4px;
+
+  @media (max-width: 600px) {
+    font-size: 14px;
+  }
+`;
+
 const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
   const firstTime = useMemo(
     () => moment(entry.firstImage).unix(),
@@ -83,10 +100,10 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
         <LiveStreamColumn>
           <LiveStreamBox>
             <Logo src="/logo_white.svg" />
+            <TimeLabel>
+              {moment.unix(firstTime + offset).format("HH:mm:ss")}
+            </TimeLabel>
           </LiveStreamBox>
-          <Header as="h3">
-            {moment.unix(firstTime + offset).format("HH:mm:ss")}
-          </Header>
           <input
             type="range"
             id="points"

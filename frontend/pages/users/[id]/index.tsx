@@ -28,11 +28,6 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
   const [action, setAction] = useState<string>();
   const [currentMethod, setCurrentMethod] = useState<number>();
 
-  const deleteUser = () => {
-    setAction("");
-    return true;
-  };
-
   const editUser = (data: AddUserData) => {
     setAction("");
     return true;
@@ -65,15 +60,6 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
             size="tiny"
             icon
             labelPosition="left"
-            onClick={() => setAction("change-password")}
-          >
-            <Icon name="lock" />
-            Change Password
-          </Button>
-          <Button
-            size="tiny"
-            icon
-            labelPosition="left"
             onClick={() => setAction("edit")}
           >
             <Icon name="edit" />
@@ -83,11 +69,11 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
             size="tiny"
             icon
             labelPosition="left"
-            color="red"
-            onClick={() => setAction("delete")}
+            color="blue"
+            onClick={() => setAction("change-password")}
           >
-            <Icon name="delete" />
-            Delete User
+            <Icon name="lock" />
+            Change Password
           </Button>
         </>
       }
@@ -101,13 +87,6 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
         isOpen={action === "edit"}
         edit={true}
         editData={user.user}
-      />
-      <DeleteModal
-        action={() => deleteUser()}
-        close={() => setAction("")}
-        isOpen={action === "delete"}
-        type="User"
-        name={user.user.name}
       />
       <ChangePasswordModal
         action={(data) => changePassword(data)}
@@ -274,9 +253,7 @@ export async function getServerSideProps() {
   const { data: user }: { data: UserDetailsType[] } = await axios.get(
     "/api/users/1"
   );
-  const { data: gates }: { data: UserDetailsType[] } = await axios.get(
-    "/api/gates"
-  );
+  const { data: gates }: { data: Gate[] } = await axios.get("/api/gates");
 
   return {
     props: {

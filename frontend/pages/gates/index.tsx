@@ -1,9 +1,9 @@
 import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import { Button, Grid, Icon } from "semantic-ui-react";
-import { AddGateData, AddGateModal, GateBox, Layout } from "../../components";
+import { AddGateModal, GateBox, Layout } from "../../components";
 import React, { useState } from "react";
-import { Gate } from "../../types";
+import { Gate, GateSettings } from "../../types";
 import axios from "axios";
 import { getSession } from "next-auth/react";
 
@@ -14,7 +14,7 @@ interface GatesProps {
 const Gates: NextPage<GatesProps> = ({ gates }) => {
   const [action, setAction] = useState<string>();
 
-  const addGate = (data: AddGateData) => {
+  const addGate = (data: GateSettings) => {
     setAction("");
     return true;
   };

@@ -255,7 +255,7 @@ export const AddMethodModal = ({
             <Form.Field
               name="startDate"
               value={
-                data.limitDate
+                data.limitDate && data.timeLimits.startDate
                   ? moment(data.timeLimits.startDate).format("DD-MM-YYYY HH:mm")
                   : ""
               }
@@ -268,13 +268,14 @@ export const AddMethodModal = ({
               label="Start Date"
               control={DateTimeInput}
               disabled={!data.limitDate}
+              inputMode="none"
               closable
               fluid
             />
             <Form.Field
               name="endDate"
               value={
-                data.limitDate
+                data.limitDate && data.timeLimits.endDate
                   ? moment(data.timeLimits.endDate).format("DD-MM-YYYY HH:mm")
                   : ""
               }
@@ -287,6 +288,7 @@ export const AddMethodModal = ({
               label="End Date"
               control={DateTimeInput}
               disabled={!data.limitDate}
+              inputMode="none"
               closable
               fluid
             />
@@ -314,6 +316,7 @@ export const AddMethodModal = ({
                 label="Start Hour"
                 control={TimeInput}
                 disabled={!data.limitHours}
+                inputMode="none"
                 closable
                 fluid
               />
@@ -329,6 +332,7 @@ export const AddMethodModal = ({
                 label="End Hour"
                 control={TimeInput}
                 disabled={!data.limitHours}
+                inputMode="none"
                 closable
                 fluid
               />

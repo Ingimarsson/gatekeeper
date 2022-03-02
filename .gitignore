@@ -3,3 +3,4 @@ __pycache__/
 frontend/node_modules
 backend/env
 streaming/env
+streaming/app/config.json

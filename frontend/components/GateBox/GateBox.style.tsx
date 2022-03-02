@@ -3,15 +3,40 @@ import { Segment } from "semantic-ui-react";
 
 export const Box = styled(Segment)`
   margin-bottom: 20px !important;
+  overflow: hidden;
+`;
+
+export const GridContainer = styled.div`
+  margin: -16px;
+  overflow: hidden;
+  display: flex;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+  }
+`;
+
+export const StreamColumn = styled.div`
+  flex-grow: 1;
+  flex-basis: 32px;
+`;
+
+export const ControlsColumn = styled.div`
+  margin: 16px;
+  flex-grow: 1;
+  flex-basis: 0;
+
+  @media (max-width: 600px) {
+    margin-top: 8px;
+  }
 `;
 
 export const LiveStreamBox = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 150px;
+  height: 100%;
   width: 100%;
-  max-width: 250px;
   margin: 0 auto;
   background: #444;
 
@@ -35,15 +60,19 @@ export const ControlsBox = styled.div`
 
 export const TopControlsBox = styled.div`
   display: flex;
-  flex-flow: wrap;
-  align-items: center;
+  flex-direction: column;
+  @media (max-width: 600px) {
+    align-items: center;
+  }
 `;
 
 export const ButtonRow = styled.div`
   display: flex;
   gap: 4px;
+  margin-bottom: 8px;
 `;
 
 export const ReverseButtonRow = styled(ButtonRow)`
   flex-flow: row-reverse;
+  margin-bottom: 0px;
 `;

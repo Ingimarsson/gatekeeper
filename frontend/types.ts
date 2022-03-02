@@ -1,5 +1,3 @@
-import { AddGateData } from "./components/modals/AddGateModal";
-
 export interface Gate {
   id: number;
   name: string;
@@ -7,15 +5,34 @@ export interface Gate {
   latestImage: string;
   controllerStatus: "online" | "offline";
   cameraStatus: "online" | "offline" | "not-setup";
+  buttonStatus: "disabled" | "enabled" | "timer";
 }
 
 export interface GateDetails {
   id: number;
   name: string;
   supportsClose: boolean;
+  controllerStatus: Gate["controllerStatus"];
+  cameraStatus: Gate["cameraStatus"];
+  buttonStatus: Gate["buttonStatus"];
   latestImage: string;
-  settings: AddGateData;
+  buttonTime: {
+    startHour: string;
+    endHour: string;
+  };
+  settings: GateSettings;
   history: LogEntry[];
+}
+
+export interface GateSettings {
+  name: string;
+  type: "generic" | "gatekeeper";
+  controllerIP?: string;
+  openUrl?: string;
+  closeUrl?: string;
+  cameraEnabled: boolean;
+  cameraUrl: string;
+  dvrTriggerUrl?: string;
 }
 
 export interface User {
@@ -81,4 +98,27 @@ export interface UserDetails {
   user: User;
   methods: AccessMethod[];
   history: LogEntry[];
+}
+
+export interface Alert {
+  id: number;
+  name: string;
+  gate: string;
+  gateId: number | null;
+  user: string;
+  userId: number | null;
+  method:
+    | "web"
+    | "keypad"
+    | "alpr"
+    | "button-1"
+    | "button-2"
+    | "button-3"
+    | "any";
+  code: string;
+  timeLimits: boolean;
+  startHour: string;
+  endHour: string;
+  failedAttempts: boolean;
+  enabled: boolean;
 }

@@ -7,6 +7,7 @@ import {
   Modal,
 } from "semantic-ui-react";
 import { useEffect, useState } from "react";
+import { DeleteModal } from "./DeleteModal";
 
 export interface AddUserData {
   name: string;
@@ -57,6 +58,13 @@ export const AddUserModal = ({
 
   const [errors, setErrors] = useState<AddUserErrors>();
 
+  const deleteUser = () => {
+    setModalAction("");
+    close();
+  };
+
+  const [modalAction, setModalAction] = useState<string>();
+
   const validate = (data: AddUserData) => {
     let err: AddUserErrors = {};
     if (data.name.length === 0) {
@@ -67,141 +75,156 @@ export const AddUserModal = ({
   };
 
   return (
-    <Modal size="mini" onClose={close} open={isOpen} closeIcon>
-      <Header>{edit ? "Edit" : "Add"} User</Header>
-      <Modal.Content>
-        <Form>
-          <Form.Field
-            name="name"
-            value={data.name}
-            onChange={(e: { target: { value: any } }) =>
-              setData({ ...data, name: e.target.value })
-            }
-            label="Name"
-            control={Input}
-            placeholder="Name"
-            fluid
-            required
-            error={
-              errors?.name && {
-                pointing: "below",
-                content: errors?.name,
+    <>
+      {" "}
+      <DeleteModal
+        isOpen={modalAction === "delete"}
+        type="User"
+        name={editData?.name ?? ""}
+        close={() => setModalAction("")}
+        action={deleteUser}
+      />
+      <Modal size="mini" onClose={close} open={isOpen} closeIcon>
+        <Header>{edit ? "Edit" : "Add"} User</Header>
+        <Modal.Content>
+          <Form>
+            <Form.Field
+              name="name"
+              value={data.name}
+              onChange={(e: { target: { value: any } }) =>
+                setData({ ...data, name: e.target.value })
               }
-            }
-          />
-          <Form.Field
-            name="username"
-            value={data.username}
-            onChange={(e: { target: { value: any } }) =>
-              setData({ ...data, username: e.target.value })
-            }
-            label="Username"
-            control={Input}
-            placeholder="Username"
-            fluid
-            required
-            error={
-              errors?.username && {
-                pointing: "below",
-                content: errors?.username,
-              }
-            }
-          />
-          <Form.Field
-            name="email"
-            value={data.email}
-            onChange={(e: { target: { value: any } }) =>
-              setData({ ...data, email: e.target.value })
-            }
-            label="Email"
-            control={Input}
-            placeholder="Email"
-            fluid
-            error={
-              errors?.email && {
-                pointing: "below",
-                content: errors?.email,
-              }
-            }
-          />
-          <Form.Field
-            name="webAccess"
-            checked={data.webAccess}
-            onChange={(
-              e: { target: { value: any } },
-              d: { checked: boolean }
-            ) => setData({ ...data, webAccess: d.checked })}
-            label="Web Access"
-            control={Checkbox}
-            fluid
-          />
-          {!edit && (
-            <>
-              <Form.Field
-                name="password"
-                value={data.webAccess ? data.password : ""}
-                onChange={(e: { target: { value: any } }) =>
-                  setData({ ...data, password: e.target.value })
+              label="Name"
+              control={Input}
+              placeholder="Name"
+              fluid
+              required
+              error={
+                errors?.name && {
+                  pointing: "below",
+                  content: errors?.name,
                 }
-                label="Password"
-                control={Input}
-                placeholder="Password"
-                fluid
-                required
-                type="password"
-                disabled={!data.webAccess}
-              />
-              <Form.Field
-                name="confirmPassword"
-                value={data.webAccess ? data.confirmPassword : ""}
-                onChange={(e: { target: { value: any } }) =>
-                  setData({ ...data, confirmPassword: e.target.value })
+              }
+            />
+            <Form.Field
+              name="username"
+              value={data.username}
+              onChange={(e: { target: { value: any } }) =>
+                setData({ ...data, username: e.target.value })
+              }
+              label="Username"
+              control={Input}
+              placeholder="Username"
+              fluid
+              required
+              error={
+                errors?.username && {
+                  pointing: "below",
+                  content: errors?.username,
                 }
-                label="Confirm Password"
-                control={Input}
-                placeholder="Confirm Password"
-                fluid
-                required
-                type="password"
-                disabled={!data.webAccess}
-                error={
-                  errors?.confirmPassword && {
-                    pointing: "below",
-                    content: errors?.confirmPassword,
+              }
+            />
+            <Form.Field
+              name="email"
+              value={data.email}
+              onChange={(e: { target: { value: any } }) =>
+                setData({ ...data, email: e.target.value })
+              }
+              label="Email"
+              control={Input}
+              placeholder="Email"
+              fluid
+              error={
+                errors?.email && {
+                  pointing: "below",
+                  content: errors?.email,
+                }
+              }
+            />
+            <Form.Field
+              name="webAccess"
+              checked={data.webAccess}
+              onChange={(
+                e: { target: { value: any } },
+                d: { checked: boolean }
+              ) => setData({ ...data, webAccess: d.checked })}
+              label="Web Access"
+              control={Checkbox}
+              fluid
+            />
+            {!edit && (
+              <>
+                <Form.Field
+                  name="password"
+                  value={data.webAccess ? data.password : ""}
+                  onChange={(e: { target: { value: any } }) =>
+                    setData({ ...data, password: e.target.value })
                   }
-                }
-              />
-            </>
+                  label="Password"
+                  control={Input}
+                  placeholder="Password"
+                  fluid
+                  required
+                  type="password"
+                  disabled={!data.webAccess}
+                />
+                <Form.Field
+                  name="confirmPassword"
+                  value={data.webAccess ? data.confirmPassword : ""}
+                  onChange={(e: { target: { value: any } }) =>
+                    setData({ ...data, confirmPassword: e.target.value })
+                  }
+                  label="Confirm Password"
+                  control={Input}
+                  placeholder="Confirm Password"
+                  fluid
+                  required
+                  type="password"
+                  disabled={!data.webAccess}
+                  error={
+                    errors?.confirmPassword && {
+                      pointing: "below",
+                      content: errors?.confirmPassword,
+                    }
+                  }
+                />
+              </>
+            )}
+            <Form.Field
+              name="admin"
+              checked={data.admin}
+              onChange={(
+                e: { target: { value: any } },
+                d: { checked: boolean }
+              ) => setData({ ...data, admin: d.checked })}
+              label="Admin"
+              control={Checkbox}
+              fluid
+            />
+            <Form.Field
+              name="enabled"
+              checked={data.enabled}
+              onChange={(
+                e: { target: { value: any } },
+                d: { checked: boolean }
+              ) => setData({ ...data, enabled: d.checked })}
+              label="Enabled"
+              control={Checkbox}
+              fluid
+            />
+          </Form>
+        </Modal.Content>
+        <Modal.Actions>
+          {edit && (
+            <Button color="red" onClick={() => setModalAction("delete")}>
+              Delete User
+            </Button>
           )}
-          <Form.Field
-            name="admin"
-            checked={data.admin}
-            onChange={(
-              e: { target: { value: any } },
-              d: { checked: boolean }
-            ) => setData({ ...data, admin: d.checked })}
-            label="Admin"
-            control={Checkbox}
-            fluid
-          />
-          <Form.Field
-            name="enabled"
-            checked={data.enabled}
-            onChange={(
-              e: { target: { value: any } },
-              d: { checked: boolean }
-            ) => setData({ ...data, enabled: d.checked })}
-            label="Enabled"
-            control={Checkbox}
-            fluid
-          />
-        </Form>
-      </Modal.Content>
-      <Modal.Actions>
-        <Button color="blue" onClick={() => validate(data) && action(data)}>
-          {edit ? "Save" : "Add"} User
-        </Button>
-      </Modal.Actions>
-    </Modal>
+          <Button color="blue" onClick={() => validate(data) && action(data)}>
+            {edit ? "Save" : "Add"} User
+          </Button>
+        </Modal.Actions>
+      </Modal>
+    </>
   );
 };

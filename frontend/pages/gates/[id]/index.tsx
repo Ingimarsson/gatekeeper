@@ -1,32 +1,43 @@
 import type { NextPage } from "next";
 import { Button, Header, Icon } from "semantic-ui-react";
 import {
-  AddGateData,
   AddGateModal,
   ConfirmActionModal,
-  DeleteModal,
   Layout,
   LogEntryTable,
 } from "../../../components";
 import React, { useEffect, useMemo, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
-import { GateDetails as GateDetailsType } from "../../../types";
+import { GateDetails as GateDetailsType, GateSettings } from "../../../types";
 import axios from "axios";
 import moment from "moment";
 import styled from "styled-components";
+import {
+  ButtonLabel,
+  CameraLabel,
+  ControllerLabel,
+} from "../../../components/GateBox/GateLabels";
+import { ConfigureButtonModal } from "../../../components/modals/ConfigureButtonModal";
 
 interface GateDetailsProps {
   gate: GateDetailsType;
 }
 
+const LabelRow = styled.div`
+  display: flex;
+  gap: 4px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+`;
+
 const LiveStreamBox = styled.div`
-  width: 100%;
   aspect-ratio: 1.5;
   background: #444;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 
   @media (max-width: 600px) {
     width: 100%;
@@ -48,13 +59,55 @@ const LiveStreamSlider = styled.input`
   }
 `;
 
+const TimeLabel = styled.div`
+  color: white;
+  font-family: sans;
+  font-size: 22px;
+  font-weight: 900;
+  position: absolute;
+  bottom: 14px;
+  background: #00000044;
+  padding: 4px;
+
+  @media (max-width: 600px) {
+    font-size: 14px;
+  }
+`;
+
+const ButtonRow = styled.div`
+  display: flex;
+  gap: 4px;
+  margin-bottom: -36px;
+
+  @media (max-width: 600px) {
+    margin-bottom: 0px;
+  }
+`;
+
 const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
   const lastTime = useMemo(() => moment(gate.latestImage).unix(), [gate]);
 
   const [offset, setOffset] = useState<number>(90);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [action, setAction] = useState<string>("");
+  const [windowHeight, setWindowHeight] = useState(0);
+  const [windowWidth, setWindowWidth] = useState(0);
 
+  // Update window height
+  useEffect(() => {
+    function handleResize() {
+      setWindowHeight(window.innerHeight);
+      setWindowWidth(window.innerWidth);
+    }
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", handleResize);
+      handleResize();
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, []);
+
+  // Update live stream image every second
   useEffect(() => {
     const intervalId = setInterval(() => {
       setElapsedTime(elapsedTime + 1);
@@ -62,6 +115,7 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
     return () => clearInterval(intervalId);
   }, [elapsedTime]);
 
+  // Execute open or close action
   const execute = (action: string) => {
     setAction("");
   };
@@ -71,7 +125,7 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
     return true;
   };
 
-  const editGate = (data: AddGateData) => {
+  const editGate = (data: GateSettings) => {
     setAction("");
     return true;
   };
@@ -95,11 +149,11 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
             size="tiny"
             icon
             labelPosition="left"
-            color="red"
-            onClick={() => setAction("delete")}
+            color="blue"
+            onClick={() => setAction("button")}
           >
-            <Icon name="delete" />
-            Delete Gate
+            <Icon name="hand point right" />
+            Configure Button
           </Button>
         </>
       }
@@ -119,12 +173,11 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
         edit={true}
         editData={gate.settings}
       />
-      <DeleteModal
+      <ConfigureButtonModal
         action={() => deleteGate()}
         close={() => setAction("")}
-        isOpen={action === "delete"}
-        type="Gate"
-        name={gate.name}
+        isOpen={action === "button"}
+        initialData={{ status: gate.buttonStatus, ...gate.buttonTime }}
       />
       <div
         style={{
@@ -134,13 +187,26 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
           flexFlow: "column",
         }}
       >
-        <LiveStreamBox>
+        <LiveStreamBox
+          style={
+            windowWidth > 1100 && windowHeight > 800
+              ? { height: Math.min(windowHeight - 420, 1127 / 1.5) }
+              : { width: "100%" }
+          }
+        >
           {" "}
           <Logo src="/logo_white.svg" />
+          <TimeLabel>
+            {moment
+              .unix(lastTime - 90 + offset + elapsedTime)
+              .format("HH:mm:ss")}
+          </TimeLabel>
         </LiveStreamBox>
-        <Header as="h3">
-          {moment.unix(lastTime - 90 + offset + elapsedTime).format("HH:mm:ss")}
-        </Header>
+        <LabelRow>
+          <ControllerLabel status={gate.controllerStatus} />
+          <CameraLabel status={gate.cameraStatus} />
+          <ButtonLabel status={gate.buttonStatus} />
+        </LabelRow>
         <LiveStreamSlider
           type="range"
           id="points"
@@ -150,7 +216,7 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
           value={offset}
           onChange={(e) => setOffset(parseInt(e.target.value))}
         />
-        <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>
+        <ButtonRow>
           {gate.supportsClose && (
             <Button
               size="tiny"
@@ -172,7 +238,7 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
             <Icon name="unlock" />
             Open
           </Button>
-        </div>
+        </ButtonRow>
       </div>
       <Header as="h3">History</Header>
       <LogEntryTable entries={gate.history} />

@@ -11,6 +11,7 @@ export const handlers = [
           supportsClose: true,
           controllerStatus: "online",
           cameraStatus: "online",
+          buttonStatus: "timer",
         },
         {
           id: 2,
@@ -18,6 +19,7 @@ export const handlers = [
           supportsClose: false,
           controllerStatus: "offline",
           cameraStatus: "not-setup",
+          buttonStatus: "disabled",
         },
         {
           id: 3,
@@ -25,6 +27,7 @@ export const handlers = [
           supportsClose: true,
           controllerStatus: "online",
           cameraStatus: "online",
+          buttonStatus: "enabled",
         },
       ])
     )
@@ -92,6 +95,13 @@ export const handlers = [
         id: 1,
         name: "Front Entrance",
         supportsClose: true,
+        controllerStatus: "online",
+        cameraStatus: "online",
+        buttonStatus: "timer",
+        buttonTime: {
+          startHour: "7:00",
+          endHour: "23:00",
+        },
         latestImage: "2022-01-21 11:21:31.933123",
         settings: {
           name: "Front Entrance",
@@ -208,6 +218,43 @@ export const handlers = [
         firstImage: "2022-01-21 11:21:16.933123",
         lastImage: "2022-01-21 11:21:45.933123",
       })
+    )
+  ),
+  rest.get("*/api/alerts", (req, res, ctx) =>
+    res(
+      ctx.status(200),
+      ctx.json([
+        {
+          id: 1,
+          name: "Kenau Alert",
+          gate: null,
+          gateId: null,
+          user: "Kenau Reeves",
+          userId: 1,
+          method: null,
+          code: null,
+          timeLimits: true,
+          startHour: "20:00",
+          endHour: "7:00",
+          failedAttempts: true,
+          enabled: true,
+        },
+        {
+          id: 2,
+          name: "Test",
+          gate: "Front Entrance",
+          gateId: 1,
+          user: null,
+          userId: null,
+          method: "button-1",
+          code: null,
+          timeLimits: false,
+          startHour: "0:00",
+          endHour: "0:00",
+          failedAttempts: false,
+          enabled: false,
+        },
+      ])
     )
   ),
 ];
