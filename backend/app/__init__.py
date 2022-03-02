@@ -1,36 +1,37 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
-import os
+from flask_apscheduler import APScheduler
 
-app = Flask(__name__)
+db = SQLAlchemy()
+migrate = Migrate()
+bcrypt = Bcrypt()
+scheduler = APScheduler()
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+from .models import *
 
-app.secret_key = 'dd3344f'
+def init_app():
+    app = Flask(__name__, instance_relative_config=False)
+    app.config.from_object('app.config.Config')
 
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-bcrypt = Bcrypt(app)
+    db.init_app(app)
+    migrate.init_app(app, db)
+    bcrypt.init_app(app)
 
-login_manager = LoginManager()
-login_manager.init_app(app)
+    scheduler.init_app(app)
+    scheduler.start()
 
-from app import models, views, services
+    with app.app_context():
+        from . import routes
 
-gates = services.GateService()
+        # Register Blueprints
+        app.register_blueprint(routes.alert_bp)
+        app.register_blueprint(routes.auth_bp)
+        app.register_blueprint(routes.endpoint_bp)
+        app.register_blueprint(routes.gate_bp)
+        app.register_blueprint(routes.log_bp)
+        app.register_blueprint(routes.system_bp)
+        app.register_blueprint(routes.user_bp)
 
-@login_manager.user_loader
-def load_ser(userid):
-    return models.User.query.filter(models.User.id==userid).first()
-
-from app.auth.auth import auth_bp
-from app.general.general import general_bp
-from app.endpoint.endpoint import endpoint_bp
-
-app.register_blueprint(auth_bp)
-app.register_blueprint(general_bp)
-app.register_blueprint(endpoint_bp)
+        return app
