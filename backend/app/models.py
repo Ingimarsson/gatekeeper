@@ -36,7 +36,11 @@ class Gate(db.Model):
     camera_uri = Column(String(256))
     http_trigger = Column(String(256))
     token = Column(String(64), nullable=False)
+    button_type = Column(String(16), nullable=False, default='disabled')
+    button_start_hour = Column(String(16), nullable=False, default='8:00')
+    button_end_hour = Column(String(16), nullable=False, default='20:00')
     settings = Column(JSON)
+    is_deleted = Column(Boolean, default=False, nullable=False)
 
 
 class Method(db.Model):

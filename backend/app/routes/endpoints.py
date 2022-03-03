@@ -7,17 +7,8 @@ class GatekeeperView(MethodView):
   def get(self):
     return "ok"
 
-  def post(self):
-    return "ok"
-
 class OpenALPRView(MethodView):
-  def get(self):
-    return "ok"
-
-  def put(self):
-    return "ok"
-
-  def delete(self):
+  def post(self):
     return "ok"
 
 endpoint_bp.add_url_rule('/endpoint/gatekeeper', view_func=GatekeeperView.as_view('gatekeeper'))
