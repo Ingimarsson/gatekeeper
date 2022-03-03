@@ -1,11 +1,12 @@
-from app import scheduler
+from app import scheduler, logger
 
 @scheduler.task('cron', id='delete_old_images', minute='*')
 def delete_old_images():
     """
     Send request to Streaming Service to delete snapshots that are old to save disk space.
     """
-    print("delete old images")
+    logger.info("Deleting old images")
+
     return
 
 

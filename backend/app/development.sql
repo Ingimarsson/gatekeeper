@@ -6,3 +6,6 @@ INSERT INTO gate VALUES(2, 'Side Entrance', 'generic', '', 'http://10.0.0.123/op
 
 INSERT INTO alert VALUES(1, 'Test 1', 1, NULL, 1, NULL, NULL, true, '8:00', '16:00', false, true, false);
 INSERT INTO alert VALUES(2, 'Test 2', 1, 1, NULL, 'button-1', NULL, false, '', '', false, true, false);
+
+INSERT INTO log VALUES(1, '2021-05-05 20:00:05', 1, 2, 'keypad', 1, '1234', 'open', '', '', '', true, false);
+INSERT INTO log VALUES(2, '2021-05-05 20:00:05', 2, 1, 'plate', 1, 'RA232', 'open', '', '', '', false, false);

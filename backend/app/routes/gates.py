@@ -8,7 +8,7 @@ from cerberus import Validator
 
 from app import db
 from app.utils import admin_required
-from app.models import Gate
+from app.models import Gate, Log, User
 
 gate_bp = Blueprint('gate_bp', __name__)
 
@@ -67,15 +67,32 @@ class GatesView(MethodView):
 class GateDetailsView(MethodView):
   @jwt_required()
   def get(self, id):
-    gate = Gate.query.filter(id=id).first_or_404()
+    gate = Gate.query.filter(Gate.id == id).first_or_404()
+    logs = Log.query.outerjoin(Gate, Log.gate == Gate.id) \
+      .outerjoin(User, Log.user == User.id) \
+      .order_by(Log.id.desc()) \
+      .filter(Log.result == True, Log.is_deleted == False, Gate.id == id) \
+      .limit(20) \
+      .add_columns(Gate.name, User.name) \
+      .all()
 
     # TODO: Join with status tables to get online/offline
     # TODO: Make call to streaming service to return latest images
 
-    result = [{
-      'id': g.id,
-      'name': g.name
-    } for g in gates]
+    result = {
+      "id": gate.id,
+      "name": gate.name,
+      "logs": [{
+        "id": l[0].id,
+        "timestamp": l[0].timestamp,
+        "gate": l[1],
+        "user": l[2],
+        "type": l[0].type,
+        "code": l[0].code,
+        "operation": l[0].operation,
+        "result": l[0].result,
+      } for l in logs]
+    }
 
     return jsonify(result), 200
 

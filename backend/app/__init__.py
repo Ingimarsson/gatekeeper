@@ -5,11 +5,15 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_apscheduler import APScheduler
 
+import logging
+
 db = SQLAlchemy()
 migrate = Migrate()
 bcrypt = Bcrypt()
 jwt = JWTManager()
 scheduler = APScheduler()
+
+logger = logging.getLogger('gunicorn.error')
 
 from . import models
 from . import jobs
@@ -17,6 +21,9 @@ from . import jobs
 def init_app():
     app = Flask(__name__, instance_relative_config=False)
     app.config.from_object('app.config.Config')
+
+    app.logger.handlers = logger.handlers
+    app.logger.setLevel(logger.level)
 
     db.init_app(app)
     migrate.init_app(app, db)

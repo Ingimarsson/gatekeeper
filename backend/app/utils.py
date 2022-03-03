@@ -10,7 +10,6 @@ def admin_required():
       verify_jwt_in_request()
       claims = get_jwt()
       if claims["is_admin"]:
-        print(claims)
         return fn(*args, **kwargs)
       else:
         return jsonify(msg="This endpoint requires admin permissions"), 403

@@ -55,8 +55,8 @@ class Method(db.Model):
     comment = Column(String(256), nullable=False)
     start_date = Column(DateTime(timezone=True))
     end_date = Column(DateTime(timezone=True))
-    start_hour = Column(String(16), nullable=False)
-    end_hour = Column(String(16), nullable=False)
+    start_hour = Column(String(16))
+    end_hour = Column(String(16))
     data = Column(JSON)
     is_enabled = Column(Boolean, default=True, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
@@ -67,6 +67,7 @@ class Log(db.Model):
 
     id = Column(Integer, primary_key=True)
     timestamp = Column(DateTime(timezone=True), default=datetime.now, nullable=False)
+    user = Column(Integer, ForeignKey('user.id'))
     gate = Column(Integer, ForeignKey('gate.id'))
     type = Column(String(16), nullable=False)
     method = Column(Integer, ForeignKey('method.id'))
@@ -102,6 +103,7 @@ class AlertEvent(db.Model):
     id = Column(Integer, primary_key=True)
     alert = Column(Integer, ForeignKey('alert.id'))
     log = Column(Integer, ForeignKey('log.id'))
+    email_sent = Column(Boolean, default=False)
 
 
 class CameraStatus(db.Model):

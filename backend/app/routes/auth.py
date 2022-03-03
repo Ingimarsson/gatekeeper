@@ -4,6 +4,7 @@ from flask.views import MethodView
 from flask_jwt_extended import create_access_token, get_jwt, jwt_required
 from cerberus import Validator
 
+from app import logger
 from app.models import User
 
 auth_bp = Blueprint('auth_bp', __name__)
@@ -24,7 +25,11 @@ class LoginView(MethodView):
            not user.verify_password(request.json['password']) or \
            not user.is_enabled or \
            not user.has_web_access:
+      logger.info("Failed authentication attempt for {}".format(user.email))
+
       return jsonify({'message': 'Invalid email or password'}), 401
+
+    logger.info("Successful authentication attempt for {}".format(user.email))
 
     token = create_access_token(
       "user", additional_claims={

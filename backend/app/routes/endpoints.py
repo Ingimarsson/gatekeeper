@@ -5,6 +5,10 @@ endpoint_bp = Blueprint('endpoint_bp', __name__)
 
 class GatekeeperView(MethodView):
   def get(self):
+    # IF button THEN look in button config
+
+    # IF keypad THEN look up method
+
     return "ok"
 
 class OpenALPRView(MethodView):
