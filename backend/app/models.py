@@ -16,6 +16,7 @@ class User(db.Model):
     is_admin = Column(Boolean, default=False, nullable=False)
     is_enabled = Column(Boolean, default=True, nullable=False)
     has_web_access = Column(Boolean, default=True, nullable=False)
+    is_deleted = Column(Boolean, default=False, nullable=False)
 
     def set_password(self, plaintext):
         self.password = bcrypt.generate_password_hash(plaintext).decode('utf-8')
@@ -58,6 +59,7 @@ class Method(db.Model):
     end_hour = Column(String(16), nullable=False)
     data = Column(JSON)
     is_enabled = Column(Boolean, default=True, nullable=False)
+    is_deleted = Column(Boolean, default=False, nullable=False)
 
 
 class Log(db.Model):
@@ -74,12 +76,14 @@ class Log(db.Model):
     first_image = Column(String(64))
     last_image = Column(String(64))
     result = Column(Boolean, default=True, nullable=False)
+    is_deleted = Column(Boolean, default=False, nullable=False)
 
 
 class Alert(db.Model):
     __tablename__ = 'alert'
 
     id = Column(Integer, primary_key=True)
+    name = Column(String(64))
     owner = Column(Integer, ForeignKey('user.id'))
     gate = Column(Integer, ForeignKey('gate.id'))
     user = Column(Integer, ForeignKey('user.id'))
@@ -90,7 +94,7 @@ class Alert(db.Model):
     end_hour = Column(String(16))
     failed_attempts = Column(Boolean, default=False, nullable=False)
     is_enabled = Column(Boolean, default=True, nullable=False)
-
+    is_deleted = Column(Boolean, default=False, nullable=False)
 
 class AlertEvent(db.Model):
     __tablename__ = 'alert_event'
