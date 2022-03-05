@@ -6,7 +6,7 @@ from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from cerberus import Validator
 
-from app import db
+from app import db, streams
 from app.utils import admin_required
 from app.models import Gate, Log, User
 
@@ -15,15 +15,25 @@ gate_bp = Blueprint('gate_bp', __name__)
 class GatesView(MethodView):
   @jwt_required()
   def get(self):
-    gates = Gate.query.all()
+    gates = Gate.query.filter(Gate.is_deleted == False).all()
 
     # TODO: Join with status tables to get online/offline
-    # TODO: Make call to streaming service to return latest images
 
     result = [{
       'id': g.id,
-      'name': g.name
+      'name': g.name,
+      'supportsOpen': g.type == 'gatekeeper' or g.uri_open != '',
+      'supportsClose': g.type == 'gatekeeper' or g.uri_close != '',
     } for g in gates]
+
+    # Add latest images from streaming service to response
+    status = streams.get_status()
+
+    for idx, r in enumerate(result):
+      result[idx]['latest_image'] = ''
+      for s in status:
+        if s['id'] == r['id']:
+          result[idx]['latest_image'] = s['latest_image']
 
     return jsonify(result), 200
 
@@ -59,7 +69,8 @@ class GatesView(MethodView):
     db.session.add(gate)
     db.session.commit()
 
-    # TODO: Send update config command to streaming service
+    # Send update config command to streaming service
+    streams.update_config()
 
     return jsonify({'message': 'Successful'}), 200
 
@@ -79,9 +90,20 @@ class GateDetailsView(MethodView):
     # TODO: Join with status tables to get online/offline
     # TODO: Make call to streaming service to return latest images
 
+    # Add latest images from streaming service to response
+    status = streams.get_status()
+
+    latest_image = ''
+    for s in status:
+      if s['id'] == gate.id:
+          latest_image = s['latest_image']
+
     result = {
       "id": gate.id,
       "name": gate.name,
+      "latestImage": latest_image,
+      'supportsOpen': gate.type == 'gatekeeper' or gate.uri_open != '',
+      'supportsClose': gate.type == 'gatekeeper' or gate.uri_close != '',
       "logs": [{
         "id": l[0].id,
         "timestamp": l[0].timestamp,
@@ -111,7 +133,7 @@ class GateDetailsView(MethodView):
     if not v.validate(request.json):
       return jsonify({'message': 'Input validation failed'}), 400
 
-    gate = Gate.query.filter(id=id).first_or_404()
+    gate = Gate.query.filter(Gate.id == id).first_or_404()
     gate.name = request.json['name']
     gate.type = request.json['type']
     gate.controller_ip = request.json['controller_ip']
@@ -121,17 +143,19 @@ class GateDetailsView(MethodView):
     gate.http_trigger = request.json['http_trigger']
     db.session.commit()
 
-    # TODO: Send update config command to streaming service
+    # Send update config command to streaming service
+    streams.update_config()
 
     return jsonify({'message': 'Successful'}), 200
 
   @admin_required()
   def delete(self, id):
-    gate = Gate.query.filter(id=id).first_or_404()
-    gate.is_deleted = is_deleted
+    gate = Gate.query.filter(Gate.id == id).first_or_404()
+    gate.is_deleted = True
     db.session.commit()
 
-    # TODO: Send update config command to streaming service
+    # Send update config command to streaming service
+    streams.update_config()
 
     return jsonify({'message': 'Successful'}), 200
 
@@ -148,7 +172,7 @@ class GateCommandView(MethodView):
     if not v.validate(request.json):
       return jsonify({'message': 'Input validation failed'}), 400
 
-    gate = Gate.query.filter(id=id).first_or_404()
+    gate = Gate.query.filter(Gate.id == id).first_or_404()
 
     # TODO: Send command and make a log record
 
@@ -169,7 +193,7 @@ class GateButtonView(MethodView):
     if not v.validate(request.json):
       return jsonify({'message': 'Input validation failed'}), 400
 
-    gate = Gate.query.filter(id=id).first_or_404()
+    gate = Gate.query.filter(Gate.id == id).first_or_404()
     gate.button_type = request.json['type']
     gate.button_start_hour = request.json['start_hour']
     gate.button_end_hour = request.json['end_hour']
