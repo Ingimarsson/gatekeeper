@@ -19,6 +19,7 @@ class Stream:
   cpu_usage = 0
   mem_usage = 0
   disk_usage = 0
+  snapshot_count = 0
 
   base_path = None
   live_path = None
@@ -53,7 +54,7 @@ class Stream:
     """
     Start an ffmpeg process that saves timestamped images to the data directory.
     """
-    command = "ffmpeg -i '{}' -f image2 -vf scale=w='min(1280\, iw*3/2):h=-1' -q:v 3 -r 2 -strftime 1 {}/%s.jpg".format(self.url, self.live_path)
+    command = "ffmpeg -i '{}' -f image2 -vf scale=w='min(1280\, iw*3/2):h=-1' -q:v 8 -r 2 -strftime 1 {}/%s.jpg".format(self.url, self.live_path)
 
     self.process = subprocess.Popen(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -77,6 +78,7 @@ class Stream:
     self.cpu_usage = p.children()[0].cpu_percent(interval=0.5)
     self.mem_usage = p.children()[0].memory_info().rss
     self.disk_usage = int(subprocess.check_output(['du','-bs', self.base_path]).split()[0].decode('utf-8'))
+    self.snapshot_count = int(subprocess.check_output(['sh','-c', f'ls -lh {self.snapshot_path} | wc -l']))
 
 
   def get_latest_image(self) -> None:
@@ -112,7 +114,7 @@ class Stream:
 
     files = []
 
-    for i in range(20):
+    for i in range(10):
       src = os.path.join(self.live_path, "{}.jpg".format(latest - i))
       if os.path.exists(src):
         os.system("cp {} {}".format(src, path))
@@ -131,7 +133,7 @@ class Stream:
       if snapshot < datetime.now().timestamp() - 30:
         path = os.path.join(self.snapshot_path, "{}/".format(snapshot))
 
-        for i in range(1, 20):
+        for i in range(1, 15):
           src = os.path.join(self.live_path, "{}.jpg".format(snapshot + i))
           if os.path.exists(src):
             os.system("cp {} {}".format(src, path))

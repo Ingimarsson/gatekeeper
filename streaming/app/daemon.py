@@ -126,8 +126,8 @@ class Daemon(Thread):
       "pid": s.process.pid,
       "cpu_percent": s.cpu_usage,
       "memory": s.mem_usage,
-      "disk_size": s.disk_usage
-
+      "disk_size": s.disk_usage,
+      "snapshot_count": s.snapshot_count
     } for s in self.streams]
 
 
