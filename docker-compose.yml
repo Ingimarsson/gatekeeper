@@ -29,7 +29,7 @@ services:
       - 3000
     env_file:
       - ./frontend/.env.prod
-      - ./backend/.env.secret
+      - ./frontend/.env.secret
   streaming:
     build: ./streaming
     restart: always

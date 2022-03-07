@@ -4,7 +4,7 @@ import { Button, Grid, Icon } from "semantic-ui-react";
 import { AddGateModal, GateBox, Layout } from "../../components";
 import React, { useState } from "react";
 import { Gate, GateSettings } from "../../types";
-import axios from "axios";
+import api from '../../api';
 import { getSession } from "next-auth/react";
 
 interface GatesProps {
@@ -68,7 +68,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
-  const { data: response }: { data: Gate[] } = await axios.get("/api/gates");
+  const { data: response }: { data: Gate[] } = await api.get("/gates");
 
   return {
     props: {
