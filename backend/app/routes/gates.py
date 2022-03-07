@@ -3,12 +3,13 @@ import secrets
 
 from flask import Blueprint, jsonify, request
 from flask.views import MethodView
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt
 from cerberus import Validator
+from datetime import timedelta
 
-from app import db, streams
+from app import db, streams, logger, emails, controllers
 from app.utils import admin_required
-from app.models import Gate, Log, User
+from app.models import Gate, Log, User, ControllerStatus
 
 gate_bp = Blueprint('gate_bp', __name__)
 
@@ -17,23 +18,34 @@ class GatesView(MethodView):
   def get(self):
     gates = Gate.query.filter(Gate.is_deleted == False).all()
 
-    # TODO: Join with status tables to get online/offline
-
     result = [{
       'id': g.id,
       'name': g.name,
+      'buttonStatus': g.button_type,
+      'controllerStatus': 'offline',
+      'streamStatus': 'not-setup',
+      'latestImage': '',
       'supportsOpen': g.type == 'gatekeeper' or g.uri_open != '',
       'supportsClose': g.type == 'gatekeeper' or g.uri_close != '',
     } for g in gates]
 
     # Add latest images from streaming service to response
-    status = streams.get_status()
+    stream_status = streams.get_status()
+    controller_status = ControllerStatus.query \
+      .filter(ControllerStatus.timestamp > timedelta(minutes=15)) \
+      .group_by(ControllerStatus.gate) \
+      .order_by(ControllerStatus.id.desc()) \
+      .all()
 
     for idx, r in enumerate(result):
-      result[idx]['latest_image'] = ''
-      for s in status:
+      for c in controller_status:
+        if c.gate == r['id']:
+          result[idx]['controllerStatus'] = 'online' if c.is_alive else 'offline'
+
+      for s in stream_status:
         if s['id'] == r['id']:
-          result[idx]['latest_image'] = s['latest_image']
+          result[idx]['latestImage'] = s['latest_image']
+          result[idx]['streamStatus'] = 'online' if s['is_alive'] else 'offline'
 
     return jsonify(result), 200
 
@@ -91,22 +103,38 @@ class GateDetailsView(MethodView):
     # TODO: Make call to streaming service to return latest images
 
     # Add latest images from streaming service to response
-    status = streams.get_status()
+    stream_statuses = streams.get_status()
+    controller_statuses = ControllerStatus.query \
+      .filter(ControllerStatus.timestamp > timedelta(minutes=15), ControllerStatus.gate == id) \
+      .order_by(ControllerStatus.id.desc()) \
+      .limit(1) \
+      .first()
 
+    controller_status = 'online' if controller_statuses and controller_statuses.is_alive else 'offline'
+    stream_status = 'not-setup'
     latest_image = ''
-    for s in status:
+
+    for s in stream_statuses:
       if s['id'] == gate.id:
           latest_image = s['latest_image']
+          stream_status = 'online' if s['is_alive'] else 'offline'
 
     result = {
       "id": gate.id,
       "name": gate.name,
       "latestImage": latest_image,
+      "streamStatus": stream_status,
+      "controllerStatus": controller_status,
       'supportsOpen': gate.type == 'gatekeeper' or gate.uri_open != '',
       'supportsClose': gate.type == 'gatekeeper' or gate.uri_close != '',
+      'buttonStatus': gate.button_type,
+      'buttonTime': {
+        'startHour': gate.button_start_hour,
+        'endHour': gate.button_end_hour
+      },
       "logs": [{
         "id": l[0].id,
-        "timestamp": l[0].timestamp,
+        "timestamp": l[0].timestamp.isoformat(),
         "gate": l[1],
         "user": l[2],
         "type": l[0].type,
@@ -161,6 +189,7 @@ class GateDetailsView(MethodView):
 
 
 class GateCommandView(MethodView):
+  @jwt_required()
   def post(self, id):
     """
     Send a command to open or close the gate.
@@ -172,14 +201,43 @@ class GateCommandView(MethodView):
     if not v.validate(request.json):
       return jsonify({'message': 'Input validation failed'}), 400
 
+    claims = get_jwt()
+    user = User.query.filter(User.email == claims['email']).first_or_404()
     gate = Gate.query.filter(Gate.id == id).first_or_404()
 
     # TODO: Send command and make a log record
+    log = Log(gate=gate.id, result=True, operation=request.json.get('command'), type='web', user=user.id)
+
+    # Ask streaming service to save an image
+    if gate.camera_uri:
+      try:
+        log.image = streams.save_image(gate.id)
+      except:
+        logger.error("Could not save image for gate {} (id: {})".format(gate.name, gate.id))
+
+    # Try to call HTTP trigger
+    if gate.http_trigger:
+      try:
+        requests.request('GET', gate.http_trigger, timeout=2)
+      except:
+        logger.error("Could not call HTTP trigger for gate {} (id: {})".format(gate.name, gate.id))
+
+    # Tell controller to open gate
+    try:
+      controllers.send_command(gate, request.json.get('command'))
+    except:
+      logger.error("Could not get controller to open gate {} (id: {})".format(gate.name, gate.id))
+
+    db.session.add(log)
+    db.session.commit()
+
+    emails.register_alerts(log)
 
     return jsonify({'message': 'Successful'}), 200
 
 
 class GateButtonView(MethodView):
+  @admin_required()
   def post(self, id):
     """
     Update the button configuration of a gate. Button can be always enabled/disabled or timer controlled.

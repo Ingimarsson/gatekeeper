@@ -1,6 +1,7 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, DateTime, JSON
 
 from app import db, bcrypt
+from app.utils import is_within_hours
 
 from datetime import datetime
 
@@ -61,6 +62,18 @@ class Method(db.Model):
     is_enabled = Column(Boolean, default=True, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
 
+    def check_dates(self):
+      current_time = datetime.now()
+      if self.start_date and current_time < self.start_date:
+        return False
+
+      if self.end_date and current_time > self.start_date:
+        return False
+
+      if self.start_hour and self.end_hour:
+        return is_within_hours(self.start_hour, self.end_hour)
+
+      return True
 
 class Log(db.Model):
     __tablename__ = 'log'
@@ -70,13 +83,14 @@ class Log(db.Model):
     user = Column(Integer, ForeignKey('user.id'))
     gate = Column(Integer, ForeignKey('gate.id'))
     type = Column(String(16), nullable=False)
+    type_label = Column(String(64))
     method = Column(Integer, ForeignKey('method.id'))
-    code = Column(String(64), nullable=False)
+    code = Column(String(64), default='', nullable=False)
     operation = Column(String(16), nullable=False)
     image = Column(String(64))
     first_image = Column(String(64))
     last_image = Column(String(64))
-    result = Column(Boolean, default=True, nullable=False)
+    result = Column(Boolean, default=False, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
 
 

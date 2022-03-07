@@ -45,7 +45,7 @@ class LogsView(MethodView):
 
     result = [{
       "id": l[0].id,
-      "timestamp": l[0].timestamp,
+      "timestamp": l[0].timestamp.isoformat(),
       "gate": l[1],
       "user": l[2],
       "type": l[0].type,
@@ -68,7 +68,7 @@ class LogDetailsView(MethodView):
       .first_or_404()
 
     result = {
-      "timestamp": log[0].timestamp,
+      "timestamp": log[0].timestamp.isoformat(),
       "gate": log[1],
       "user": log[2],
       "type": log[0].type,
