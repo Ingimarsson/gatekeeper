@@ -5,7 +5,6 @@ COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
 
 FROM node:16.14-alpine AS builder
-ENV NEXT_MOCKING enabled
 WORKDIR /app
 COPY . .
 COPY --from=deps /app/node_modules ./node_modules

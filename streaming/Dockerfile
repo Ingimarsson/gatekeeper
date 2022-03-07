@@ -16,5 +16,5 @@ VOLUME /data
 
 COPY ./app/ /usr/src/app/
 
-CMD ["gunicorn", "app:app"]
+CMD gunicorn app:app
 
