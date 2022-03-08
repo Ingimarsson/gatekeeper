@@ -1,6 +1,6 @@
 import smtplib, ssl
 from email.mime.text import MIMEText
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from app import db, logger
 from app.models import Gate, User, Alert, AlertEvent, Log
@@ -63,7 +63,7 @@ class EmailService:
       .join(Gate, Log.gate == Gate.id) \
       .join(Owner, Alert.owner == Owner.id) \
       .outerjoin(User, Log.user == User.id) \
-      .filter(Log.timestamp > timedelta(days=1), AlertEvent.email_sent == False) \
+      .filter(Log.timestamp > datetime.now() - timedelta(days=1), AlertEvent.email_sent == False) \
       .add_columns(Owner.email, Alert.name, Log.timestamp, Log.type, Gate.name, User.name) \
       .all()
 

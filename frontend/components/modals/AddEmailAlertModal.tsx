@@ -58,7 +58,7 @@ export const AddEmailAlertModal = ({
     { key: "any", text: "All Methods", value: "any" },
     { key: "web", text: "Web Interface", value: "web" },
     { key: "keypad", text: "Keypad", value: "keypad" },
-    { key: "alpr", text: "ALPR", value: "alpr" },
+    { key: "plate", text: "Plate", value: "plate" },
     { key: "button-1", text: "Button 1", value: "button-1" },
     { key: "button-2", text: "Button 2", value: "button-2" },
     { key: "button-2", text: "Button 3", value: "button-2" },
@@ -180,7 +180,7 @@ export const AddEmailAlertModal = ({
               required
               options={methods}
             />
-            {data.method === "alpr" && (
+            {data.method === "plate" && (
               <Form.Field
                 name="code"
                 value={data.code}

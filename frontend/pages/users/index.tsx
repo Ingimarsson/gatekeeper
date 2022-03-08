@@ -6,7 +6,7 @@ import React, { useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { User } from "../../types";
-import axios from "axios";
+import api from "../../api";
 import { getSession } from "next-auth/react";
 
 interface UsersProps {
@@ -97,8 +97,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
-  const { data: response }: { data: User[] } = await axios.get("/api/users");
-
+  const { data: response }: { data: User[] } = await api(context).get("/user");
   return {
     props: {
       users: response,

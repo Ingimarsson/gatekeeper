@@ -4,7 +4,8 @@ import { Layout, LogEntryTable } from "../../components";
 import React from "react";
 import Head from "next/head";
 import { LogEntry, User } from "../../types";
-import axios from "axios";
+import api from "../../api";
+import { GetServerSideProps } from "next";
 
 interface LogsProps {
   entries: LogEntry[];
@@ -40,14 +41,14 @@ const Logs: NextPage<LogsProps> = ({ entries }) => {
   );
 };
 
-export async function getServerSideProps() {
-  const { data: response }: { data: User[] } = await axios.get("/api/logs");
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { data: response }: { data: User[] } = await api(context).get("/log");
 
   return {
     props: {
       entries: response,
     },
   };
-}
+};
 
 export default Logs;

@@ -16,8 +16,9 @@ import React, { useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { Gate, User, UserDetails as UserDetailsType } from "../../../types";
-import axios from "axios";
+import api from "../../../api";
 import moment from "moment";
+import { GetServerSideProps } from "next";
 
 interface UserDetailsProps {
   user: UserDetailsType;
@@ -236,7 +237,7 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
         </div>
       </div>
       <Header as="h3">History</Header>
-      <LogEntryTable entries={user.history} />
+      <LogEntryTable entries={user.logs} />
       <div style={{ display: "flex", flexFlow: "row-reverse" }}>
         <Link href={`/logs?user=${user.user.id}`} passHref={true}>
           <Button size="tiny" icon labelPosition="right" color="blue">
@@ -249,11 +250,11 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
   );
 };
 
-export async function getServerSideProps() {
-  const { data: user }: { data: UserDetailsType[] } = await axios.get(
-    "/api/users/1"
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { data: user }: { data: UserDetailsType[] } = await api(context).get(
+    "/user/" + context.params?.id
   );
-  const { data: gates }: { data: Gate[] } = await axios.get("/api/gates");
+  const { data: gates }: { data: Gate[] } = await api(context).get("/gate");
 
   return {
     props: {
@@ -261,6 +262,6 @@ export async function getServerSideProps() {
       gates,
     },
   };
-}
+};
 
 export default UserDetails;

@@ -27,7 +27,7 @@ class LoginView(MethodView):
            not user.has_web_access:
       logger.info("Failed authentication attempt for {}".format(user.email))
 
-      return jsonify({'message': 'Invalid email or password'}), 401
+      return jsonify({'message': 'Invalid email or password'}), 400
 
     logger.info("Successful authentication attempt for {}".format(user.email))
 
@@ -39,7 +39,7 @@ class LoginView(MethodView):
       }
     )
 
-    return jsonify({"token": token}), 200
+    return jsonify({"token": token, "name": user.name, "email": user.email}), 200
 
 class UserView(MethodView):
   @jwt_required()

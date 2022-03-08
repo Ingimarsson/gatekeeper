@@ -1,8 +1,12 @@
 version: '3.1'
 services:
-  db:
-    ports:
-      - 5432:5432
-  web:
+  backend:
+    command: gunicorn --bind 0.0.0.0:5000 --reload wsgi:app
     volumes:
       - ./backend:/usr/src/app
+  frontend:
+    command: ./node_modules/.bin/next dev
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./frontend:/app

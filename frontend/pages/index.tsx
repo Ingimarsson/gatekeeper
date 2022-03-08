@@ -49,11 +49,12 @@ const Login: NextPage = () => {
 
   const doSignIn = () => {
     signIn("credentials", {
-      username: data.username,
+      email: data.username,
       password: data.password,
       callbackUrl: `${window.location.origin}/gates`,
       redirect: false,
     }).then((result: any) => {
+      console.log(result);
       result?.ok ? Router.push("/gates") : setError(true);
     });
   };

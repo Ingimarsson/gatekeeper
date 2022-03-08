@@ -108,6 +108,7 @@ class UserDetailsView(MethodView):
         "gate": l[1],
         "user": l[2],
         "type": l[0].type,
+        "typeLabel": l[0].type_label,
         "code": l[0].code,
         "operation": l[0].operation,
         "result": l[0].result,

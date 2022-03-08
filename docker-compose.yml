@@ -35,6 +35,8 @@ services:
     restart: always
     volumes:
       - gatekeeper_data:/data
+    expose:
+      - 8000
   nginx:
     image: nginx
     ports:

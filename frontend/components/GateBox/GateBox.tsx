@@ -1,5 +1,5 @@
 import { Button, Header, Icon } from "semantic-ui-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   ButtonRow,
@@ -23,10 +23,22 @@ interface GateBoxProps {
 
 export const GateBox = ({ gate }: { gate: Gate }) => {
   const [action, setAction] = useState<string>("");
+  const [latestImage, setLatestImage] = useState<string>(gate.latestImage);
 
   const execute = (action: string) => {
     setAction("");
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const timestamp = parseInt(latestImage.split(".")[0]);
+      const extension = latestImage.split(".")[1];
+      setLatestImage(`${timestamp + 1}.${extension}`);
+    }, 1000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [latestImage]);
 
   return (
     <Box>
@@ -40,7 +52,19 @@ export const GateBox = ({ gate }: { gate: Gate }) => {
           <Link href={`/gates/${gate.id}`} passHref={true}>
             <a>
               <LiveStreamBox>
-                <Logo src="/logo_white.svg" />
+                {gate.cameraStatus === "online" ? (
+                  <img
+                    src={`/data/camera_${gate.id}/live/${latestImage}`}
+                    style={{
+                      position: "absolute",
+                      height: "100%",
+                      width: "100%",
+                      objectFit: "contain",
+                    }}
+                  />
+                ) : (
+                  <Logo src="/logo_white.svg" />
+                )}
               </LiveStreamBox>
             </a>
           </Link>

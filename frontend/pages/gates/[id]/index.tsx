@@ -19,6 +19,8 @@ import {
   ControllerLabel,
 } from "../../../components/GateBox/GateLabels";
 import { ConfigureButtonModal } from "../../../components/modals/ConfigureButtonModal";
+import api from "../../../api";
+import type { GetServerSideProps } from "next";
 
 interface GateDetailsProps {
   gate: GateDetailsType;
@@ -85,9 +87,12 @@ const ButtonRow = styled.div`
 `;
 
 const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
-  const lastTime = useMemo(() => moment(gate.latestImage).unix(), [gate]);
+  const lastTime = useMemo(
+    () => parseInt(gate.latestImage.split(".")[0]),
+    [gate]
+  );
 
-  const [offset, setOffset] = useState<number>(90);
+  const [offset, setOffset] = useState<number>(50);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [action, setAction] = useState<string>("");
   const [windowHeight, setWindowHeight] = useState(0);
@@ -195,10 +200,24 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
           }
         >
           {" "}
-          <Logo src="/logo_white.svg" />
+          {gate.cameraStatus === "online" ? (
+            <img
+              src={`/data/camera_${gate.id}/live/${
+                lastTime - 50 + offset + elapsedTime
+              }.jpg`}
+              style={{
+                position: "absolute",
+                height: "100%",
+                width: "100%",
+                objectFit: "contain",
+              }}
+            />
+          ) : (
+            <Logo src="/logo_white.svg" />
+          )}
           <TimeLabel>
             {moment
-              .unix(lastTime - 90 + offset + elapsedTime)
+              .unix(lastTime - 50 + offset + elapsedTime)
               .format("HH:mm:ss")}
           </TimeLabel>
         </LiveStreamBox>
@@ -212,7 +231,7 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
           id="points"
           name="points"
           min="0"
-          max="90"
+          max="50"
           value={offset}
           onChange={(e) => setOffset(parseInt(e.target.value))}
         />
@@ -241,7 +260,7 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
         </ButtonRow>
       </div>
       <Header as="h3">History</Header>
-      <LogEntryTable entries={gate.history} />
+      <LogEntryTable entries={gate.logs} />
       <div style={{ display: "flex", flexFlow: "row-reverse" }}>
         <Link href={`/logs?gate=${gate.id}`} passHref={true}>
           <Button size="tiny" icon labelPosition="right" color="blue">
@@ -254,9 +273,9 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
   );
 };
 
-export async function getServerSideProps() {
-  const { data: response }: { data: GateDetailsType } = await axios.get(
-    "/api/gates/1"
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { data: response }: { data: GateDetailsType } = await api(context).get(
+    "/gate/" + context.params?.id
   );
 
   return {
@@ -264,6 +283,6 @@ export async function getServerSideProps() {
       gate: response,
     },
   };
-}
+};
 
 export default GateDetails;

@@ -49,6 +49,7 @@ class LogsView(MethodView):
       "gate": l[1],
       "user": l[2],
       "type": l[0].type,
+      "typeLabel": l[0].type_label,
       "code": l[0].code,
       "operation": l[0].operation,
       "result": l[0].result,
@@ -70,14 +71,16 @@ class LogDetailsView(MethodView):
     result = {
       "timestamp": log[0].timestamp.isoformat(),
       "gate": log[1],
+      "gateId": log[0].gate,
       "user": log[2],
       "type": log[0].type,
+      "typeLabel": log[0].type_label,
       "code": log[0].code,
       "operation": log[0].operation,
       "result": log[0].result,
       "image": log[0].image,
-      "first_image": log[0].first_image,
-      "last_image": log[0].last_image,
+      "firstImage": log[0].first_image,
+      "lastImage": log[0].last_image,
     }
 
     return jsonify(result), 200

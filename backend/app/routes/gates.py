@@ -4,8 +4,9 @@ import secrets
 from flask import Blueprint, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt
+from sqlalchemy import func
 from cerberus import Validator
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from app import db, streams, logger, emails, controllers
 from app.utils import admin_required
@@ -23,18 +24,23 @@ class GatesView(MethodView):
       'name': g.name,
       'buttonStatus': g.button_type,
       'controllerStatus': 'offline',
-      'streamStatus': 'not-setup',
+      'cameraStatus': 'not-setup',
       'latestImage': '',
       'supportsOpen': g.type == 'gatekeeper' or g.uri_open != '',
       'supportsClose': g.type == 'gatekeeper' or g.uri_close != '',
     } for g in gates]
 
     # Add latest images from streaming service to response
-    stream_status = streams.get_status()
+    try:
+      stream_status = streams.get_status()
+    except:
+      stream_status = []
+
+    max_ids = db.session.query(func.max(ControllerStatus.id)).group_by(ControllerStatus.gate).all()
+
     controller_status = ControllerStatus.query \
-      .filter(ControllerStatus.timestamp > timedelta(minutes=15)) \
-      .group_by(ControllerStatus.gate) \
-      .order_by(ControllerStatus.id.desc()) \
+      .filter(ControllerStatus.timestamp > datetime.now() - timedelta(minutes=15)) \
+      .filter(ControllerStatus.id.in_([m[0] for m in max_ids])) \
       .all()
 
     for idx, r in enumerate(result):
@@ -45,7 +51,7 @@ class GatesView(MethodView):
       for s in stream_status:
         if s['id'] == r['id']:
           result[idx]['latestImage'] = s['latest_image']
-          result[idx]['streamStatus'] = 'online' if s['is_alive'] else 'offline'
+          result[idx]['cameraStatus'] = 'online' if s['is_alive'] else 'offline'
 
     return jsonify(result), 200
 
@@ -103,9 +109,13 @@ class GateDetailsView(MethodView):
     # TODO: Make call to streaming service to return latest images
 
     # Add latest images from streaming service to response
-    stream_statuses = streams.get_status()
+    try:
+      stream_statuses = streams.get_status()
+    except:
+      stream_statuses = []
+
     controller_statuses = ControllerStatus.query \
-      .filter(ControllerStatus.timestamp > timedelta(minutes=15), ControllerStatus.gate == id) \
+      .filter(ControllerStatus.timestamp > datetime.now() - timedelta(minutes=15), ControllerStatus.gate == id) \
       .order_by(ControllerStatus.id.desc()) \
       .limit(1) \
       .first()
@@ -123,7 +133,7 @@ class GateDetailsView(MethodView):
       "id": gate.id,
       "name": gate.name,
       "latestImage": latest_image,
-      "streamStatus": stream_status,
+      "cameraStatus": stream_status,
       "controllerStatus": controller_status,
       'supportsOpen': gate.type == 'gatekeeper' or gate.uri_open != '',
       'supportsClose': gate.type == 'gatekeeper' or gate.uri_close != '',
@@ -138,6 +148,7 @@ class GateDetailsView(MethodView):
         "gate": l[1],
         "user": l[2],
         "type": l[0].type,
+        "typeLabel": l[0].type_label,
         "code": l[0].code,
         "operation": l[0].operation,
         "result": l[0].result,

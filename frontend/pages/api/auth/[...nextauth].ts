@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import api from "../../../api";
 
 export default NextAuth({
   pages: {
@@ -15,27 +16,32 @@ export default NextAuth({
       // e.g. domain, username, password, 2FA token, etc.
       // You can pass any HTML attribute to the <input> tag through the object.
       credentials: {
-        username: { label: "Username", type: "text", placeholder: "jsmith" },
+        email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
         // Add logic here to look up the user from the credentials supplied
-        const user = {
-          id: 1,
-          name: "Harrison Ford",
-          email: "harrison@example.com",
-        };
-
-        if (credentials?.username === "harrison") {
-          // Any object returned will be saved in `user` property of the JWT
-          return user;
-        } else {
-          // If you return null then an error will be displayed advising the user to check their details.
-          return null;
-
-          // You can also Reject this callback with an Error thus the user will be sent to the error page with the error message as a query parameter
+        const res = await api().post("/auth/login", {
+          email: credentials?.email,
+          password: credentials?.password,
+        });
+        if (res.status == 200) {
+          return res.data;
         }
+        return null;
       },
     }),
   ],
+  callbacks: {
+    jwt: async ({ token, user }) => {
+      user && (token.user = user);
+      console.log("USER", user);
+      return token;
+    },
+    session: async ({ session, token }: { session: any; token: any }) => {
+      session.token = token.user.token;
+      console.log(session);
+      return session;
+    },
+  },
 });

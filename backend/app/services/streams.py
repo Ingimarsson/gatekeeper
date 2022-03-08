@@ -30,11 +30,11 @@ class StreamService:
 
   def update_config(self):
     gates = Gate.query.filter(Gate.is_deleted == False).all()
-
     config = [{
       "id": g.id,
       "url": g.camera_uri
     } for g in gates if g.camera_uri != '']
 
-    response = self.request('POST', f'{self.stream_host}/config', json=config, timeout=10)
+    response = self.request('POST', f'/config', json=config, timeout=10)
+
     return response.ok

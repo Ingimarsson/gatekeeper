@@ -39,6 +39,7 @@ export const LiveStreamBox = styled.div`
   width: 100%;
   margin: 0 auto;
   background: #444;
+  position: relative;
 
   @media (max-width: 600px) {
     max-width: none;

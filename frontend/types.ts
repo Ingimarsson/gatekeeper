@@ -1,3 +1,15 @@
+type MethodType =
+  | "web"
+  | "keypad"
+  | "keypad-pin"
+  | "keypad-card"
+  | "keypad-both"
+  | "plate"
+  | "button-1"
+  | "button-2"
+  | "button-3"
+  | "any";
+
 export interface Gate {
   id: number;
   name: string;
@@ -21,7 +33,7 @@ export interface GateDetails {
     endHour: string;
   };
   settings: GateSettings;
-  history: LogEntry[];
+  logs: LogEntry[];
 }
 
 export interface GateSettings {
@@ -50,10 +62,11 @@ export interface LogEntry {
   timestamp: string;
   user: string;
   gate: string;
-  method: string;
+  type: MethodType;
+  typeLabel: string;
   code: CodeType;
   operation: string;
-  granted: boolean;
+  result: boolean;
 }
 
 export interface LogEntryDetails {
@@ -61,10 +74,13 @@ export interface LogEntryDetails {
   timestamp: string;
   user: string;
   gate: string;
-  method: string;
+  gateId: number;
+  type: MethodType;
+  typeLabel: string;
   code: CodeType;
   operation: string;
-  granted: boolean;
+  result: boolean;
+  image: string;
   firstImage: string;
   lastImage: string;
 }
@@ -97,7 +113,7 @@ export interface AccessMethod {
 export interface UserDetails {
   user: User;
   methods: AccessMethod[];
-  history: LogEntry[];
+  logs: LogEntry[];
 }
 
 export interface Alert {
@@ -107,14 +123,7 @@ export interface Alert {
   gateId: number | null;
   user: string;
   userId: number | null;
-  method:
-    | "web"
-    | "keypad"
-    | "alpr"
-    | "button-1"
-    | "button-2"
-    | "button-3"
-    | "any";
+  method: MethodType;
   code: string;
   timeLimits: boolean;
   startHour: string;

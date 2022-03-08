@@ -6,23 +6,14 @@ import { Alert, Gate, User } from "../../types";
 import { Button, Header, Icon, Label, Table } from "semantic-ui-react";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
-import axios from "axios";
+import { typeLabels } from "../../components/LogEntryTable";
+import api from "../../api";
 
 interface AlertsProps {
   alerts: Alert[];
   gates: Gate[];
   users: User[];
 }
-
-const methodTypes: Record<Exclude<Alert["method"], null>, string> = {
-  web: "Web Interface",
-  keypad: "Keypad",
-  alpr: "ALPR",
-  "button-1": "Button 1",
-  "button-2": "Button 2",
-  "button-3": "Button 3",
-  any: "All Methods",
-};
 
 const Alerts: NextPage<AlertsProps> = ({ alerts, gates, users }) => {
   const [action, setAction] = useState<string>("");
@@ -85,7 +76,7 @@ const Alerts: NextPage<AlertsProps> = ({ alerts, gates, users }) => {
             <Table.Cell>{alert.gate ?? "All Gates"}</Table.Cell>
             <Table.Cell>{alert.user ?? "All Users"}</Table.Cell>
             <Table.Cell>
-              {alert.method ? methodTypes[alert.method] : "All Methods"}
+              {alert.method ? typeLabels[alert.method] : "All Methods"}
             </Table.Cell>
             <Table.Cell>{alert.code}</Table.Cell>
             <Table.Cell>
@@ -117,9 +108,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   }
-  const { data: alerts }: { data: Alert[] } = await axios.get("/api/alerts");
-  const { data: gates }: { data: Gate[] } = await axios.get("/api/gates");
-  const { data: users }: { data: User[] } = await axios.get("/api/users");
+  const { data: alerts }: { data: Alert[] } = await api(context).get("/alert");
+  const { data: gates }: { data: Gate[] } = await api(context).get("/gate");
+  const { data: users }: { data: User[] } = await api(context).get("/user");
 
   return {
     props: {

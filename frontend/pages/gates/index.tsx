@@ -4,8 +4,7 @@ import { Button, Grid, Icon } from "semantic-ui-react";
 import { AddGateModal, GateBox, Layout } from "../../components";
 import React, { useState } from "react";
 import { Gate, GateSettings } from "../../types";
-import api from '../../api';
-import { getSession } from "next-auth/react";
+import api from "../../api";
 
 interface GatesProps {
   gates: Gate[];
@@ -58,17 +57,9 @@ const Gates: NextPage<GatesProps> = ({ gates }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getSession(context);
+  const { data: response }: { data: Gate[] } = await api(context).get("/gate");
 
-  if (!session) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-    };
-  }
-  const { data: response }: { data: Gate[] } = await api.get("/gates");
+  console.log(response);
 
   return {
     props: {

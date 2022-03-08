@@ -4,9 +4,11 @@ import { Code, Layout } from "../../../components";
 import React, { useMemo, useState } from "react";
 import Head from "next/head";
 import { LogEntryDetails } from "../../../types";
-import axios from "axios";
+import api from "../../../api";
+import type { GetServerSideProps } from "next";
 import moment from "moment";
 import styled from "styled-components";
+import { typeLabels, capitalizeFirst } from "../../../components/LogEntryTable";
 
 interface LogEntryProps {
   entry: LogEntryDetails;
@@ -79,16 +81,13 @@ const TimeLabel = styled.div`
 
 const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
   const firstTime = useMemo(
-    () => moment(entry.firstImage).unix(),
+    () => parseInt(entry.firstImage),
     [entry.timestamp]
   );
-  const lastTime = useMemo(
-    () => moment(entry.lastImage).unix(),
-    [entry.timestamp]
-  );
+  const lastTime = useMemo(() => parseInt(entry.lastImage), [entry.timestamp]);
 
   const [offset, setOffset] = useState<number>(
-    moment(entry.timestamp).unix() - firstTime
+    parseInt(entry.image) - firstTime
   );
 
   return (
@@ -99,7 +98,22 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
       <Grid>
         <LiveStreamColumn>
           <LiveStreamBox>
-            <Logo src="/logo_white.svg" />
+            {entry.image ? (
+              <img
+                src={`/data/camera_${entry.gateId}/snapshots/${entry.image}/${
+                  firstTime + offset
+                }.jpg`}
+                style={{
+                  position: "absolute",
+                  height: "100%",
+                  width: "100%",
+                  objectFit: "contain",
+                }}
+              />
+            ) : (
+              <Logo src="/logo_white.svg" />
+            )}
+
             <TimeLabel>
               {moment.unix(firstTime + offset).format("HH:mm:ss")}
             </TimeLabel>
@@ -109,7 +123,7 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
             id="points"
             name="points"
             min="0"
-            max={lastTime - firstTime + 1}
+            max={lastTime - firstTime}
             value={offset}
             onChange={(e) => setOffset(parseInt(e.target.value))}
             style={{ width: 300, marginBottom: 20 }}
@@ -141,9 +155,12 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
             </Table.Row>
             <Table.Row>
               <Table.Cell>
-                <b>Method</b>
+                <b>Type</b>
               </Table.Cell>
-              <Table.Cell>{entry.method}</Table.Cell>
+              <Table.Cell>
+                {!!entry.typeLabel && entry.typeLabel + " / "}
+                {typeLabels[entry.type]}
+              </Table.Cell>
             </Table.Row>
             <Table.Row>
               <Table.Cell>
@@ -158,7 +175,7 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
                 <b>Operation</b>
               </Table.Cell>
               <Table.Cell>
-                <Label size="tiny">{entry.operation}</Label>
+                <Label size="tiny">{capitalizeFirst(entry.operation)}</Label>
               </Table.Cell>
             </Table.Row>
             <Table.Row>
@@ -166,8 +183,8 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
                 <b>Result</b>
               </Table.Cell>
               <Table.Cell>
-                <Label size="tiny" color={entry.granted ? "green" : undefined}>
-                  {entry.granted ? "Granted" : "Failed"}
+                <Label size="tiny" color={entry.result ? "green" : undefined}>
+                  {entry.result ? "Granted" : "Failed"}
                 </Label>
               </Table.Cell>
             </Table.Row>
@@ -178,9 +195,9 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
   );
 };
 
-export async function getServerSideProps() {
-  const { data: response }: { data: LogEntryDetails } = await axios.get(
-    "/api/logs/1"
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { data: response }: { data: LogEntryDetails } = await api(context).get(
+    "/log/" + context.params?.id
   );
 
   return {
@@ -188,6 +205,6 @@ export async function getServerSideProps() {
       entry: response,
     },
   };
-}
+};
 
 export default LogEntry;
