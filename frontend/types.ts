@@ -131,3 +131,29 @@ export interface Alert {
   failedAttempts: boolean;
   enabled: boolean;
 }
+
+export interface CameraStatus {
+  alive: boolean;
+  cpuUsage: number;
+  diskUsage: number;
+  gate: string;
+  memoryUsage: number;
+  pid: number;
+  snapshotCount: number;
+  timestamp: string;
+  uptime: number;
+}
+
+export interface ControllerStatus {
+  alive: boolean;
+  gate: string;
+  ipAddress: string;
+  timestamp: string;
+  type: string;
+  uptime: number;
+}
+
+export interface Status {
+  controllers: ControllerStatus[]
+  streams: CameraStatus[]
+}

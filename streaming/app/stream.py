@@ -72,11 +72,15 @@ class Stream:
     except Except:
       pass
 
-    if not p or not p.children():
+    if not p:
       return
 
-    self.cpu_usage = p.children()[0].cpu_percent(interval=0.5)
-    self.mem_usage = p.children()[0].memory_info().rss
+    # Sometimes we get an /bin/sh instance first
+    if p.name() != 'ffmpeg':
+      p = p.children()[0]
+
+    self.cpu_usage = p.cpu_percent(interval=0.5)
+    self.mem_usage = p.memory_info().rss
     self.disk_usage = int(subprocess.check_output(['du','-bs', self.base_path]).split()[0].decode('utf-8'))
     self.snapshot_count = int(subprocess.check_output(['sh','-c', f'ls -lh {self.snapshot_path} | wc -l']))
 

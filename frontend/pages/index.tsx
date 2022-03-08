@@ -33,15 +33,10 @@ const Footer = styled.span`
   margin-top: 20px;
 `;
 
-interface LoginData {
-  username: string;
-  password: string;
-}
-
 const Login: NextPage = () => {
   const Router = useRouter();
   const [data, setData] = useState({
-    username: process.env.NEXT_MOCKING ? "harrison" : "",
+    email: process.env.NEXT_MOCKING ? "harrison" : "",
     password: process.env.NEXT_MOCKING ? "ford!?123" : "",
   });
 
@@ -49,7 +44,7 @@ const Login: NextPage = () => {
 
   const doSignIn = () => {
     signIn("credentials", {
-      email: data.username,
+      email: data.email,
       password: data.password,
       callbackUrl: `${window.location.origin}/gates`,
       redirect: false,
@@ -69,15 +64,15 @@ const Login: NextPage = () => {
       <Box>
         <Form size="large">
           <Form.Input
-            name="username"
-            value={data.username}
+            name="email"
+            value={data.email}
             onChange={(e: { target: { value: any } }) =>
-              setData({ ...data, username: e.target.value })
+              setData({ ...data, email: e.target.value })
             }
             fluid
             icon="user"
             iconPosition="left"
-            placeholder="Username"
+            placeholder="Email"
           />
           <Form.Input
             name="password"
@@ -101,7 +96,7 @@ const Login: NextPage = () => {
             <Message.Content>
               <Message.Header>Sign in failed.</Message.Header>
               <p>
-                Make sure that your username and password are typed correctly.
+                Make sure that your email and password are typed correctly.
               </p>
             </Message.Content>
           </Message>

@@ -34,7 +34,7 @@ class SystemView(MethodView):
         'gate': c[1],
         'timestamp': c[0].timestamp,
         'alive': c[0].is_alive,
-        'uptime': c[0].uptime,
+        'uptime': c[0].uptime if c[0].uptime else 0,
         'type': c[0].type,
         'ipAddress': c[0].ip_address
       } for c in controller_status],
@@ -42,7 +42,7 @@ class SystemView(MethodView):
         'gate': s[1],
         'timestamp': s[0].timestamp,
         'alive': s[0].is_alive,
-        'uptime': s[0].uptime,
+        'uptime': s[0].uptime if s[0].uptime else 0,
         'pid': s[0].pid,
         'cpuUsage': s[0].cpu_usage,
         'memoryUsage': s[0].memory_usage,

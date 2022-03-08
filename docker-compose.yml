@@ -24,7 +24,6 @@ services:
       - db
   frontend:
     build: ./frontend
-    command: yarn start
     expose:
       - 3000
     env_file:
@@ -42,7 +41,8 @@ services:
     ports:
       - 9000:80
     depends_on:
-      - web
+      - backend
+      - frontend
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - gatekeeper_data:/data
