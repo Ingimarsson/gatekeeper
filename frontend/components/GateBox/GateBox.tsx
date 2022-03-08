@@ -23,22 +23,26 @@ interface GateBoxProps {
 
 export const GateBox = ({ gate }: { gate: Gate }) => {
   const [action, setAction] = useState<string>("");
-  const [latestImage, setLatestImage] = useState<string>(gate.latestImage);
+  const [lastTime, setLastTime] = useState<number>(
+    parseInt(gate.latestImage.split(".")[0]) - 1
+  );
 
   const execute = (action: string) => {
     setAction("");
   };
 
+  useEffect(
+    () => setLastTime(parseInt(gate.latestImage.split(".")[0]) - 1),
+    [gate]
+  );
   useEffect(() => {
     const interval = setInterval(() => {
-      const timestamp = parseInt(latestImage.split(".")[0]);
-      const extension = latestImage.split(".")[1];
-      setLatestImage(`${timestamp + 1}.${extension}`);
+      setLastTime(lastTime + 1);
     }, 1000);
     return () => {
       clearInterval(interval);
     };
-  }, [latestImage]);
+  }, [lastTime]);
 
   return (
     <Box>
@@ -54,7 +58,7 @@ export const GateBox = ({ gate }: { gate: Gate }) => {
               <LiveStreamBox>
                 {gate.cameraStatus === "online" ? (
                   <img
-                    src={`/data/camera_${gate.id}/live/${latestImage}`}
+                    src={`/data/camera_${gate.id}/live/${lastTime}.jpg`}
                     style={{
                       position: "absolute",
                       height: "100%",

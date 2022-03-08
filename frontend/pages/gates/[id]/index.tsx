@@ -21,6 +21,7 @@ import {
 import { ConfigureButtonModal } from "../../../components/modals/ConfigureButtonModal";
 import api from "../../../api";
 import type { GetServerSideProps } from "next";
+import { useRouter } from "next/router";
 
 interface GateDetailsProps {
   gate: GateDetailsType;
@@ -87,8 +88,10 @@ const ButtonRow = styled.div`
 `;
 
 const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
+  const router = useRouter();
+
   const lastTime = useMemo(
-    () => parseInt(gate.latestImage.split(".")[0]),
+    () => parseInt(gate.latestImage.split(".")[0]) - 1,
     [gate]
   );
 
@@ -118,7 +121,16 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
       setElapsedTime(elapsedTime + 1);
     }, 1000);
     return () => clearInterval(intervalId);
-  }, [elapsedTime]);
+  }, [elapsedTime, router]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      router.replace(router.asPath).then(() => setElapsedTime(0));
+    }, 5000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [router]);
 
   // Execute open or close action
   const execute = (action: string) => {
@@ -201,40 +213,44 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
         >
           {" "}
           {gate.cameraStatus === "online" ? (
-            <img
-              src={`/data/camera_${gate.id}/live/${
-                lastTime - 50 + offset + elapsedTime
-              }.jpg`}
-              style={{
-                position: "absolute",
-                height: "100%",
-                width: "100%",
-                objectFit: "contain",
-              }}
-            />
+            <>
+              <img
+                src={`/data/camera_${gate.id}/live/${
+                  lastTime - 50 + offset + elapsedTime
+                }.jpg`}
+                style={{
+                  position: "absolute",
+                  height: "100%",
+                  width: "100%",
+                  objectFit: "contain",
+                }}
+              />{" "}
+              <TimeLabel>
+                {moment
+                  .unix(lastTime - 50 + offset + elapsedTime)
+                  .format("HH:mm:ss")}
+              </TimeLabel>
+            </>
           ) : (
             <Logo src="/logo_white.svg" />
           )}
-          <TimeLabel>
-            {moment
-              .unix(lastTime - 50 + offset + elapsedTime)
-              .format("HH:mm:ss")}
-          </TimeLabel>
         </LiveStreamBox>
         <LabelRow>
           <ControllerLabel status={gate.controllerStatus} />
           <CameraLabel status={gate.cameraStatus} />
           <ButtonLabel status={gate.buttonStatus} />
         </LabelRow>
-        <LiveStreamSlider
-          type="range"
-          id="points"
-          name="points"
-          min="0"
-          max="50"
-          value={offset}
-          onChange={(e) => setOffset(parseInt(e.target.value))}
-        />
+        {gate.cameraStatus === "online" && (
+          <LiveStreamSlider
+            type="range"
+            id="points"
+            name="points"
+            min="0"
+            max="50"
+            value={offset}
+            onChange={(e) => setOffset(parseInt(e.target.value))}
+          />
+        )}
         <ButtonRow>
           {gate.supportsClose && (
             <Button

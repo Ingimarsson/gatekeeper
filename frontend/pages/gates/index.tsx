@@ -2,21 +2,33 @@ import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import { Button, Grid, Icon } from "semantic-ui-react";
 import { AddGateModal, GateBox, Layout } from "../../components";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Gate, GateSettings } from "../../types";
 import api from "../../api";
+import { useRouter } from "next/router";
 
 interface GatesProps {
   gates: Gate[];
 }
 
 const Gates: NextPage<GatesProps> = ({ gates }) => {
+  const router = useRouter();
+
   const [action, setAction] = useState<string>();
 
   const addGate = (data: GateSettings) => {
     setAction("");
     return true;
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      router.replace(router.asPath);
+    }, 5000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [router]);
 
   return (
     <Layout
