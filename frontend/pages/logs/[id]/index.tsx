@@ -167,7 +167,7 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
                 <b>Code</b>
               </Table.Cell>
               <Table.Cell>
-                <Code code={entry.code} />
+                <Code type={entry.type} code={entry.code} />
               </Table.Cell>
             </Table.Row>
             <Table.Row>

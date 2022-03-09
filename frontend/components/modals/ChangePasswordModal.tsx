@@ -1,5 +1,5 @@
 import { Button, Form, Header, Input, Modal } from "semantic-ui-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export interface ChangePasswordData {
   password: string;
@@ -10,10 +10,15 @@ type ChangePasswordErrors = {
   [key in keyof ChangePasswordData]?: string;
 };
 
+const initialState = {
+  password: "",
+  confirmPassword: "",
+};
+
 interface ChangePasswordModalProps {
   isOpen: boolean;
   close: () => void;
-  action: (data: ChangePasswordData) => boolean;
+  action: (data: ChangePasswordData) => void;
 }
 
 export const ChangePasswordModal = ({
@@ -21,19 +26,27 @@ export const ChangePasswordModal = ({
   close,
   action,
 }: ChangePasswordModalProps) => {
-  const [data, setData] = useState<ChangePasswordData>({
-    password: "",
-    confirmPassword: "",
-  });
+  const [data, setData] = useState<ChangePasswordData>(initialState);
   const [errors, setErrors] = useState<ChangePasswordErrors>();
 
+  // Reset modal values when modal is re-opened
+  useEffect(() => {
+    setData(initialState);
+    setErrors({});
+  }, [isOpen]);
+
   const validate = (data: ChangePasswordData) => {
+    let err: ChangePasswordErrors = {};
+
     if (data.password !== data.confirmPassword) {
-      setErrors({ ...errors, confirmPassword: "Passwords don't match." });
-    } else {
-      setErrors({});
-      return true;
+      err = { ...err, confirmPassword: "Passwords don't match." };
     }
+    if ((data.password?.length ?? 5) < 5) {
+      err = { ...err, confirmPassword: "Password is too short" };
+    }
+
+    setErrors(err);
+    return !Object.keys(err).length;
   };
 
   return (

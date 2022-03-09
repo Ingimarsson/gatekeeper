@@ -1,4 +1,4 @@
-import type { NextPage } from "next";
+import { NextPage } from "next";
 import { Layout } from "../../components";
 import React from "react";
 import Head from "next/head";
@@ -11,6 +11,7 @@ import moment from "moment";
 interface StatusProps {
   status: StatusType;
 }
+
 const humanFileSize = (size: number) => {
   const i = Math.floor(Math.log(size) / Math.log(1024));
   return (
@@ -57,13 +58,19 @@ const Status: NextPage<StatusProps> = ({ status }) => {
             <Table.Cell>{stream.gate}</Table.Cell>
             <Table.Cell>{moment(stream.timestamp).fromNow()}</Table.Cell>
             <Table.Cell>
-              {stream.alive && formatUptime(stream.uptime)}
+              {stream.alive && stream.alive && formatUptime(stream.uptime)}
             </Table.Cell>
-            <Table.Cell>{stream.pid}</Table.Cell>
-            <Table.Cell>{(stream.cpuUsage / 10).toFixed(1)}%</Table.Cell>
-            <Table.Cell>{humanFileSize(stream.memoryUsage)}</Table.Cell>
-            <Table.Cell>{humanFileSize(stream.diskUsage)}</Table.Cell>
-            <Table.Cell>{stream.snapshotCount}</Table.Cell>
+            <Table.Cell>{stream.alive && stream.pid}</Table.Cell>
+            <Table.Cell>
+              {stream.alive && (stream.cpuUsage / 10).toFixed(1) + "%"}
+            </Table.Cell>
+            <Table.Cell>
+              {stream.alive && humanFileSize(stream.memoryUsage)}
+            </Table.Cell>
+            <Table.Cell>
+              {stream.alive && humanFileSize(stream.diskUsage)}
+            </Table.Cell>
+            <Table.Cell>{stream.alive && stream.snapshotCount}</Table.Cell>
             <Table.Cell>
               {stream.alive ? (
                 <Label color="green">Running</Label>

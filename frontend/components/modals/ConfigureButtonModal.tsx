@@ -7,11 +7,11 @@ import {
   Label,
   Modal,
 } from "semantic-ui-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TimeInput } from "semantic-ui-calendar-react";
 
 export interface ConfigureButtonData {
-  status: "enabled" | "disabled" | "timer";
+  type: "enabled" | "disabled" | "timer";
   startHour: string;
   endHour: string;
 }
@@ -20,8 +20,12 @@ interface ConfigureButtonModalProps {
   isOpen: boolean;
   close: () => void;
   initialData: ConfigureButtonData;
-  action: (data: ConfigureButtonData) => boolean;
+  action: (data: ConfigureButtonData) => void;
 }
+
+type ConfigureButtonErrors = {
+  [key in keyof ConfigureButtonData]?: string;
+};
 
 export const ConfigureButtonModal = ({
   isOpen,
@@ -30,6 +34,36 @@ export const ConfigureButtonModal = ({
   action,
 }: ConfigureButtonModalProps) => {
   const [data, setData] = useState<ConfigureButtonData>(initialData);
+  const [errors, setErrors] = useState<ConfigureButtonErrors>();
+
+  const submit = () => {
+    if (validate(data)) {
+      action(data);
+    }
+  };
+
+  // Reset modal values when modal is re-opened
+  useEffect(() => {
+    setData(initialData);
+  }, [isOpen]);
+
+  const validate = (data: ConfigureButtonData) => {
+    let err: ConfigureButtonErrors = {};
+
+    // Is startHour valid
+    if (
+      data.type === "timer" &&
+      data.startHour.search(/^\d{2}:\d{2}$/) === -1
+    ) {
+      err = { ...err, startHour: "Not a valid hour" };
+    }
+    // Is endHour valid
+    if (data.type === "timer" && data.endHour.search(/^\d{2}:\d{2}$/) === -1) {
+      err = { ...err, endHour: "Not a valid hour" };
+    }
+    setErrors(err);
+    return !Object.keys(err).length;
+  };
 
   return (
     <Modal size="mini" onClose={close} open={isOpen} closeIcon>
@@ -43,33 +77,33 @@ export const ConfigureButtonModal = ({
         <Form>
           <Form.Field
             name="enabled"
-            checked={data.status === "enabled"}
+            checked={data.type === "enabled"}
             onChange={(
               e: { target: { value: any } },
               d: { checked: boolean }
-            ) => setData({ ...data, status: "enabled" })}
+            ) => setData({ ...data, type: "enabled" })}
             label="Enabled"
             control={Checkbox}
             fluid
           />
           <Form.Field
             name="disabled"
-            checked={data.status === "disabled"}
+            checked={data.type === "disabled"}
             onChange={(
               e: { target: { value: any } },
               d: { checked: boolean }
-            ) => setData({ ...data, status: "disabled" })}
+            ) => setData({ ...data, type: "disabled" })}
             label="Disabled"
             control={Checkbox}
             fluid
           />
           <Form.Field
             name="timer"
-            checked={data.status === "timer"}
+            checked={data.type === "timer"}
             onChange={(
               e: { target: { value: any } },
               d: { checked: boolean }
-            ) => setData({ ...data, status: "timer" })}
+            ) => setData({ ...data, type: "timer" })}
             label="Time Controlled"
             control={Checkbox}
             fluid
@@ -86,9 +120,10 @@ export const ConfigureButtonModal = ({
               }
               label="Start Hour"
               control={TimeInput}
-              disabled={data.status !== "timer"}
+              disabled={data.type !== "timer"}
               inputMode="none"
               closable
+              error={!!errors?.startHour}
               fluid
             />
             <Form.Field
@@ -102,9 +137,10 @@ export const ConfigureButtonModal = ({
               }
               label="End Hour"
               control={TimeInput}
-              disabled={data.status !== "timer"}
+              disabled={data.type !== "timer"}
               inputMode="none"
               closable
+              error={!!errors?.endHour}
               fluid
             />
           </Form.Group>
@@ -114,7 +150,7 @@ export const ConfigureButtonModal = ({
         <Button basic inverted onClick={close}>
           Cancel
         </Button>
-        <Button color="blue" onClick={() => action(data)}>
+        <Button color="blue" onClick={() => submit()}>
           Save
         </Button>
       </Modal.Actions>

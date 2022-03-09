@@ -8,6 +8,7 @@ import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import { typeLabels } from "../../components/LogEntryTable";
 import api from "../../api";
+import { useRouter } from "next/router";
 
 interface AlertsProps {
   alerts: Alert[];
@@ -19,9 +20,67 @@ const Alerts: NextPage<AlertsProps> = ({ alerts, gates, users }) => {
   const [action, setAction] = useState<string>("");
   const [currentAlert, setCurrentAlert] = useState<number>();
 
+  const router = useRouter();
+
   const addAlert = (data: Alert) => {
-    setAction("");
-    return true;
+    api()
+      .post("/alert", {
+        name: data.name,
+        gateId: !!data.gateId ? data.gateId : null,
+        userId: !!data.userId ? data.userId : null,
+        type: data.type !== "any" ? data.type : null,
+        code: data.code !== "" ? data.code : null,
+        timeLimits: data.timeLimits,
+        startHour: data.startHour,
+        endHour: data.endHour,
+        failedAttempts: data.failedAttempts,
+        enabled: data.enabled,
+      })
+      .then((res) => {
+        if (res.status != 200) {
+          alert("Error occurred: " + JSON.stringify(res.data));
+        } else {
+          setAction("");
+          router.push(router.asPath);
+        }
+      });
+  };
+
+  const deleteAlert = (id: number) => {
+    api()
+      .delete(`/alert/${id}`)
+      .then((res) => {
+        if (res.status != 200) {
+          alert("Error occurred: " + JSON.stringify(res.data));
+        } else {
+          setAction("");
+          router.push(router.asPath);
+        }
+      });
+  };
+
+  const editAlert = (data: Alert) => {
+    api()
+      .put(`/alert/${data.id}`, {
+        name: data.name,
+        gateId: !!data.gateId ? data.gateId : null,
+        userId: !!data.userId ? data.userId : null,
+        type: data.type !== "any" ? data.type : null,
+        code: data.code !== "" ? data.code : null,
+        timeLimits: data.timeLimits,
+        startHour: data.startHour,
+        endHour: data.endHour,
+        failedAttempts: data.failedAttempts,
+        enabled: data.enabled,
+      })
+      .then((res) => {
+        if (res.status != 200) {
+          alert("Error occurred: " + JSON.stringify(res.data));
+        } else {
+          setAction("");
+          router.push(router.asPath);
+        }
+      });
   };
 
   const openEditModal = (id: number) => {
@@ -50,14 +109,28 @@ const Alerts: NextPage<AlertsProps> = ({ alerts, gates, users }) => {
         <title>Email Alerts - Gatekeeper</title>
       </Head>
       <AddEmailAlertModal
-        action={(data) => addAlert(data)}
+        submitAction={
+          action === "add"
+            ? (data) => addAlert(data)
+            : (data) => editAlert(data)
+        }
+        deleteAction={(id) => deleteAlert(id)}
         close={() => setAction("")}
         gates={gates}
         users={users}
         isOpen={action === "add" || action === "edit-alert"}
         edit={action === "edit-alert"}
         alertId={currentAlert}
-        editData={alerts.find((alert) => alert.id === currentAlert)}
+        editData={((alert) => {
+          return alert
+            ? {
+                ...alert,
+                userId: Number(alert?.userId) ?? 0,
+                gateId: Number(alert?.gateId) ?? 0,
+                type: alert?.type ?? "any",
+              }
+            : undefined;
+        })(alerts.find((alert) => alert.id === currentAlert))}
       />
       <Table>
         <Table.Header>
@@ -76,7 +149,7 @@ const Alerts: NextPage<AlertsProps> = ({ alerts, gates, users }) => {
             <Table.Cell>{alert.gate ?? "All Gates"}</Table.Cell>
             <Table.Cell>{alert.user ?? "All Users"}</Table.Cell>
             <Table.Cell>
-              {alert.method ? typeLabels[alert.method] : "All Methods"}
+              {alert.type ? typeLabels[alert.type] : "All Methods"}
             </Table.Cell>
             <Table.Cell>{alert.code}</Table.Cell>
             <Table.Cell>

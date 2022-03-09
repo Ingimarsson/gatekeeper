@@ -16,7 +16,9 @@ class SystemView(MethodView):
 
     controller_status = ControllerStatus.query \
       .join(Gate) \
+      .filter(Gate.is_deleted == False) \
       .filter(ControllerStatus.id.in_([m[0] for m in max_ids])) \
+      .order_by(Gate.id) \
       .add_columns(Gate.name) \
       .all()
 
@@ -24,8 +26,10 @@ class SystemView(MethodView):
 
     stream_status = CameraStatus.query \
       .join(Gate) \
+      .filter(Gate.is_deleted == False) \
       .filter(Gate.camera_uri != '', Gate.camera_uri != None) \
       .filter(CameraStatus.id.in_([m[0] for m in max_ids])) \
+      .order_by(Gate.id) \
       .add_columns(Gate.name) \
       .all()
 

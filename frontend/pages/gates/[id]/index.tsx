@@ -2,6 +2,7 @@ import type { NextPage } from "next";
 import { Button, Header, Icon } from "semantic-ui-react";
 import {
   AddGateModal,
+  ConfigureButtonData,
   ConfirmActionModal,
   Layout,
   LogEntryTable,
@@ -121,30 +122,73 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
       setElapsedTime(elapsedTime + 1);
     }, 1000);
     return () => clearInterval(intervalId);
-  }, [elapsedTime, router]);
+  }, [elapsedTime, gate]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      router.replace(router.asPath).then(() => setElapsedTime(0));
+      router
+        .push(router.asPath, undefined, { scroll: false })
+        .then(() => setElapsedTime(0));
     }, 5000);
     return () => {
       clearInterval(interval);
     };
   }, [router]);
 
+  useEffect(() => {
+    setElapsedTime(0);
+  }, [gate]);
+
   // Execute open or close action
   const execute = (action: string) => {
-    setAction("");
+    api()
+      .post(`/gate/${gate.id}/command`, { command: action })
+      .then((res) => {
+        if (res.status != 200) {
+          alert("Error occurred: " + JSON.stringify(res.data));
+        } else {
+          setAction("");
+        }
+      });
+  };
+
+  const editButton = (data: ConfigureButtonData) => {
+    api()
+      .post(`/gate/${gate.id}/button`, data)
+      .then((res) => {
+        if (res.status != 200) {
+          alert("Error occurred: " + JSON.stringify(res.data));
+        } else {
+          setAction("");
+          router.push(router.asPath);
+        }
+      });
   };
 
   const deleteGate = () => {
-    setAction("");
-    return true;
+    api()
+      .delete(`/gate/${gate.id}`)
+      .then((res) => {
+        if (res.status != 200) {
+          alert("Error occurred: " + JSON.stringify(res.data));
+        } else {
+          setAction("");
+          router.push("/gates");
+        }
+      });
   };
 
   const editGate = (data: GateSettings) => {
-    setAction("");
-    return true;
+    api()
+      .put(`/gate/${gate.id}`, data)
+      .then((res) => {
+        if (res.status != 200) {
+          alert("Error occurred: " + JSON.stringify(res.data));
+        } else {
+          setAction("");
+          router.push(router.asPath);
+        }
+      });
   };
 
   return (
@@ -184,17 +228,18 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
         isOpen={action === "open" || action === "close"}
       />
       <AddGateModal
-        action={(data) => editGate(data)}
+        submitAction={(data) => editGate(data)}
+        deleteAction={() => deleteGate()}
         close={() => setAction("")}
         isOpen={action === "edit"}
         edit={true}
         editData={gate.settings}
       />
       <ConfigureButtonModal
-        action={() => deleteGate()}
+        action={(data) => editButton(data)}
         close={() => setAction("")}
         isOpen={action === "button"}
-        initialData={{ status: gate.buttonStatus, ...gate.buttonTime }}
+        initialData={{ type: gate.buttonStatus, ...gate.buttonTime }}
       />
       <div
         style={{
@@ -263,16 +308,18 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
               Close
             </Button>
           )}
-          <Button
-            size="tiny"
-            icon
-            labelPosition="left"
-            color="green"
-            onClick={() => setAction("open")}
-          >
-            <Icon name="unlock" />
-            Open
-          </Button>
+          {gate.supportsOpen && (
+            <Button
+              size="tiny"
+              icon
+              labelPosition="left"
+              color="green"
+              onClick={() => setAction("open")}
+            >
+              <Icon name="unlock" />
+              Open
+            </Button>
+          )}
         </ButtonRow>
       </div>
       <Header as="h3">History</Header>

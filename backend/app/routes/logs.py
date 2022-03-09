@@ -17,7 +17,7 @@ class LogsView(MethodView):
     user = request.args.get('user')
     search = request.args.get('search')
     type = request.args.get('type')
-    start_at = request.args.get('start_at')
+    limit = request.args.get('limit')
     show_failed = request.args.get('show_failed')
 
     query = Log.query
@@ -30,16 +30,16 @@ class LogsView(MethodView):
       query = query.filter(Log.type == 'plate', Log.code.ilike(f'%{search}%'))
     if type:
       query = query.filter(Log.type == type)
-    if start_at:
-      query = query.filter(Log.id <= start_at)
-    if not show_failed:
+    if not show_failed == 'true':
       query = query.filter(Log.result == True)
+
+    limit = int(limit) if limit else 50
 
     logs = query.outerjoin(Gate, Log.gate == Gate.id) \
       .outerjoin(User, Log.user == User.id) \
       .order_by(Log.id.desc()) \
       .filter(Log.is_deleted == False) \
-      .limit(50) \
+      .limit(limit) \
       .add_columns(Gate.name, User.name) \
       .all()
 

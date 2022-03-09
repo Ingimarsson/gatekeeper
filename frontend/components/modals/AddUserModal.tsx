@@ -24,10 +24,22 @@ type AddUserErrors = {
   [key in keyof AddUserData]?: string;
 };
 
+const initialState = {
+  name: "",
+  username: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+  admin: false,
+  webAccess: false,
+  enabled: true,
+};
+
 interface AddUserModalProps {
   isOpen: boolean;
   close: () => void;
-  action: (data: AddUserData) => boolean;
+  submitAction: (data: AddUserData) => void;
+  deleteAction?: () => void;
   edit?: boolean;
   editData?: AddUserData;
 }
@@ -35,40 +47,41 @@ interface AddUserModalProps {
 export const AddUserModal = ({
   isOpen,
   close,
-  action,
+  submitAction,
+  deleteAction,
   edit = false,
   editData,
 }: AddUserModalProps) => {
-  const [data, setData] = useState<AddUserData>({
-    name: "",
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    admin: false,
-    webAccess: false,
-    enabled: true,
-  });
-
-  useEffect(() => {
-    if (edit && editData) {
-      setData(editData);
-    }
-  }, []);
-
+  const [data, setData] = useState<AddUserData>(initialState);
   const [errors, setErrors] = useState<AddUserErrors>();
-
-  const deleteUser = () => {
-    setModalAction("");
-    close();
-  };
-
   const [modalAction, setModalAction] = useState<string>();
+
+  // Reset modal values when modal is re-opened
+  useEffect(() => {
+    setData(edit ? editData ?? initialState : initialState);
+    setErrors({});
+  }, [isOpen]);
+
+  const submit = () => {
+    validate(data) && submitAction(data);
+  };
 
   const validate = (data: AddUserData) => {
     let err: AddUserErrors = {};
     if (data.name.length === 0) {
       err = { ...err, name: "Name can't be empty" };
+    }
+    if (data.username.length === 0) {
+      err = { ...err, username: "Username can't be empty" };
+    }
+    if (data.email.length === 0) {
+      err = { ...err, email: "Email can't be empty" };
+    }
+    if (data.webAccess && data.password !== data.confirmPassword) {
+      err = { ...err, confirmPassword: "Passwords don't match" };
+    }
+    if (data.webAccess && (data.password?.length ?? 5) < 5) {
+      err = { ...err, confirmPassword: "Password is too short" };
     }
     setErrors(err);
     return !Object.keys(err).length;
@@ -76,13 +89,12 @@ export const AddUserModal = ({
 
   return (
     <>
-      {" "}
       <DeleteModal
         isOpen={modalAction === "delete"}
         type="User"
         name={editData?.name ?? ""}
         close={() => setModalAction("")}
-        action={deleteUser}
+        action={() => !!deleteAction && deleteAction()}
       />
       <Modal size="mini" onClose={close} open={isOpen} closeIcon>
         <Header>{edit ? "Edit" : "Add"} User</Header>
@@ -220,7 +232,7 @@ export const AddUserModal = ({
               Delete User
             </Button>
           )}
-          <Button color="blue" onClick={() => validate(data) && action(data)}>
+          <Button color="blue" onClick={() => submit()}>
             {edit ? "Save" : "Add"} User
           </Button>
         </Modal.Actions>

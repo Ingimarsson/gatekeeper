@@ -16,6 +16,7 @@ import Link from "next/link";
 import { Gate } from "../../types";
 import { ConfirmActionModal } from "../modals";
 import { ButtonLabel, CameraLabel, ControllerLabel } from "./GateLabels";
+import api from "../../api";
 
 interface GateBoxProps {
   gate: Gate;
@@ -27,8 +28,17 @@ export const GateBox = ({ gate }: { gate: Gate }) => {
     parseInt(gate.latestImage.split(".")[0]) - 1
   );
 
+  // Execute open or close action
   const execute = (action: string) => {
-    setAction("");
+    api()
+      .post(`/gate/${gate.id}/command`, { command: action })
+      .then((res) => {
+        if (res.status != 200) {
+          alert("Error occurred: " + JSON.stringify(res.data));
+        } else {
+          setAction("");
+        }
+      });
   };
 
   useEffect(
@@ -96,16 +106,18 @@ export const GateBox = ({ gate }: { gate: Gate }) => {
               </ButtonRow>
             </TopControlsBox>
             <ReverseButtonRow>
-              <Button
-                size="tiny"
-                icon
-                labelPosition="left"
-                color="green"
-                onClick={() => setAction("open")}
-              >
-                <Icon name="unlock" />
-                Open
-              </Button>
+              {gate.supportsOpen && (
+                <Button
+                  size="tiny"
+                  icon
+                  labelPosition="left"
+                  color="green"
+                  onClick={() => setAction("open")}
+                >
+                  <Icon name="unlock" />
+                  Open
+                </Button>
+              )}
               {gate.supportsClose && (
                 <Button
                   size="tiny"

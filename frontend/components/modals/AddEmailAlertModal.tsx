@@ -12,14 +12,31 @@ import { DeleteModal } from "./DeleteModal";
 import { Alert, Gate, GateSettings, User } from "../../types";
 import { TimeInput } from "semantic-ui-calendar-react";
 
+const initialData: Alert = {
+  id: 0,
+  name: "",
+  gate: "",
+  gateId: 0,
+  user: "",
+  userId: 0,
+  type: "any",
+  code: "",
+  timeLimits: false,
+  startHour: "",
+  endHour: "",
+  failedAttempts: false,
+  enabled: true,
+};
+
 type AddEmailAlertErrors = {
-  [key in keyof GateSettings]?: string;
+  [key in keyof Alert]?: string;
 };
 
 interface AddEmailAlertProps {
   isOpen: boolean;
   close: () => void;
-  action: (data: Alert) => boolean;
+  submitAction: (data: Alert) => void;
+  deleteAction: (id: number) => void;
   gates: Gate[];
   users: User[];
   edit?: boolean;
@@ -30,28 +47,14 @@ interface AddEmailAlertProps {
 export const AddEmailAlertModal = ({
   isOpen,
   close,
-  action,
+  submitAction,
+  deleteAction,
   gates,
   users,
   edit = false,
   alertId,
   editData,
 }: AddEmailAlertProps) => {
-  const initialData: Alert = {
-    id: 0,
-    name: "",
-    gate: "",
-    gateId: 0,
-    user: "",
-    userId: 0,
-    method: "any",
-    code: "",
-    timeLimits: false,
-    startHour: "",
-    endHour: "",
-    failedAttempts: false,
-    enabled: true,
-  };
   const [data, setData] = useState<Alert>(initialData);
 
   const methods = [
@@ -64,13 +67,15 @@ export const AddEmailAlertModal = ({
     { key: "button-2", text: "Button 3", value: "button-2" },
   ];
 
+  // Reset modal values when modal is re-opened
   useEffect(() => {
-    if (edit && editData) {
-      setData({ ...data, ...editData });
-    } else {
-      setData(initialData);
-    }
-  }, [alertId, isOpen]);
+    setData(edit ? editData ?? initialData : initialData);
+    setErrors({});
+  }, [isOpen]);
+
+  const submit = () => {
+    validate(data) && submitAction(data);
+  };
 
   const [errors, setErrors] = useState<AddEmailAlertErrors>();
 
@@ -83,11 +88,25 @@ export const AddEmailAlertModal = ({
 
   const validate = (data: Alert) => {
     let err: AddEmailAlertErrors = {};
+
+    // Is name valid
+    if (data.name.length === 0) {
+      err = { ...err, name: "Name can't be empty" };
+    }
+    // Is startHour valid
+    if (data.timeLimits && data.startHour.search(/^\d{2}:\d{2}$/) === -1) {
+      err = { ...err, startHour: "Not a valid hour" };
+    }
+    // Is endHour valid
+    if (data.timeLimits && data.endHour.search(/^\d{2}:\d{2}$/) === -1) {
+      err = { ...err, endHour: "Not a valid hour" };
+    }
+
+    setErrors(err);
     return !Object.keys(err).length;
   };
 
   console.log(editData);
-  console.log(alertId);
 
   return (
     <>
@@ -97,7 +116,10 @@ export const AddEmailAlertModal = ({
         type="Alert"
         name={editData?.name ?? ""}
         close={() => setModalAction("")}
-        action={deleteAlert}
+        action={() => {
+          setModalAction("");
+          deleteAction && deleteAction(data.id ?? 0);
+        }}
       />
       <Modal size="mini" onClose={close} open={isOpen} closeIcon>
         <Header>{edit ? "Edit" : "Add"} Email Alert</Header>
@@ -167,11 +189,11 @@ export const AddEmailAlertModal = ({
             />
             <Form.Field
               name="method"
-              value={data.method}
+              value={data.type}
               onChange={(
                 e: { target: { value: any } },
                 { value }: { value: string }
-              ) => setData({ ...data, method: value as any })}
+              ) => setData({ ...data, type: value as any })}
               label="Method"
               control={Dropdown}
               placeholder="Method"
@@ -180,7 +202,7 @@ export const AddEmailAlertModal = ({
               required
               options={methods}
             />
-            {data.method === "plate" && (
+            {data.type === "plate" && (
               <Form.Field
                 name="code"
                 value={data.code}
@@ -219,6 +241,7 @@ export const AddEmailAlertModal = ({
                 disabled={!data.timeLimits}
                 inputMode="none"
                 closable
+                error={!!errors?.startHour}
                 fluid
               />
               <Form.Field
@@ -235,6 +258,7 @@ export const AddEmailAlertModal = ({
                 disabled={!data.timeLimits}
                 inputMode="none"
                 closable
+                error={!!errors?.endHour}
                 fluid
               />
             </Form.Group>
@@ -268,7 +292,7 @@ export const AddEmailAlertModal = ({
               Delete Alert
             </Button>
           )}
-          <Button color="blue" onClick={() => validate(data) && action(data)}>
+          <Button color="blue" onClick={() => submit()}>
             {edit ? "Save" : "Add"} Alert
           </Button>
         </Modal.Actions>

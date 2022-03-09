@@ -8,24 +8,23 @@ import {
   Modal,
 } from "semantic-ui-react";
 import { useEffect, useState } from "react";
-import { CodeType, Gate } from "../../types";
+import { CodeType, MethodType, Gate } from "../../types";
 import { DateTimeInput, TimeInput } from "semantic-ui-calendar-react";
 import { DeleteModal } from "./DeleteModal";
 import moment from "moment";
 
 export interface AddMethodData {
-  type: string;
+  id?: number;
+  type: MethodType;
   code: CodeType;
   allGates: boolean;
   gate: number;
   limitDate: boolean;
   limitHours: boolean;
-  timeLimits: {
-    startDate?: string;
-    endDate?: string;
-    startHour?: string;
-    endHour?: string;
-  };
+  startDate?: string;
+  endDate?: string;
+  startHour?: string;
+  endHour?: string;
   comment: string;
   enabled: boolean;
 }
@@ -34,10 +33,30 @@ type AddMethodErrors = {
   [key in keyof AddMethodData]?: string;
 };
 
+const initialState = {
+  type: "keypad-pin" as MethodType,
+  code: {
+    pin: "",
+    card: "",
+    plate: "",
+  },
+  allGates: true,
+  gate: 0,
+  limitDate: false,
+  limitHours: false,
+  startDate: "",
+  endDate: "",
+  startHour: "",
+  endHour: "",
+  comment: "",
+  enabled: true,
+};
+
 interface AddMethodModalProps {
   isOpen: boolean;
   close: () => void;
-  action: (data: AddMethodData) => boolean;
+  submitAction: (data: AddMethodData) => void;
+  deleteAction?: (id: number) => void;
   gates: Gate[];
   edit?: boolean;
   methodId?: number;
@@ -47,52 +66,69 @@ interface AddMethodModalProps {
 export const AddMethodModal = ({
   isOpen,
   close,
-  action,
+  submitAction,
+  deleteAction,
   gates,
   edit = false,
   methodId,
   editData,
 }: AddMethodModalProps) => {
-  const initialData = {
-    type: "keypad-pin",
-    code: {
-      pin: "",
-      card: "",
-      plate: "",
-    },
-    allGates: true,
-    gate: 0,
-    limitDate: false,
-    limitHours: false,
-    timeLimits: {},
-    comment: "",
-    enabled: true,
-  };
-  const [data, setData] = useState<AddMethodData>(initialData);
-
-  useEffect(() => {
-    if (edit && editData) {
-      setData({ ...editData });
-    } else {
-      setData(initialData);
-    }
-  }, [edit, methodId]);
-
+  const [data, setData] = useState<AddMethodData>(initialState);
+  const [modalAction, setModalAction] = useState<string>();
   const [errors, setErrors] = useState<AddMethodErrors>();
+
+  // Reset modal values when modal is re-opened
+  useEffect(() => {
+    setData(edit ? editData ?? initialState : initialState);
+    setErrors({});
+  }, [isOpen]);
+
+  const submit = () => {
+    validate(data) && submitAction({ id: methodId, ...data });
+  };
 
   const validate = (data: AddMethodData) => {
     let err: AddMethodErrors = {};
 
+    if (
+      (data.type === "keypad-pin" || data.type === "keypad-both") &&
+      data.code?.pin == ""
+    ) {
+      err = { ...err, code: "PIN can't be empty" };
+    }
+    if (
+      (data.type === "keypad-card" || data.type === "keypad-both") &&
+      data.code?.card == ""
+    ) {
+      err = { ...err, code: "Card can't be empty" };
+    }
+    if (data.type === "plate" && data.code?.plate == "") {
+      err = { ...err, code: "Plate can't be empty" };
+    }
+    if (data.limitDate && data.startDate == "") {
+      err = { ...err, startDate: "Not a valid date" };
+    }
+    if (data.limitDate && data.endDate == "") {
+      err = { ...err, endDate: "Not a valid date" };
+    }
+    // Is startHour valid
+    if (
+      data.limitHours &&
+      (data.startHour ?? "").search(/^\d{2}:\d{2}$/) === -1
+    ) {
+      err = { ...err, startHour: "Not a valid hour" };
+    }
+    // Is endHour valid
+    if (
+      data.limitHours &&
+      (data.endHour ?? "").search(/^\d{2}:\d{2}$/) === -1
+    ) {
+      err = { ...err, endHour: "Not a valid hour" };
+    }
+
     setErrors(err);
     return !Object.keys(err).length;
   };
-
-  const deleteMethod = () => {
-    setModalAction("");
-    close();
-  };
-
-  const [modalAction, setModalAction] = useState<string>();
 
   return (
     <>
@@ -101,7 +137,10 @@ export const AddMethodModal = ({
         type="Method"
         name=""
         close={() => setModalAction("")}
-        action={deleteMethod}
+        action={() => {
+          setModalAction("");
+          deleteAction && deleteAction(methodId ?? 0);
+        }}
       />
       <Modal size="mini" onClose={close} open={isOpen} closeIcon>
         <Header>{edit ? "Edit" : "Add"} Method</Header>
@@ -113,9 +152,7 @@ export const AddMethodModal = ({
               onChange={(
                 e: { target: { value: any } },
                 { value }: { value: string }
-              ) =>
-                setData({ ...data, type: value as "gatekeeper" | "generic" })
-              }
+              ) => setData({ ...data, type: value as MethodType })}
               label="Method Type"
               control={Dropdown}
               placeholder="Method Type"
@@ -255,14 +292,14 @@ export const AddMethodModal = ({
             <Form.Field
               name="startDate"
               value={
-                data.limitDate && data.timeLimits.startDate
-                  ? moment(data.timeLimits.startDate).format("DD-MM-YYYY HH:mm")
+                data.limitDate && data.startDate
+                  ? moment(data.startDate).format("DD-MM-YYYY HH:mm")
                   : ""
               }
               onChange={(e: any, { name, value }: any) =>
                 setData({
                   ...data,
-                  timeLimits: { ...data.timeLimits, startDate: value },
+                  startDate: moment(value, "DD-MM-YYYY HH:mm").toISOString(),
                 })
               }
               label="Start Date"
@@ -270,19 +307,20 @@ export const AddMethodModal = ({
               disabled={!data.limitDate}
               inputMode="none"
               closable
+              error={!!errors?.startDate}
               fluid
             />
             <Form.Field
               name="endDate"
               value={
-                data.limitDate && data.timeLimits.endDate
-                  ? moment(data.timeLimits.endDate).format("DD-MM-YYYY HH:mm")
+                data.limitDate && data.endDate
+                  ? moment(data.endDate).format("DD-MM-YYYY HH:mm")
                   : ""
               }
               onChange={(e: any, { name, value }: any) =>
                 setData({
                   ...data,
-                  timeLimits: { ...data.timeLimits, endDate: value },
+                  endDate: moment(value, "DD-MM-YYYY HH:mm").toISOString(),
                 })
               }
               label="End Date"
@@ -290,6 +328,7 @@ export const AddMethodModal = ({
               disabled={!data.limitDate}
               inputMode="none"
               closable
+              error={!!errors?.endDate}
               fluid
             />
             <Form.Field
@@ -306,11 +345,11 @@ export const AddMethodModal = ({
             <Form.Group widths="equal">
               <Form.Field
                 name="startHour"
-                value={data.limitHours ? data.timeLimits.startHour : ""}
+                value={data.limitHours ? data.startHour : ""}
                 onChange={(e: any, { name, value }: any) =>
                   setData({
                     ...data,
-                    timeLimits: { ...data.timeLimits, startHour: value },
+                    startHour: value,
                   })
                 }
                 label="Start Hour"
@@ -318,15 +357,16 @@ export const AddMethodModal = ({
                 disabled={!data.limitHours}
                 inputMode="none"
                 closable
+                error={!!errors?.startHour}
                 fluid
               />
               <Form.Field
                 name="endHour"
-                value={data.limitHours ? data.timeLimits.endHour : ""}
+                value={data.limitHours ? data.endHour : ""}
                 onChange={(e: any, { name, value }: any) =>
                   setData({
                     ...data,
-                    timeLimits: { ...data.timeLimits, endHour: value },
+                    endHour: value,
                   })
                 }
                 label="End Hour"
@@ -334,6 +374,7 @@ export const AddMethodModal = ({
                 disabled={!data.limitHours}
                 inputMode="none"
                 closable
+                error={!!errors?.endHour}
                 fluid
               />
             </Form.Group>
@@ -373,7 +414,7 @@ export const AddMethodModal = ({
               Delete Method
             </Button>
           )}
-          <Button color="blue" onClick={() => validate(data) && action(data)}>
+          <Button color="blue" onClick={() => submit()}>
             {edit ? "Save" : "Add"} Method
           </Button>
         </Modal.Actions>

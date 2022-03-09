@@ -1,9 +1,10 @@
-import { CodeType } from "../types";
+import { MethodType } from "../types";
 import { Icon, Popup } from "semantic-ui-react";
 import styled from "styled-components";
 
 interface CodeProps {
-  code: CodeType;
+  type: MethodType;
+  code: string;
 }
 
 const BoxStyle = styled.div`
@@ -12,37 +13,37 @@ const BoxStyle = styled.div`
   align-items: center;
 `;
 
-export const Code = ({ code }: CodeProps) => {
+export const Code = ({ type, code }: CodeProps) => {
   const hiddenText = <>&#183;&#183;&#183;&#183;&#183;&#183;&#183;&#183;</>;
 
-  if (code?.pin && code?.card) {
+  if (type == "keypad-both") {
     return (
       <BoxStyle>
         {hiddenText}
         <Popup trigger={<Icon name="eye" />}>
-          PIN: {code?.pin}
+          PIN: {code.split("-")[0]}
           <br />
-          Card: {code?.card}
+          Card: {code.split("-")[1]}
         </Popup>
       </BoxStyle>
     );
-  } else if (code?.pin) {
+  } else if (type == "keypad-pin") {
     return (
       <BoxStyle>
         {hiddenText}
-        <Popup trigger={<Icon name="eye" />}>PIN: {code?.pin}</Popup>
+        <Popup trigger={<Icon name="eye" />}>PIN: {code}</Popup>
       </BoxStyle>
     );
-  } else if (code?.card) {
+  } else if (type == "keypad-card") {
     return (
       <BoxStyle>
         {hiddenText}
-        <Popup trigger={<Icon name="eye" />}>Card: {code?.card}</Popup>
+        <Popup trigger={<Icon name="eye" />}>Card: {code}</Popup>
       </BoxStyle>
     );
-  } else if (code?.plate) {
-    return <div>{code?.plate}</div>;
+  } else if (type == "plate") {
+    return <div>{code}</div>;
   } else {
-    return <div>{hiddenText}</div>;
+    return <div />;
   }
 };

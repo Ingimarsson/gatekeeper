@@ -49,7 +49,7 @@ def collect_statistics():
       db.session.add(status)
       db.session.commit()
 
-    gates = Gate.query.all()
+    gates = Gate.query.filter(Gate.is_deleted == False).all()
     for g in gates:
       try:
         controller_status = controllers.get_status(g)

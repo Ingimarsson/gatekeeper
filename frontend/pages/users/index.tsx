@@ -8,6 +8,7 @@ import Link from "next/link";
 import { User } from "../../types";
 import api from "../../api";
 import { getSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
 interface UsersProps {
   users: User[];
@@ -16,9 +17,27 @@ interface UsersProps {
 const Users: NextPage<UsersProps> = ({ users }) => {
   const [action, setAction] = useState<string>();
 
+  const router = useRouter();
+
   const addUser = (data: AddUserData) => {
-    setAction("");
-    return true;
+    api()
+      .post("/user", {
+        name: data.name,
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        webAccess: data.webAccess,
+        admin: data.admin,
+        enabled: data.enabled,
+      })
+      .then((res) => {
+        if (res.status != 200) {
+          alert("Error occurred: " + JSON.stringify(res.data));
+        } else {
+          setAction("");
+          router.push(router.asPath);
+        }
+      });
   };
 
   return (
@@ -42,7 +61,7 @@ const Users: NextPage<UsersProps> = ({ users }) => {
         <title>Users - Gatekeeper</title>
       </Head>
       <AddUserModal
-        action={(data) => addUser(data)}
+        submitAction={(data) => addUser(data)}
         close={() => setAction("")}
         isOpen={action === "add"}
       />

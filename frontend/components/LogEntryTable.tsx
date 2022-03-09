@@ -53,7 +53,7 @@ export const LogEntryTable = ({ entries }: LogEntryTableProps) => (
               {typeLabels[entry.type]}
             </Table.Cell>
             <Table.Cell>
-              <Code code={entry.code} />
+              <Code type={entry.type} code={entry.code} />
             </Table.Cell>
             <Table.Cell>
               <Label>{capitalizeFirst(entry.operation)}</Label>

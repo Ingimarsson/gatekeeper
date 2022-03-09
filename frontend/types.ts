@@ -1,4 +1,4 @@
-type MethodType =
+export type MethodType =
   | "web"
   | "keypad"
   | "keypad-pin"
@@ -13,6 +13,7 @@ type MethodType =
 export interface Gate {
   id: number;
   name: string;
+  supportsOpen: boolean;
   supportsClose: boolean;
   latestImage: string;
   controllerStatus: "online" | "offline";
@@ -23,6 +24,7 @@ export interface Gate {
 export interface GateDetails {
   id: number;
   name: string;
+  supportsOpen: boolean;
   supportsClose: boolean;
   controllerStatus: Gate["controllerStatus"];
   cameraStatus: Gate["cameraStatus"];
@@ -40,11 +42,10 @@ export interface GateSettings {
   name: string;
   type: "generic" | "gatekeeper";
   controllerIP?: string;
-  openUrl?: string;
-  closeUrl?: string;
-  cameraEnabled: boolean;
-  cameraUrl: string;
-  dvrTriggerUrl?: string;
+  uriOpen?: string;
+  uriClose?: string;
+  cameraUri: string;
+  httpTrigger?: string;
 }
 
 export interface User {
@@ -64,7 +65,7 @@ export interface LogEntry {
   gate: string;
   type: MethodType;
   typeLabel: string;
-  code: CodeType;
+  code: string;
   operation: string;
   result: boolean;
 }
@@ -77,7 +78,7 @@ export interface LogEntryDetails {
   gateId: number;
   type: MethodType;
   typeLabel: string;
-  code: CodeType;
+  code: string;
   operation: string;
   result: boolean;
   image: string;
@@ -93,20 +94,17 @@ export interface CodeType {
 
 export interface AccessMethod {
   id: number;
-  type: string;
-  typeName: string;
+  type: MethodType;
   allGates: boolean;
-  gate: number;
-  gateName: string;
-  code: CodeType;
+  gateId: number;
+  gate: string;
+  code: string;
   comment: string;
   lastUsage: string;
-  timeLimits: {
-    startDate: string;
-    endDate: string;
-    startHour: string;
-    endHour: string;
-  };
+  startDate: string;
+  endDate: string;
+  startHour: string;
+  endHour: string;
   enabled: boolean;
 }
 
@@ -123,7 +121,7 @@ export interface Alert {
   gateId: number | null;
   user: string;
   userId: number | null;
-  method: MethodType;
+  type: MethodType;
   code: string;
   timeLimits: boolean;
   startHour: string;
@@ -154,6 +152,6 @@ export interface ControllerStatus {
 }
 
 export interface Status {
-  controllers: ControllerStatus[]
-  streams: CameraStatus[]
+  controllers: ControllerStatus[];
+  streams: CameraStatus[];
 }

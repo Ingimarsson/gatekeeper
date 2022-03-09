@@ -11,14 +11,61 @@ import {
   DeleteModal,
   Layout,
   LogEntryTable,
+  typeLabels,
 } from "../../../components";
 import React, { useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
-import { Gate, User, UserDetails as UserDetailsType } from "../../../types";
+import {
+  Gate,
+  User,
+  UserDetails as UserDetailsType,
+  CodeType,
+} from "../../../types";
 import api from "../../../api";
 import moment from "moment";
 import { GetServerSideProps } from "next";
+import { useRouter } from "next/router";
+
+const serializeCode = (type: string, code: CodeType) => {
+  if (type === "keypad-both") {
+    return code?.pin + "-" + code?.card;
+  }
+  if (type === "keypad-pin") {
+    return code?.pin;
+  }
+  if (type === "keypad-card") {
+    return code?.card;
+  }
+  if (type === "plate") {
+    return code?.plate;
+  }
+};
+
+const deserializeCode = (type: string, code: string): CodeType => {
+  if (type === "keypad-both") {
+    return {
+      pin: code.split("-")[0],
+      card: code.split("-")[1],
+    };
+  }
+  if (type === "keypad-pin") {
+    return {
+      pin: code,
+    };
+  }
+  if (type === "keypad-card") {
+    return {
+      card: code,
+    };
+  }
+  if (type === "plate") {
+    return {
+      plate: code,
+    };
+  }
+  return {};
+};
 
 interface UserDetailsProps {
   user: UserDetailsType;
@@ -29,22 +76,112 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
   const [action, setAction] = useState<string>();
   const [currentMethod, setCurrentMethod] = useState<number>();
 
+  const router = useRouter();
+
   const editUser = (data: AddUserData) => {
-    setAction("");
-    return true;
+    api()
+      .put(`/user/${user.user.id}`, {
+        name: data.name,
+        username: data.username,
+        email: data.email,
+        webAccess: data.webAccess,
+        admin: data.admin,
+        enabled: data.enabled,
+      })
+      .then((res) => {
+        if (res.status != 200) {
+          alert("Error occurred: " + JSON.stringify(res.data));
+        } else {
+          setAction("");
+          router.push(router.asPath);
+        }
+      });
+  };
+
+  const deleteUser = () => {
+    api()
+      .delete(`/user/${user.user.id}`)
+      .then((res) => {
+        if (res.status != 200) {
+          alert("Error occurred: " + JSON.stringify(res.data));
+        } else {
+          setAction("");
+          router.push("/users");
+        }
+      });
   };
 
   const changePassword = (data: ChangePasswordData) => {
-    setAction("");
-    return true;
+    api()
+      .post(`/user/${user.user.id}/password`, { password: data.password })
+      .then((res) => {
+        if (res.status != 200) {
+          alert("Error occurred: " + JSON.stringify(res.data));
+        } else {
+          setAction("");
+          router.push(router.asPath);
+        }
+      });
   };
 
   const addMethod = (data: AddMethodData) => {
-    setAction("");
-    return true;
+    api()
+      .post(`/user/${user.user.id}/method`, {
+        type: data.type,
+        code: serializeCode(data.type, data.code),
+        gate: data.allGates ? null : data.gate,
+        startDate: data.limitDate ? data.startDate : null,
+        endDate: data.limitDate ? data.endDate : null,
+        startHour: data.limitHours ? data.startHour : null,
+        endHour: data.limitHours ? data.endHour : null,
+        comment: data.comment,
+        enabled: data.enabled,
+      })
+      .then((res) => {
+        if (res.status != 200) {
+          alert("Error occurred: " + JSON.stringify(res.data));
+        } else {
+          setAction("");
+          router.push(router.asPath);
+        }
+      });
   };
 
-  const editMethod = (data: AddMethodData) => {};
+  const deleteMethod = (id: number) => {
+    api()
+      .delete(`/user/method/${id}`)
+      .then((res) => {
+        if (res.status != 200) {
+          alert("Error occurred: " + JSON.stringify(res.data));
+        } else {
+          setAction("");
+          router.push(router.asPath);
+        }
+      });
+  };
+
+  const editMethod = (data: AddMethodData) => {
+    api()
+      .put(`/user/method/${data.id}`, {
+        type: data.type,
+        code: serializeCode(data.type, data.code),
+        gate: data.allGates ? null : data.gate,
+        startDate: data.limitDate ? data.startDate : null,
+        endDate: data.limitDate ? data.endDate : null,
+        startHour: data.limitHours ? data.startHour : null,
+        endHour: data.limitHours ? data.endHour : null,
+        comment: data.comment,
+        enabled: data.enabled,
+      })
+      .then((res) => {
+        if (res.status != 200) {
+          alert("Error occurred: " + JSON.stringify(res.data));
+        } else {
+          setAction("");
+          router.push(router.asPath);
+        }
+      });
+  };
 
   const openEditModal = (id: number) => {
     setCurrentMethod(id);
@@ -83,7 +220,8 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
         <title>User Details - Gatekeeper</title>
       </Head>
       <AddUserModal
-        action={(data) => editUser(data)}
+        submitAction={(data) => editUser(data)}
+        deleteAction={() => deleteUser()}
         close={() => setAction("")}
         isOpen={action === "edit"}
         edit={true}
@@ -95,7 +233,12 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
         isOpen={action === "change-password"}
       />
       <AddMethodModal
-        action={(data) => addMethod(data)}
+        submitAction={
+          action === "add-method"
+            ? (data) => addMethod(data)
+            : (data) => editMethod(data)
+        }
+        deleteAction={(id) => deleteMethod(id)}
         close={() => setAction("")}
         gates={gates}
         isOpen={action === "add-method" || action === "edit-method"}
@@ -107,10 +250,11 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
           return !!u
             ? {
                 ...u,
-                limitHours:
-                  u.timeLimits.startHour !== "" || u.timeLimits.endHour !== "",
-                limitDate:
-                  u.timeLimits.startDate !== "" || u.timeLimits.endDate !== "",
+                code: deserializeCode(u.type, u.code),
+                allGates: !u.gateId,
+                gate: u.gateId,
+                limitHours: !!u.startHour && !!u.endHour,
+                limitDate: !!u.startDate && !!u.endDate,
               }
             : undefined;
         })()}
@@ -170,7 +314,6 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
           <Table.HeaderCell>Type</Table.HeaderCell>
           <Table.HeaderCell>Code</Table.HeaderCell>
           <Table.HeaderCell>Gate</Table.HeaderCell>
-          <Table.HeaderCell>Last Usage</Table.HeaderCell>
           <Table.HeaderCell>Time Limits</Table.HeaderCell>
           <Table.HeaderCell>Comment</Table.HeaderCell>
           <Table.HeaderCell>Enabled</Table.HeaderCell>
@@ -178,35 +321,27 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
         <Table.Body>
           {user.methods.map((method) => (
             <Table.Row key={method.id} onClick={() => openEditModal(method.id)}>
-              <Table.Cell>{method.typeName}</Table.Cell>
+              <Table.Cell>{typeLabels[method.type]}</Table.Cell>
               <Table.Cell>
-                <Code code={method.code} />
+                <Code type={method.type} code={method.code} />
               </Table.Cell>
-              <Table.Cell>{method.gateName ?? "All"}</Table.Cell>
+              <Table.Cell>{method.gate ?? "All"}</Table.Cell>
               <Table.Cell>
-                {moment(method.lastUsage).format("ll HH:mm")}
-              </Table.Cell>
-              <Table.Cell>
-                {method.timeLimits.startDate || method.timeLimits.startHour ? (
+                {method.startDate || method.startHour ? (
                   <div>
-                    {method.timeLimits.startDate && (
+                    {method.startDate && (
                       <>
                         <div>
-                          From{" "}
-                          {moment(method.timeLimits.startDate).format(
-                            "ll HH:mm"
-                          )}
+                          From {moment(method.startDate).format("ll HH:mm")}
                         </div>
                         <div>
-                          Until{" "}
-                          {moment(method.timeLimits.endDate).format("ll HH:mm")}
+                          Until {moment(method.endDate).format("ll HH:mm")}
                         </div>
                       </>
                     )}
-                    {method.timeLimits.startHour && (
+                    {method.startHour && (
                       <div>
-                        Between {method.timeLimits.startHour} -{" "}
-                        {method.timeLimits.endHour}
+                        Between {method.startHour} - {method.endHour}
                       </div>
                     )}
                   </div>
@@ -216,7 +351,9 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
               </Table.Cell>
               <Table.Cell>{method.comment}</Table.Cell>
               <Table.Cell>
-                <Label>{method.enabled ? "Enabled" : "Disabled"}</Label>
+                <Label color={method.enabled ? undefined : "red"}>
+                  {method.enabled ? "Enabled" : "Disabled"}
+                </Label>
               </Table.Cell>
             </Table.Row>
           ))}

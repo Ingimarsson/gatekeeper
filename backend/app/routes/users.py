@@ -13,7 +13,7 @@ user_bp = Blueprint('user_bp', __name__)
 class UsersView(MethodView):
   @jwt_required()
   def get(self):
-    users = User.query.filter(User.is_deleted == False).all()
+    users = User.query.filter(User.is_deleted == False).order_by(User.id).all()
 
     result = [{
       "id": u.id,
@@ -34,9 +34,9 @@ class UsersView(MethodView):
       'username': {'type': 'string', 'required': True},
       'email': {'type': 'string', 'required': True},
       'password': {'type': 'string', 'required': True},
-      'has_web_access': {'type': 'boolean', 'required': True},
-      'is_admin': {'type': 'boolean', 'required': True},
-      'is_enabled': {'type': 'boolean', 'required': True},
+      'webAccess': {'type': 'boolean', 'required': True},
+      'admin': {'type': 'boolean', 'required': True},
+      'enabled': {'type': 'boolean', 'required': True},
     })
 
     if not v.validate(request.json):
@@ -51,8 +51,10 @@ class UsersView(MethodView):
       is_enabled=request.json['enabled'],
     )
 
-    if request.json['has_web_access']:
+    if request.json['webAccess']:
       user.set_password(request.json['password'])
+    else:
+      user.password = ""
 
     db.session.add(user)
     db.session.commit()
@@ -68,7 +70,8 @@ class UserDetailsView(MethodView):
     user = User.query.filter(User.id == id).first_or_404()
     methods = Method.query.join(User) \
       .outerjoin(Gate) \
-      .filter(User.id == id) \
+      .filter(User.id == id, Method.is_deleted == False) \
+      .order_by(Method.id) \
       .add_columns(Gate.name) \
       .all()
     logs = Log.query.outerjoin(Gate, Log.gate == Gate.id) \
@@ -100,6 +103,7 @@ class UserDetailsView(MethodView):
         "startHour": m[0].start_hour,
         "endHour": m[0].end_hour,
         "comment": m[0].comment,
+        "enabled": m[0].is_enabled,
         "code": m[0].code,
       } for m in methods],
       "logs": [{
@@ -123,9 +127,9 @@ class UserDetailsView(MethodView):
       'name': {'type': 'string', 'required': True},
       'username': {'type': 'string', 'required': True},
       'email': {'type': 'string', 'required': True},
-      'has_web_access': {'type': 'boolean', 'required': True},
-      'is_admin': {'type': 'boolean', 'required': True},
-      'is_enabled': {'type': 'boolean', 'required': True},
+      'webAccess': {'type': 'boolean', 'required': True},
+      'admin': {'type': 'boolean', 'required': True},
+      'enabled': {'type': 'boolean', 'required': True},
     })
 
     if not v.validate(request.json):
@@ -217,17 +221,17 @@ class UserMethodsView(MethodView):
 
 class UserMethodDetailsView(MethodView):
   @admin_required()
-  def put(self):
+  def put(self, id):
     v = Validator({
       'type': {'type': 'string', 'required': True, 'allowed': ['keypad-pin', 'keypad-card', 'keypad-both', 'plate']},
       'code': {'type': 'string', 'required': True},
-      'gate': {'type': 'number', 'required': True},
-      'startDate': {'type': 'string', 'required': True},
-      'endDate': {'type': 'string', 'required': True},
-      'startHour': {'type': 'string', 'required': True},
-      'endHour': {'type': 'string', 'required': True},
+      'gate': {'type': 'number', 'required': True, 'nullable': True},
+      'startDate': {'type': 'string', 'required': True, 'nullable': True},
+      'endDate': {'type': 'string', 'required': True, 'nullable': True},
+      'startHour': {'type': 'string', 'required': True, 'nullable': True},
+      'endHour': {'type': 'string', 'required': True, 'nullable': True},
       'comment': {'type': 'string', 'required': True},
-      'is_enabled': {'type': 'boolean', 'required': True},
+      'enabled': {'type': 'boolean', 'required': True},
     })
 
     if not v.validate(request.json):
@@ -250,7 +254,7 @@ class UserMethodDetailsView(MethodView):
     return jsonify({'message': 'Successful'}), 200
 
   @admin_required()
-  def delete(self):
+  def delete(self, id):
     method = Method.query.filter(Method.id == id).first_or_404()
     method.is_deleted = True
     db.session.commit()

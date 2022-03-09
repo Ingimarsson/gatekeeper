@@ -17,7 +17,7 @@ gate_bp = Blueprint('gate_bp', __name__)
 class GatesView(MethodView):
   @jwt_required()
   def get(self):
-    gates = Gate.query.filter(Gate.is_deleted == False).all()
+    gates = Gate.query.filter(Gate.is_deleted == False).order_by(Gate.id).all()
 
     result = [{
       'id': g.id,
@@ -60,15 +60,15 @@ class GatesView(MethodView):
     v = Validator({
       'name': {'type': 'string', 'required': True},
       'type': {'type': 'string', 'required': True, 'allowed': ['gatekeeper', 'generic']},
-      'controller_ip': {'type': 'string', 'required': True},
-      'uri_open': {'type': 'string', 'required': True},
-      'uri_close': {'type': 'string', 'required': True},
-      'camera_uri': {'type': 'string', 'required': True},
-      'http_trigger': {'type': 'string', 'required': True},
+      'controllerIP': {'type': 'string', 'required': True},
+      'uriOpen': {'type': 'string', 'required': True},
+      'uriClose': {'type': 'string', 'required': True},
+      'cameraUri': {'type': 'string', 'required': True},
+      'httpTrigger': {'type': 'string', 'required': True},
     })
 
     if not v.validate(request.json):
-      return jsonify({'message': 'Input validation failed'}), 400
+      return jsonify({'message': 'Input validation failed', 'errors': v.errors}), 400
 
     alphabet = string.ascii_letters + string.digits
     token = ''.join(secrets.choice(alphabet) for i in range(8))
@@ -76,11 +76,11 @@ class GatesView(MethodView):
     gate = Gate(
       name = request.json['name'],
       type = request.json['type'],
-      controller_ip = request.json['controller_ip'],
-      uri_open = request.json['uri_open'],
-      uri_close = request.json['uri_close'],
-      camera_uri = request.json['camera_uri'],
-      http_trigger = request.json['http_trigger'],
+      controller_ip = request.json['controllerIP'],
+      uri_open = request.json['uriOpen'],
+      uri_close = request.json['uriClose'],
+      camera_uri = request.json['cameraUri'],
+      http_trigger = request.json['httpTrigger'],
       token = token
     )
 
@@ -100,7 +100,7 @@ class GateDetailsView(MethodView):
     logs = Log.query.outerjoin(Gate, Log.gate == Gate.id) \
       .outerjoin(User, Log.user == User.id) \
       .order_by(Log.id.desc()) \
-      .filter(Log.result == True, Log.is_deleted == False, Gate.id == id) \
+      .filter(Log.is_deleted == False, Gate.id == id) \
       .limit(20) \
       .add_columns(Gate.name, User.name) \
       .all()
@@ -152,7 +152,16 @@ class GateDetailsView(MethodView):
         "code": l[0].code,
         "operation": l[0].operation,
         "result": l[0].result,
-      } for l in logs]
+      } for l in logs],
+      "settings": {
+        'name': gate.name,
+        'type': gate.type,
+        'controllerIP': gate.controller_ip,
+        'uriOpen': gate.uri_open,
+        'uriClose': gate.uri_close,
+        'cameraUri': gate.camera_uri,
+        'httpTrigger': gate.http_trigger
+      }
     }
 
     return jsonify(result), 200
@@ -162,24 +171,24 @@ class GateDetailsView(MethodView):
     v = Validator({
       'name': {'type': 'string', 'required': True},
       'type': {'type': 'string', 'required': True, 'allowed': ['gatekeeper', 'generic']},
-      'controller_ip': {'type': 'string', 'required': True},
-      'uri_open': {'type': 'string', 'required': True},
-      'uri_close': {'type': 'string', 'required': True},
-      'camera_uri': {'type': 'string', 'required': True},
-      'http_trigger': {'type': 'string', 'required': True},
+      'controllerIP': {'type': 'string', 'required': True},
+      'uriOpen': {'type': 'string', 'required': True},
+      'uriClose': {'type': 'string', 'required': True},
+      'cameraUri': {'type': 'string', 'required': True},
+      'httpTrigger': {'type': 'string', 'required': True},
     })
 
     if not v.validate(request.json):
-      return jsonify({'message': 'Input validation failed'}), 400
+      return jsonify({'message': 'Input validation failed', 'errors': v.errors}), 400
 
     gate = Gate.query.filter(Gate.id == id).first_or_404()
     gate.name = request.json['name']
     gate.type = request.json['type']
-    gate.controller_ip = request.json['controller_ip']
-    gate.uri_open = request.json['uri_open']
-    gate.uri_close = request.json['uri_close']
-    gate.camera_uri = request.json['camera_uri']
-    gate.http_trigger = request.json['http_trigger']
+    gate.controller_ip = request.json['controllerIP']
+    gate.uri_open = request.json['uriOpen']
+    gate.uri_close = request.json['uriClose']
+    gate.camera_uri = request.json['cameraUri']
+    gate.http_trigger = request.json['httpTrigger']
     db.session.commit()
 
     # Send update config command to streaming service
@@ -255,8 +264,8 @@ class GateButtonView(MethodView):
     """
     v = Validator({
       'type': {'type': 'string', 'required': True, 'allowed': ['enabled', 'disabled', 'timer']},
-      'start_hour': {'type': 'string', 'required': True},
-      'end_hour': {'type': 'string', 'required': True},
+      'startHour': {'type': 'string', 'required': True},
+      'endHour': {'type': 'string', 'required': True},
     })
 
     if not v.validate(request.json):
@@ -264,8 +273,8 @@ class GateButtonView(MethodView):
 
     gate = Gate.query.filter(Gate.id == id).first_or_404()
     gate.button_type = request.json['type']
-    gate.button_start_hour = request.json['start_hour']
-    gate.button_end_hour = request.json['end_hour']
+    gate.button_start_hour = request.json['startHour']
+    gate.button_end_hour = request.json['endHour']
     db.session.commit()
 
     return jsonify({'message': 'Successful'}), 200

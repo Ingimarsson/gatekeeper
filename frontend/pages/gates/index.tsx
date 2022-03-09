@@ -17,8 +17,16 @@ const Gates: NextPage<GatesProps> = ({ gates }) => {
   const [action, setAction] = useState<string>();
 
   const addGate = (data: GateSettings) => {
-    setAction("");
-    return true;
+    api()
+      .post(`/gate`, data)
+      .then((res) => {
+        if (res.status != 200) {
+          alert("Error occurred: " + JSON.stringify(res.data));
+        } else {
+          setAction("");
+          router.push(router.asPath);
+        }
+      });
   };
 
   useEffect(() => {
@@ -51,7 +59,7 @@ const Gates: NextPage<GatesProps> = ({ gates }) => {
         <title>Gates - Gatekeeper</title>
       </Head>
       <AddGateModal
-        action={(data) => addGate(data)}
+        submitAction={(data) => addGate(data)}
         close={() => setAction("")}
         isOpen={action === "add"}
       />

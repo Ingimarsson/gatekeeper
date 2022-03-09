@@ -24,6 +24,7 @@ class AlertsView(MethodView):
       .outerjoin(User, Alert.user == User.id) \
       .outerjoin(Gate) \
       .add_columns(Gate.id, Gate.name, User.id, User.name) \
+      .order_by(Alert.id) \
       .filter(Owner.email == user_email, Alert.is_deleted == False).all()
 
     result = [{

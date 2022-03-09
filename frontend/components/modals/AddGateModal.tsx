@@ -18,61 +18,61 @@ type AddGateErrors = {
 interface AddGateModalProps {
   isOpen: boolean;
   close: () => void;
-  action: (data: GateSettings) => boolean;
+  submitAction: (data: GateSettings) => void;
+  deleteAction?: () => void;
   edit?: boolean;
   editData?: GateSettings;
 }
 
+const initialState: GateSettings = {
+  name: "",
+  type: "gatekeeper",
+  controllerIP: "",
+  uriOpen: "",
+  uriClose: "",
+  cameraUri: "",
+  httpTrigger: "",
+};
+
 export const AddGateModal = ({
   isOpen,
   close,
-  action,
+  submitAction,
+  deleteAction,
   edit = false,
   editData,
 }: AddGateModalProps) => {
-  const [data, setData] = useState<GateSettings>({
-    name: "",
-    type: "gatekeeper",
-    controllerIP: "",
-    openUrl: "",
-    closeUrl: "",
-    cameraEnabled: true,
-    cameraUrl: "",
-    dvrTriggerUrl: "",
-  });
+  const [data, setData] = useState<GateSettings>(initialState);
+  const [modalAction, setModalAction] = useState<string>("");
 
+  // Reset modal values when modal is re-opened
   useEffect(() => {
-    if (edit && editData) {
-      setData({ ...data, ...editData });
-    }
-  }, []);
+    setData(edit ? editData ?? initialState : initialState);
+    setErrors({});
+  }, [isOpen]);
+
+  const submit = () => {
+    validate(data) && submitAction(data);
+  };
 
   const [errors, setErrors] = useState<AddGateErrors>();
 
-  const deleteGate = () => {
-    setModalAction("");
-    close();
-  };
-
-  const [modalAction, setModalAction] = useState<string>();
-
   const validate = (data: GateSettings) => {
     let err: AddGateErrors = {};
+
+    // Is name valid
     if (data.name.length === 0) {
       err = { ...err, name: "Name can't be empty" };
     }
+
+    // Is IP valid (only for gatekeeper type)
     if (
       data.type === "gatekeeper" &&
       data.controllerIP?.split(".").length !== 4
     ) {
       err = { ...err, controllerIP: "Not a valid IP address" };
     }
-    if (data.type === "generic" && data.closeUrl?.length === 0) {
-      err = { ...err, closeUrl: "Close URL can't be empty" };
-    }
-    if (data.cameraEnabled && data.cameraUrl.length === 0) {
-      err = { ...err, cameraUrl: "Camera URL can't be empty" };
-    }
+
     setErrors(err);
     return !Object.keys(err).length;
   };
@@ -85,7 +85,7 @@ export const AddGateModal = ({
         type="Gate"
         name={editData?.name ?? ""}
         close={() => setModalAction("")}
-        action={deleteGate}
+        action={() => !!deleteAction && deleteAction()}
       />
       <Modal size="mini" onClose={close} open={isOpen} closeIcon>
         <Header>{edit ? "Edit" : "Add"} Gate</Header>
@@ -158,9 +158,9 @@ export const AddGateModal = ({
               <>
                 <Form.Field
                   name="openUrl"
-                  value={data.openUrl}
+                  value={data.uriOpen}
                   onChange={(e: { target: { value: any } }) =>
-                    setData({ ...data, openUrl: e.target.value })
+                    setData({ ...data, uriOpen: e.target.value })
                   }
                   label="Open URL"
                   control={Input}
@@ -169,58 +169,34 @@ export const AddGateModal = ({
                 />
                 <Form.Field
                   name="closeUrl"
-                  value={data.closeUrl}
+                  value={data.uriClose}
                   onChange={(e: { target: { value: any } }) =>
-                    setData({ ...data, closeUrl: e.target.value })
+                    setData({ ...data, uriClose: e.target.value })
                   }
                   label="Close URL"
                   control={Input}
                   placeholder="Close URL"
                   required
                   fluid
-                  error={
-                    errors?.closeUrl && {
-                      pointing: "below",
-                      content: errors?.closeUrl,
-                    }
-                  }
                 />
               </>
             )}
             <Form.Field
-              name="cameraEnabled"
-              checked={data.cameraEnabled}
-              onChange={(
-                e: { target: { value: any } },
-                d: { checked: boolean }
-              ) => setData({ ...data, cameraEnabled: d.checked })}
-              label="Enable Camera"
-              control={Checkbox}
-              fluid
-            />
-            <Form.Field
               name="cameraURL"
-              value={data.cameraEnabled ? data.cameraUrl : ""}
+              value={data.cameraUri}
               onChange={(e: { target: { value: any } }) =>
-                setData({ ...data, cameraUrl: e.target.value })
+                setData({ ...data, cameraUri: e.target.value })
               }
               label="Camera Stream (RTSP)"
               control={Input}
-              disabled={!data.cameraEnabled}
               placeholder="Camera Stream (RTSP)"
               fluid
-              error={
-                errors?.cameraUrl && {
-                  pointing: "below",
-                  content: errors?.cameraUrl,
-                }
-              }
             />
             <Form.Field
               name="dvrTriggerURL"
-              value={data.dvrTriggerUrl}
+              value={data.httpTrigger}
               onChange={(e: { target: { value: any } }) =>
-                setData({ ...data, dvrTriggerUrl: e.target.value })
+                setData({ ...data, httpTrigger: e.target.value })
               }
               label="DVR Trigger URL"
               control={Input}
@@ -235,7 +211,7 @@ export const AddGateModal = ({
               Delete Gate
             </Button>
           )}
-          <Button color="blue" onClick={() => validate(data) && action(data)}>
+          <Button color="blue" onClick={() => submit()}>
             {edit ? "Save" : "Add"} Gate
           </Button>
         </Modal.Actions>

@@ -95,9 +95,7 @@ const Login: NextPage = () => {
             <Icon name="exclamation triangle" />
             <Message.Content>
               <Message.Header>Sign in failed.</Message.Header>
-              <p>
-                Make sure that your email and password are typed correctly.
-              </p>
+              <p>Make sure that your email and password are typed correctly.</p>
             </Message.Content>
           </Message>
         )}
