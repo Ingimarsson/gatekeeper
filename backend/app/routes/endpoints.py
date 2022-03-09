@@ -52,11 +52,11 @@ class GatekeeperView(MethodView):
         log.code = card
 
       method = Method.query \
-        .filter(Method.code == log.code) \
+        .filter(Method.code == log.code, Method.is_deleted == False) \
         .filter(or_(Method.gate == None, Method.gate == gate.id)) \
         .first()
 
-      if method and method.is_enabled and not method.is_deleted:
+      if method and method.is_enabled:
         user = User.query.filter(User.id == method.user).first()
 
         log.method = method.id
@@ -79,24 +79,24 @@ class GatekeeperView(MethodView):
       except:
         logger.error("Could not call HTTP trigger for gate {} (id: {})".format(gate.name, gate.id))
 
-    # Tell controller to open gate if authorized
-    if log.result:
-      try:
-        controllers.send_command(gate, 'open')
-      except:
-        logger.error("Could not get controller to open gate {} (id: {})".format(gate.name, gate.id))
-
     db.session.add(log)
     db.session.commit()
 
     # Handle alert emails if log matches user defined alerts
     emails.register_alerts(log)
 
-    return {"message": "ok"}, 200
+    if log.result:
+      return {"message": "success"}, 200
+    else:
+      return {"message": "access denied"}, 403
 
 
 class OpenALPRView(MethodView):
   def post(self):
+    # Ignore irrelevant OpenALPR messages
+    if request.json.get('data_type') != 'alpr_group':
+      return {"message": "request ignored"}, 200
+
     token = request.args.get('token')
     gate = Gate.query.filter(Gate.token != "", Gate.token == token).first_or_404()
     settings = gate.settings if gate.settings else {}
@@ -106,11 +106,11 @@ class OpenALPRView(MethodView):
     log = Log(gate=gate.id, result=False, operation='open', code=plate, type='plate')
 
     method = Method.query \
-      .filter(Method.type == 'plate', Method.code == plate) \
+      .filter(Method.type == 'plate', Method.code == plate, Method.is_deleted == False) \
       .filter(or_(Method.gate == None, Method.gate == gate.id)) \
       .first()
 
-    if method and method.is_enabled and not method.is_deleted:
+    if method and method.is_enabled:
       user = User.query.filter(User.id == method.user).first()
 
       if method.check_dates() and user.is_enabled and not user.is_deleted:
