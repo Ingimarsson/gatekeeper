@@ -6,6 +6,7 @@ from app.models import Alert, User, Gate, Method, Log
 from app.utils import is_within_hours
 
 from sqlalchemy import or_
+import requests
 
 endpoint_bp = Blueprint('endpoint_bp', __name__)
 
@@ -33,6 +34,10 @@ class GatekeeperView(MethodView):
 
       if gate.button_type == 'timer':
         log.result = is_within_hours(gate.button_start_hour, gate.button_end_hour)
+
+      # Buttons 1 and 2 open regardless of response, button 3 respects server decision
+      if int(button) != 3:
+        log.result = True
 
     elif pin or card:
       # Combine PIN and card into a code

@@ -81,7 +81,7 @@ class Stream:
 
     self.cpu_usage = p.cpu_percent(interval=0.5)
     self.mem_usage = p.memory_info().rss
-    self.disk_usage = int(subprocess.check_output(['du','-bs', self.base_path]).split()[0].decode('utf-8'))
+    self.disk_usage = int(subprocess.check_output(['du','-s', self.base_path]).split()[0].decode('utf-8'))*1024
     self.snapshot_count = int(subprocess.check_output(['sh','-c', f'ls -lh {self.snapshot_path} | wc -l']))
 
 

@@ -10,7 +10,7 @@ ENV PYTHONUNBUFFERED 1
 
 # install psycopg2 dependencies
 RUN apk update \
-    && apk add postgresql-dev gcc python3-dev musl-dev libffi-dev
+    && apk add build-base postgresql-dev gcc python3-dev musl-dev libffi-dev
 
 # install python dependencies
 RUN pip install --upgrade pip
@@ -23,4 +23,4 @@ VOLUME /data
 COPY . /usr/src/app/
 
 # Start command
-CMD gunicorn --bind 0.0.0.0:5000 run:app
+CMD gunicorn --bind 0.0.0.0:5000 wsgi:app

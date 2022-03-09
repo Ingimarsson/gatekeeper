@@ -31,7 +31,7 @@ const Gates: NextPage<GatesProps> = ({ gates }) => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      router.replace(router.asPath);
+      router.push(router.asPath, undefined, { scroll: false });
     }, 5000);
     return () => {
       clearInterval(interval);
