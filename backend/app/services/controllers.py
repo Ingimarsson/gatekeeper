@@ -8,16 +8,16 @@ class ControllerService:
   def send_command(self, gate, command='open', conditional=False):
     if gate.type == 'gatekeeper':
       if command == 'open' and not conditional:
-        requests.get(f'http://{gate.controller_ip}/open', timeout=2)
+        requests.get(f'http://{gate.controller_ip}/?a=open', timeout=2)
 
       elif command == 'close' and not conditional:
-        requests.get(f'http://{gate.controller_ip}/close', timeout=2)
+        requests.get(f'http://{gate.controller_ip}/?a=close', timeout=2)
 
       elif command == 'open' and conditional:
-        requests.get(f'http://{gate.controller_ip}/grant', timeout=2)
+        requests.get(f'http://{gate.controller_ip}/?a=grant', timeout=2)
 
       elif command == 'close' and conditional:
-        requests.get(f'http://{gate.controller_ip}/deny', timeout=2)
+        requests.get(f'http://{gate.controller_ip}/?a=deny', timeout=2)
 
     elif gate.type == 'generic':
       if command == 'open':
