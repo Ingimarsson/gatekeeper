@@ -24,7 +24,7 @@ class LoginView(MethodView):
     if not user or \
            not user.verify_password(request.json['password']) or \
            not user.is_enabled or \
-           not user.is_deleted or \
+           user.is_deleted or \
            not user.has_web_access:
       logger.info("Failed authentication attempt for {}".format(user.email))
 
