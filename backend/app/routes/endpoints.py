@@ -113,6 +113,9 @@ class OpenALPRView(MethodView):
     if method and method.is_enabled:
       user = User.query.filter(User.id == method.user).first()
 
+      log.method = method.id
+      log.user = user.id
+
       if method.check_dates() and user.is_enabled and not user.is_deleted:
         log.result = True
 

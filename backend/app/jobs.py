@@ -89,7 +89,7 @@ def update_snapshots():
   Update log snapshots to include +N seconds after event
   """
   with scheduler.app.app_context():
-    gates = Gate.query.filter(Gate.camera_uri != '').all()
+    gates = Gate.query.filter(Gate.camera_uri != '', Gate.is_deleted == False).all()
     logs = Log.query \
       .filter(Log.image != None, Log.first_image == None) \
       .filter(Log.timestamp < datetime.now() - timedelta(seconds=40)) \
