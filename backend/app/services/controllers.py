@@ -43,7 +43,7 @@ class ControllerService:
       except:
         pass
 
-      return {'is_alive': True, 'controller_ip': controller_ip, 'uptime': uptime}
+      return {'is_alive': True, 'controller_ip': gate.controller_ip, 'uptime': uptime}
 
     elif gate.type == 'generic':
       # If there is no open uri then we can't do much
