@@ -95,7 +95,7 @@ class Daemon(Thread):
     """
     stream = next((s for s in self.streams if s.id == stream_id), None)
 
-    snapshots = os.listdir(os.path.join(configuration['DATA_PATH'], "camera_{}/snapshots/".format(stream.id)))
+    snapshots = sorted(os.listdir(os.path.join(configuration['DATA_PATH'], "camera_{}/snapshots/".format(stream.id))))
     result = []
 
     for s in snapshots[-50:]:
