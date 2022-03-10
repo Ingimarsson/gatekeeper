@@ -79,14 +79,6 @@ class GatekeeperView(MethodView):
       except:
         logger.error("Could not call HTTP trigger for gate {} (id: {})".format(gate.name, gate.id))
 
-    # Tell controller to open gate if authorized
-    if log.result:
-      try:
-        controllers.send_command(gate, 'open')
-      except:
-        logger.error("Could not get controller to open gate {} (id: {})".format(gate.name, gate.id))
-
-
     db.session.add(log)
     db.session.commit()
 
@@ -94,9 +86,9 @@ class GatekeeperView(MethodView):
     emails.register_alerts(log)
 
     if log.result:
-      return {"message": "success"}, 200
+      return {"msg": "200 ok"}, 200
     else:
-      return {"message": "access denied"}, 403
+      return {"msg": "403 denied"}, 403
 
 
 class OpenALPRView(MethodView):
