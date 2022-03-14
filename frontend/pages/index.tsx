@@ -4,8 +4,8 @@ import { useRouter } from "next/router";
 import { Button, Form, Header, Icon, Message } from "semantic-ui-react";
 import styled from "styled-components";
 import Head from "next/head";
-import React, { useState } from "react";
-import { getSession, signIn } from "next-auth/react";
+import React, { useEffect, useState } from "react";
+import { getSession, signIn, signOut } from "next-auth/react";
 
 const Container = styled.div`
   background: #f8f8f8;
@@ -33,12 +33,20 @@ const Footer = styled.span`
   margin-top: 20px;
 `;
 
-const Login: NextPage = () => {
+interface LoginProps {
+  signout?: boolean;
+}
+
+const Login: NextPage<LoginProps> = ({ signout = false }) => {
   const Router = useRouter();
   const [data, setData] = useState({
     email: process.env.NEXT_MOCKING ? "harrison" : "",
     password: process.env.NEXT_MOCKING ? "ford!?123" : "",
   });
+
+  useEffect(() => {
+    if (signout) signOut({ redirect: false }).then(() => Router.push("/"));
+  }, [signout]);
 
   const [error, setError] = useState<boolean>(false);
 
@@ -119,8 +127,9 @@ const Login: NextPage = () => {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession(context);
+  const signout = context.query.signout === "true";
 
-  if (session) {
+  if (session && !signout) {
     return {
       redirect: {
         destination: "/gates",
@@ -129,7 +138,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
   return {
-    props: {},
+    props: {
+      signout,
+    },
   };
 };
 
