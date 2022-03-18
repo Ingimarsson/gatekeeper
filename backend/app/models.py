@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, DateTime, JSON
+from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, DateTime, JSON, BigInteger
 
 from app import db, bcrypt
 from app.utils import is_within_hours
@@ -63,11 +63,10 @@ class Method(db.Model):
     is_deleted = Column(Boolean, default=False, nullable=False)
 
     def check_dates(self):
-      current_time = datetime.now()
-      if self.start_date and current_time < self.start_date:
+      if self.start_date and datetime.now(tz=self.start_date.tzinfo) < self.start_date:
         return False
 
-      if self.end_date and current_time > self.start_date:
+      if self.end_date and datetime.now(tz=self.end_date.tzinfo) > self.end_date:
         return False
 
       if self.start_hour and self.end_hour:
@@ -130,7 +129,7 @@ class CameraStatus(db.Model):
     pid = Column(Integer)
     cpu_usage = Column(Integer)
     memory_usage = Column(Integer)
-    disk_usage = Column(Integer)
+    disk_usage = Column(BigInteger)
     snapshot_count = Column(Integer)
     is_alive = Column(Boolean, default=True, nullable=False)
 
