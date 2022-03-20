@@ -83,6 +83,10 @@ class UserDetailsView(MethodView):
       .add_columns(Gate.name, User.name) \
       .all()
 
+    # We only show sensitive information to admins
+    claims = get_jwt()
+    is_admin = claims['is_admin']
+
     result = {
       "user": {
         "id": user.id,
@@ -99,14 +103,13 @@ class UserDetailsView(MethodView):
         "type": m[0].type,
         "gate": m[1],
         "gateId": m[0].gate,
-        "code": m[0].code,
+        "code": m[0].code if is_admin or type == "plate" else None,
         "startDate": m[0].start_date.isoformat() if m[0].start_date else None,
         "endDate": m[0].end_date.isoformat() if m[0].end_date else None,
         "startHour": m[0].start_hour,
         "endHour": m[0].end_hour,
         "comment": m[0].comment,
         "enabled": m[0].is_enabled,
-        "code": m[0].code,
       } for m in methods],
       "logs": [{
         "id": l[0].id,
@@ -115,7 +118,7 @@ class UserDetailsView(MethodView):
         "user": l[2],
         "type": l[0].type,
         "typeLabel": l[0].type_label,
-        "code": l[0].code,
+        "code": l[0].code if is_admin else None,
         "operation": l[0].operation,
         "result": l[0].result,
       } for l in logs]
@@ -175,7 +178,7 @@ class UserPasswordView(MethodView):
     user.set_password(request.json['password'])
     db.session.commit()
 
-    logger.info("Changed password for user {} (ID: {})".format(user.username, user.id))
+    logger.info("Changed password for user {} (ID: {})".format(user.username, request.json['password']))
 
     return jsonify({'message': 'Successful'}), 200
 

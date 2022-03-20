@@ -66,7 +66,7 @@ export interface LogEntry {
   gate: string;
   type: MethodType;
   typeLabel: string;
-  code: string;
+  code: string | null;
   operation: string;
   result: boolean;
 }
@@ -79,7 +79,7 @@ export interface LogEntryDetails {
   gateId: number;
   type: MethodType;
   typeLabel: string;
-  code: string;
+  code: string | null;
   operation: string;
   result: boolean;
   image: string;
@@ -99,7 +99,7 @@ export interface AccessMethod {
   allGates: boolean;
   gateId: number;
   gate: string;
-  code: string;
+  code: string | null;
   comment: string;
   lastUsage: string;
   startDate: string;
@@ -123,7 +123,7 @@ export interface Alert {
   user: string;
   userId: number | null;
   type: MethodType;
-  code: string;
+  code: string | null;
   timeLimits: boolean;
   startHour: string;
   endHour: string;

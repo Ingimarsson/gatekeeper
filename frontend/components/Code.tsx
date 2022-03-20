@@ -16,14 +16,16 @@ const BoxStyle = styled.div`
 export const Code = ({ type, code }: CodeProps) => {
   const hiddenText = <>&#183;&#183;&#183;&#183;&#183;&#183;&#183;&#183;</>;
 
-  if (type == "keypad-both") {
+  if (type.includes("keypad") && !code) {
+    return <BoxStyle>{hiddenText}</BoxStyle>;
+  } else if (type == "keypad-both") {
     return (
       <BoxStyle>
         {hiddenText}
         <Popup trigger={<Icon name="eye" />}>
-          PIN: {code.split("-")[0]}
+          PIN: {code?.split("-")[0]}
           <br />
-          Card: {code.split("-")[1]}
+          Card: {code?.split("-")[1]}
         </Popup>
       </BoxStyle>
     );

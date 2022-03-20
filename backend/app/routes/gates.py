@@ -130,6 +130,10 @@ class GateDetailsView(MethodView):
           latest_image = s['latest_image']
           stream_status = 'online' if s['is_alive'] else 'offline'
 
+    # We only show sensitive information to admins
+    claims = get_jwt()
+    is_admin = claims['is_admin']
+
     result = {
       "id": gate.id,
       "name": gate.name,
@@ -150,7 +154,7 @@ class GateDetailsView(MethodView):
         "user": l[2],
         "type": l[0].type,
         "typeLabel": l[0].type_label,
-        "code": l[0].code,
+        "code": l[0].code if is_admin or type == "plate" else None,
         "operation": l[0].operation,
         "result": l[0].result,
       } for l in logs],
