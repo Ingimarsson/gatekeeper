@@ -98,7 +98,7 @@ export const Layout: React.FC<LayoutProps> = ({
                     </Menu.Item>
                   </Link>
                   <Dropdown.Divider />
-                  {i18n.language === "en" ? (
+                  {i18n.language !== "is" ? (
                     <Menu.Item onClick={() => changeLanguage("is")}>
                       <Flag name="is" /> Íslenska
                     </Menu.Item>
@@ -151,7 +151,7 @@ export const Layout: React.FC<LayoutProps> = ({
                 >
                   <Dropdown.Menu>
                     {" "}
-                    {i18n.language === "en" ? (
+                    {i18n.language !== "is" ? (
                       <Menu.Item onClick={() => changeLanguage("is")}>
                         <Flag name="is" /> Íslenska
                       </Menu.Item>

@@ -47,7 +47,7 @@ const Status: NextPage<StatusProps> = ({ status }) => {
       <Head>
         <title>{t("system-status", "System Status")} - Gatekeeper</title>
       </Head>
-      <Header as="h3">{t("camera-streams", "Myndavélar")}</Header>
+      <Header as="h3">{t("camera-streams", "Camera Streams")}</Header>
       <Table className="readonly">
         <Table.Header>
           <Table.HeaderCell>{t("gate", "Gate")}</Table.HeaderCell>
