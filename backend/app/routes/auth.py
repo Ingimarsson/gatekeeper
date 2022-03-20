@@ -26,7 +26,7 @@ class LoginView(MethodView):
            not user.is_enabled or \
            user.is_deleted or \
            not user.has_web_access:
-      logger.info("Failed authentication attempt for {}".format(user.email))
+      logger.info("Failed authentication attempt for {}".format(request.json['email']))
 
       return jsonify({'message': 'Invalid email or password'}), 400
 
