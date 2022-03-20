@@ -34,10 +34,10 @@ const LiveStreamBox = styled.div`
   }
 `;
 
-const LiveStreamBoxoverlay = styled.div`
+const LiveStreamBoxOverlay = styled.div`
   position: absolute;
-  top: 6px;
-  left: 6px;
+  top: 10px;
+  left: 10px;
   display: flex;
   gap: 6px;
 `;
@@ -94,11 +94,12 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
   const { t } = useTranslation();
 
   const firstTime = useMemo(
-    () => parseInt(entry.firstImage !== "" ? entry.firstImage : entry.image),
+    () =>
+      parseInt(entry.firstImage?.length > 0 ? entry.firstImage : entry.image),
     []
   );
   const lastTime = useMemo(
-    () => parseInt(entry.lastImage !== "" ? entry.lastImage : entry.image),
+    () => parseInt(entry.lastImage?.length > 0 ? entry.lastImage : entry.image),
     []
   );
 
@@ -107,6 +108,7 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
   );
   const [playing, setPlaying] = useState<boolean>(false);
   const [enlarged, setEnlarged] = useState<boolean>(false);
+  const [preloaded, setPreloaded] = useState<boolean>(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -125,10 +127,22 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
   const changeOffset = (offset: number) => {
     setPlaying(false);
     setOffset(offset);
+
+    // Preload all jpegs for smooth playback
+    if (!preloaded) {
+      let images = new Array();
+      for (let i = firstTime; i <= lastTime; i++) {
+        images[firstTime - i] = new Image();
+        images[
+          firstTime - i
+        ].src = `/data/camera_${entry.gateId}/snapshots/${entry.image}/${i}.jpg`;
+      }
+      setPreloaded(true);
+    }
   };
 
   const play = () => {
-    setOffset(0);
+    changeOffset(0);
     setPlaying(true);
   };
 
@@ -186,7 +200,7 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
                 {moment.unix(firstTime + offset).format("HH:mm:ss")}
               </TimeLabel>
             )}
-            <LiveStreamBoxoverlay>
+            <LiveStreamBoxOverlay>
               {entry.image?.length > 0 && (
                 <Button
                   size="mini"
@@ -209,7 +223,7 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
                   {playing ? t("pause", "Pause") : t("play", "Play")}
                 </Button>
               )}
-            </LiveStreamBoxoverlay>
+            </LiveStreamBoxOverlay>
           </LiveStreamBox>
           {entry.firstImage?.length > 0 && (
             <input

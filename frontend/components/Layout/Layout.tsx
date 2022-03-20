@@ -157,17 +157,6 @@ export const Layout: React.FC<LayoutProps> = ({
                   style={{ display: "flex", flexDirection: "row-reverse" }}
                 >
                   <Dropdown.Menu>
-                    {" "}
-                    {i18n.language !== "is" ? (
-                      <Menu.Item onClick={() => updateLanguage("is")}>
-                        <Flag name="is" /> Íslenska
-                      </Menu.Item>
-                    ) : (
-                      <Menu.Item onClick={() => updateLanguage("en")}>
-                        <Flag name="gb" /> English
-                      </Menu.Item>
-                    )}
-                    <Dropdown.Divider />
                     <Link href="/alerts" passHref={true}>
                       <Menu.Item>
                         <Icon name="mail" /> {t("email-alerts", "Email Alerts")}
@@ -180,6 +169,15 @@ export const Layout: React.FC<LayoutProps> = ({
                       </Menu.Item>
                     </Link>
                     <Dropdown.Divider />
+                    {i18n.language !== "is" ? (
+                      <Menu.Item onClick={() => updateLanguage("is")}>
+                        <Flag name="is" /> Íslenska
+                      </Menu.Item>
+                    ) : (
+                      <Menu.Item onClick={() => updateLanguage("en")}>
+                        <Flag name="gb" /> English
+                      </Menu.Item>
+                    )}
                     <Dropdown.Item
                       onClick={() =>
                         signOut({ redirect: false }).then(() =>

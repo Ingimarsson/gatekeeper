@@ -79,6 +79,14 @@ const TimeLabel = styled.div`
   }
 `;
 
+const LiveStreamBoxOverlay = styled.div`
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 6px;
+`;
+
 const ButtonRow = styled.div`
   display: flex;
   gap: 4px;
@@ -277,6 +285,11 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
                   .unix(lastTime - 50 + offset + elapsedTime)
                   .format("HH:mm:ss")}
               </TimeLabel>
+              <LiveStreamBoxOverlay>
+                <Button size="mini" icon labelPosition="left">
+                  <Icon name="expand" /> {t("full-screen", "Full Screen")}
+                </Button>
+              </LiveStreamBoxOverlay>
             </>
           ) : (
             <Logo src="/logo_white.svg" />
