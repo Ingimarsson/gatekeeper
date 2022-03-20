@@ -88,9 +88,9 @@ export interface LogEntryDetails {
 }
 
 export interface CodeType {
-  pin?: string;
-  card?: string;
-  plate?: string;
+  pin?: string | null;
+  card?: string | null;
+  plate?: string | null;
 }
 
 export interface AccessMethod {

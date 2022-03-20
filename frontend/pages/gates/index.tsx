@@ -7,6 +7,7 @@ import React, { useEffect, useState } from "react";
 import { Gate, GateSettings } from "../../types";
 import api from "../../api";
 import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
 
 interface GatesProps {
   gates: Gate[];
@@ -14,7 +15,8 @@ interface GatesProps {
 
 const Gates: NextPage<GatesProps> = ({ gates }) => {
   const router = useRouter();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const session = useSession();
 
   const [action, setAction] = useState<string>();
 
@@ -45,16 +47,20 @@ const Gates: NextPage<GatesProps> = ({ gates }) => {
       title={t("gates", "Gates")}
       segmented={false}
       buttons={
-        <Button
-          size="tiny"
-          icon
-          labelPosition="left"
-          color="blue"
-          onClick={() => setAction("add")}
-        >
-          <Icon name="plus" />
-          {t("add-gate", "Add Gate")}
-        </Button>
+        <>
+          {session.data?.admin && (
+            <Button
+              size="tiny"
+              icon
+              labelPosition="left"
+              color="blue"
+              onClick={() => setAction("add")}
+            >
+              <Icon name="plus" />
+              {t("add-gate", "Add Gate")}
+            </Button>
+          )}
+        </>
       }
     >
       <Head>

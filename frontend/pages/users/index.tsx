@@ -7,7 +7,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { User } from "../../types";
 import api from "../../api";
-import { getSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useTranslation } from "react-i18next";
 
@@ -20,6 +20,7 @@ const Users: NextPage<UsersProps> = ({ users }) => {
 
   const router = useRouter();
   const { t } = useTranslation();
+  const session = useSession();
 
   const addUser = (data: AddUserData) => {
     api()
@@ -47,16 +48,18 @@ const Users: NextPage<UsersProps> = ({ users }) => {
       title={t("users", "Users")}
       segmented={false}
       buttons={
-        <Button
-          size="tiny"
-          icon
-          labelPosition="left"
-          color="blue"
-          onClick={() => setAction("add")}
-        >
-          <Icon name="plus" />
-          {t("add-user", "Add User")}
-        </Button>
+        session.data?.admin ? (
+          <Button
+            size="tiny"
+            icon
+            labelPosition="left"
+            color="blue"
+            onClick={() => setAction("add")}
+          >
+            <Icon name="plus" />
+            {t("add-user", "Add User")}
+          </Button>
+        ) : null
       }
     >
       <Head>

@@ -27,6 +27,7 @@ import moment from "moment";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { useTranslation } from "react-i18next";
+import { useSession } from "next-auth/react";
 
 const serializeCode = (type: string, code: CodeType) => {
   if (type === "keypad-both") {
@@ -43,11 +44,11 @@ const serializeCode = (type: string, code: CodeType) => {
   }
 };
 
-const deserializeCode = (type: string, code: string): CodeType => {
+const deserializeCode = (type: string, code: string | null): CodeType => {
   if (type === "keypad-both") {
     return {
-      pin: code.split("-")[0],
-      card: code.split("-")[1],
+      pin: code?.split("-")[0],
+      card: code?.split("-")[1],
     };
   }
   if (type === "keypad-pin") {
@@ -79,6 +80,7 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
 
   const router = useRouter();
   const { t } = useTranslation();
+  const session = useSession();
 
   const editUser = (data: AddUserData) => {
     api()
@@ -195,27 +197,29 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
       title={user.user.name}
       segmented={false}
       buttons={
-        <>
-          <Button
-            size="tiny"
-            icon
-            labelPosition="left"
-            onClick={() => setAction("edit")}
-          >
-            <Icon name="edit" />
-            {t("edit-user", "Edit User")}
-          </Button>
-          <Button
-            size="tiny"
-            icon
-            labelPosition="left"
-            color="blue"
-            onClick={() => setAction("change-password")}
-          >
-            <Icon name="lock" />
-            {t("change-password", "Change Password")}
-          </Button>
-        </>
+        session.data?.admin ? (
+          <>
+            <Button
+              size="tiny"
+              icon
+              labelPosition="left"
+              onClick={() => setAction("edit")}
+            >
+              <Icon name="edit" />
+              {t("edit-user", "Edit User")}
+            </Button>
+            <Button
+              size="tiny"
+              icon
+              labelPosition="left"
+              color="blue"
+              onClick={() => setAction("change-password")}
+            >
+              <Icon name="lock" />
+              {t("change-password", "Change Password")}
+            </Button>
+          </>
+        ) : null
       }
     >
       <Head>
@@ -319,7 +323,7 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
         </Table>
       </div>
       <Header as="h3">{t("methods", "Access Methods")}</Header>
-      <Table>
+      <Table className={session.data?.admin ? "" : "readonly"}>
         <Table.Header>
           <Table.HeaderCell>{t("type", "Type")}</Table.HeaderCell>
           <Table.HeaderCell>{t("code", "Code")}</Table.HeaderCell>
@@ -330,7 +334,12 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
         </Table.Header>
         <Table.Body>
           {user.methods.map((method) => (
-            <Table.Row key={method.id} onClick={() => openEditModal(method.id)}>
+            <Table.Row
+              key={method.id}
+              onClick={() =>
+                session.data?.admin ? openEditModal(method.id) : null
+              }
+            >
               <Table.Cell>{t(method.type)}</Table.Cell>
               <Table.Cell>
                 <Code type={method.type} code={method.code} />
@@ -378,16 +387,18 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
       </Table>
       <div>
         <div style={{ display: "flex", flexFlow: "row-reverse" }}>
-          <Button
-            size="tiny"
-            icon
-            labelPosition="left"
-            color="blue"
-            onClick={() => setAction("add-method")}
-          >
-            <Icon name="plus" />
-            {t("add-method", "Add Method")}
-          </Button>
+          {session.data?.admin ? (
+            <Button
+              size="tiny"
+              icon
+              labelPosition="left"
+              color="blue"
+              onClick={() => setAction("add-method")}
+            >
+              <Icon name="plus" />
+              {t("add-method", "Add Method")}
+            </Button>
+          ) : null}
         </div>
       </div>
       <Header as="h3">{t("history", "History")}</Header>

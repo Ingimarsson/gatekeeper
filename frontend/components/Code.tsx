@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 interface CodeProps {
   type: MethodType;
-  code: string;
+  code: string | null;
 }
 
 const BoxStyle = styled.div`

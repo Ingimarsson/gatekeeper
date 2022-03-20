@@ -24,6 +24,7 @@ import api from "../../../api";
 import type { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { useTranslation } from "react-i18next";
+import { useSession } from "next-auth/react";
 
 interface GateDetailsProps {
   gate: GateDetailsType;
@@ -100,6 +101,7 @@ const ButtonRow = styled.div`
 const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
   const router = useRouter();
   const { t } = useTranslation();
+  const session = useSession();
 
   const lastTime = useMemo(
     () => parseInt(gate.latestImage.split(".")[0]) - 1,
@@ -206,27 +208,29 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
       title={gate.name}
       segmented={false}
       buttons={
-        <>
-          <Button
-            size="tiny"
-            icon
-            labelPosition="left"
-            onClick={() => setAction("edit")}
-          >
-            <Icon name="edit" />
-            {t("edit-gate", "Edit Gate")}
-          </Button>
-          <Button
-            size="tiny"
-            icon
-            labelPosition="left"
-            color="blue"
-            onClick={() => setAction("button")}
-          >
-            <Icon name="hand point right" />
-            {t("configure-button", "Configure Button")}
-          </Button>
-        </>
+        session.data?.admin ? (
+          <>
+            <Button
+              size="tiny"
+              icon
+              labelPosition="left"
+              onClick={() => setAction("edit")}
+            >
+              <Icon name="edit" />
+              {t("edit-gate", "Edit Gate")}
+            </Button>
+            <Button
+              size="tiny"
+              icon
+              labelPosition="left"
+              color="blue"
+              onClick={() => setAction("button")}
+            >
+              <Icon name="hand point right" />
+              {t("configure-button", "Configure Button")}
+            </Button>
+          </>
+        ) : null
       }
     >
       <Head>

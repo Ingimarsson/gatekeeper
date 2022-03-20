@@ -41,7 +41,13 @@ class LoginView(MethodView):
       }
     )
 
-    return jsonify({"token": token, "name": user.name, "email": user.email, "language": user.language}), 200
+    return jsonify({
+      "token": token,
+      "name": user.name,
+      "email": user.email,
+      "language": user.language,
+      "is_admin": user.is_admin
+    }), 200
 
 class UserView(MethodView):
   @jwt_required()
