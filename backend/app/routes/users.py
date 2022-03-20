@@ -20,6 +20,7 @@ class UsersView(MethodView):
       "name": u.name,
       "username": u.username,
       "email": u.email,
+      "language": u.language,
       "admin": u.is_admin,
       "webAccess": u.has_web_access,
       "enabled": u.is_enabled
@@ -88,6 +89,7 @@ class UserDetailsView(MethodView):
         "name": user.name,
         "username": user.username,
         "email": user.email,
+        "language": user.language,
         "webAccess": user.has_web_access,
         "admin": user.is_admin,
         "enabled": user.is_enabled
@@ -174,6 +176,28 @@ class UserPasswordView(MethodView):
     db.session.commit()
 
     logger.info("Changed password for user {} (ID: {})".format(user.username, user.id))
+
+    return jsonify({'message': 'Successful'}), 200
+
+
+class UserLanguageView(MethodView):
+  @jwt_required()
+  def post(self):
+    v = Validator({
+      'language': {'type': 'string', 'required': True, 'allowed': ['en', 'is']}
+    })
+
+    if not v.validate(request.json):
+      return jsonify({'message': 'Input validation failed', 'errors': v.errors}), 400
+
+    claims = get_jwt()
+    user_email = claims['email']
+
+    user = User.query.filter(User.email == user_email).first_or_404()
+    user.language = request.json['language']
+    db.session.commit()
+
+    logger.info("Changed language for user {} (lang: {})".format(user.username, user.language))
 
     return jsonify({'message': 'Successful'}), 200
 
@@ -265,4 +289,5 @@ user_bp.add_url_rule('/user', view_func=UsersView.as_view('users'))
 user_bp.add_url_rule('/user/<id>', view_func=UserDetailsView.as_view('user_details'))
 user_bp.add_url_rule('/user/<id>/method', view_func=UserMethodsView.as_view('user_methods'))
 user_bp.add_url_rule('/user/<id>/password', view_func=UserPasswordView.as_view('user_password'))
+user_bp.add_url_rule('/user/language', view_func=UserLanguageView.as_view('user_language'))
 user_bp.add_url_rule('/user/method/<id>', view_func=UserMethodDetailsView.as_view('user_method_details'))

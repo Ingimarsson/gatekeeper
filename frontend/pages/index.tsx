@@ -5,8 +5,10 @@ import { Button, Form, Header, Icon, Message } from "semantic-ui-react";
 import styled from "styled-components";
 import Head from "next/head";
 import React, { useEffect, useState } from "react";
-import { getSession, signIn, signOut } from "next-auth/react";
+import { getSession, signIn, signOut, useSession } from "next-auth/react";
 import { useTranslation } from "react-i18next";
+import i18n from "../i18n";
+import api from "../api";
 
 const Container = styled.div`
   background: #f8f8f8;
@@ -41,6 +43,7 @@ interface LoginProps {
 const Login: NextPage<LoginProps> = ({ signout = false }) => {
   const Router = useRouter();
   const { t } = useTranslation();
+  const session = useSession();
 
   const [data, setData] = useState({
     email: process.env.NEXT_MOCKING ? "harrison" : "",
@@ -61,7 +64,17 @@ const Login: NextPage<LoginProps> = ({ signout = false }) => {
       redirect: false,
     }).then((result: any) => {
       console.log(result);
-      result?.ok ? Router.push("/gates") : setError(true);
+      if (result?.ok) {
+        api()
+          .get("/auth/user")
+          .then((response) => {
+            console.log("setting language to " + response.data?.language);
+            i18n.changeLanguage(response.data?.language);
+            Router.push("/gates");
+          });
+      } else {
+        setError(true);
+      }
     });
   };
 

@@ -53,6 +53,7 @@ export interface User {
   name: string;
   username: string;
   email: string;
+  language: string;
   admin: boolean;
   webAccess: boolean;
   enabled: boolean;

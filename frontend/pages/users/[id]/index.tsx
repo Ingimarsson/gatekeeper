@@ -277,6 +277,12 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
           </Table.Row>
           <Table.Row>
             <Table.Cell>
+              <b>{t("language", "Language")}</b>
+            </Table.Cell>
+            <Table.Cell>{t(user.user.language)}</Table.Cell>
+          </Table.Row>
+          <Table.Row>
+            <Table.Cell>
               <b>{t("role", "Role")}</b>
             </Table.Cell>
             <Table.Cell>

@@ -15,6 +15,7 @@ import { ButtonBox } from "./Layout.style";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useTranslation } from "react-i18next";
+import api from "../../api";
 
 interface LayoutProps {
   title: string;
@@ -50,6 +51,12 @@ export const Layout: React.FC<LayoutProps> = ({
       window.removeEventListener("resize", handleWindowSizeChange);
     };
   }, []);
+
+  const updateLanguage = (lang: string) => {
+    api()
+      .post("/user/language", { language: lang })
+      .then(() => changeLanguage(lang));
+  };
 
   const isMobile = width <= 768;
 
@@ -99,11 +106,11 @@ export const Layout: React.FC<LayoutProps> = ({
                   </Link>
                   <Dropdown.Divider />
                   {i18n.language !== "is" ? (
-                    <Menu.Item onClick={() => changeLanguage("is")}>
+                    <Menu.Item onClick={() => updateLanguage("is")}>
                       <Flag name="is" /> Íslenska
                     </Menu.Item>
                   ) : (
-                    <Menu.Item onClick={() => changeLanguage("en")}>
+                    <Menu.Item onClick={() => updateLanguage("en")}>
                       <Flag name="gb" /> English
                     </Menu.Item>
                   )}
@@ -152,11 +159,11 @@ export const Layout: React.FC<LayoutProps> = ({
                   <Dropdown.Menu>
                     {" "}
                     {i18n.language !== "is" ? (
-                      <Menu.Item onClick={() => changeLanguage("is")}>
+                      <Menu.Item onClick={() => updateLanguage("is")}>
                         <Flag name="is" /> Íslenska
                       </Menu.Item>
                     ) : (
-                      <Menu.Item onClick={() => changeLanguage("en")}>
+                      <Menu.Item onClick={() => updateLanguage("en")}>
                         <Flag name="gb" /> English
                       </Menu.Item>
                     )}

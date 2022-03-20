@@ -36,11 +36,12 @@ class LoginView(MethodView):
       "user", additional_claims={
         "name": user.name,
         "email": user.email,
+        "language": user.language,
         "is_admin": user.is_admin,
       }
     )
 
-    return jsonify({"token": token, "name": user.name, "email": user.email}), 200
+    return jsonify({"token": token, "name": user.name, "email": user.email, "language": user.language}), 200
 
 class UserView(MethodView):
   @jwt_required()
@@ -50,6 +51,7 @@ class UserView(MethodView):
     return {
       "name": claims['name'],
       "email": claims['email'],
+      "language": claims['language'],
       "is_admin": claims['is_admin']
     }, 200
 

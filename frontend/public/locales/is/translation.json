@@ -91,5 +91,8 @@
   "enlarge": "Stækka",
   "play": "Spila",
   "pause": "Pása",
-  "no-image": "Engin mynd tiltæk"
+  "no-image": "Engin mynd tiltæk",
+  "language": "Tungumál",
+  "en": "Enska",
+  "is": "Íslenska"
 }

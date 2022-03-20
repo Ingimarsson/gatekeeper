@@ -14,6 +14,7 @@ class User(db.Model):
     email = Column(String(64))
     password = Column(String(128), nullable=False)
     token = Column(String(256))
+    language = Column(String(64), default='en')
     is_admin = Column(Boolean, default=False, nullable=False)
     is_enabled = Column(Boolean, default=True, nullable=False)
     has_web_access = Column(Boolean, default=True, nullable=False)
