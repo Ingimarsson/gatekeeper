@@ -87,5 +87,9 @@
   "log-entry": "Færsla",
   "controllers": "Stýringar",
   "sign-in-failed": "Innskráning mistókst.",
-  "sign-in-failed-details": "Gangið úr skugga um að netfang og lykilorð hafi verið rétt slegið inn."
+  "sign-in-failed-details": "Gangið úr skugga um að netfang og lykilorð hafi verið rétt slegið inn.",
+  "enlarge": "Stækka",
+  "play": "Spila",
+  "pause": "Pása",
+  "no-image": "Engin mynd tiltæk"
 }

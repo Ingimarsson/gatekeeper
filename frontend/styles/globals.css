@@ -13,6 +13,11 @@ body {
   background: #fafafa;
 }
 
+.modal.fullscreen.basic {
+  left: auto !important;
+  width: fit-content !important;
+}
+
 @media (max-width: 768px) {
   thead {
     display: none !important;

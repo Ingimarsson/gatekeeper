@@ -1,7 +1,7 @@
 import type { NextPage } from "next";
-import { Header, Label, Table } from "semantic-ui-react";
+import { Button, Icon, Label, Modal, Table } from "semantic-ui-react";
 import { Code, Layout } from "../../../components";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Head from "next/head";
 import { LogEntryDetails } from "../../../types";
 import api from "../../../api";
@@ -19,16 +19,27 @@ const LiveStreamBox = styled.div`
   width: 600px;
   background: #444;
   display: flex;
+  flex-flow: column;
   align-items: center;
   justify-content: center;
   position: relative;
   margin-bottom: 20px;
+  color: #fffd;
+  position: relative;
 
   @media (max-width: 600px) {
     width: 100%;
     height: auto;
     aspect-ratio: 1.5;
   }
+`;
+
+const LiveStreamBoxoverlay = styled.div`
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  display: flex;
+  gap: 6px;
 `;
 
 export const Logo = styled.img`
@@ -83,14 +94,43 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
   const { t } = useTranslation();
 
   const firstTime = useMemo(
-    () => parseInt(entry.firstImage),
-    [entry.timestamp]
+    () => parseInt(entry.firstImage !== "" ? entry.firstImage : entry.image),
+    []
   );
-  const lastTime = useMemo(() => parseInt(entry.lastImage), [entry.timestamp]);
+  const lastTime = useMemo(
+    () => parseInt(entry.lastImage !== "" ? entry.lastImage : entry.image),
+    []
+  );
 
   const [offset, setOffset] = useState<number>(
     parseInt(entry.image) - firstTime
   );
+  const [playing, setPlaying] = useState<boolean>(false);
+  const [enlarged, setEnlarged] = useState<boolean>(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (playing && offset < lastTime - firstTime) {
+        setOffset(offset + 1);
+      }
+      if (offset == lastTime - firstTime) {
+        setPlaying(false);
+      }
+    }, 150);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [playing, offset, lastTime, firstTime]);
+
+  const changeOffset = (offset: number) => {
+    setPlaying(false);
+    setOffset(offset);
+  };
+
+  const play = () => {
+    setOffset(0);
+    setPlaying(true);
+  };
 
   return (
     <Layout
@@ -101,6 +141,25 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
       <Head>
         <title>{t("log-entry", "Log Entry")} - Gatekeeper</title>
       </Head>
+      <Modal
+        size="fullscreen"
+        onClose={() => setEnlarged(false)}
+        open={enlarged}
+        closeIcon
+        basic
+      >
+        <img
+          src={`/data/camera_${entry.gateId}/snapshots/${entry.image}/${
+            firstTime + offset
+          }.jpg`}
+          style={{
+            background: "#999",
+            width: "90vw",
+            maxHeight: "90vh",
+            objectFit: "contain",
+          }}
+        />
+      </Modal>
       <Grid>
         <LiveStreamColumn>
           <LiveStreamBox>
@@ -117,23 +176,53 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
                 }}
               />
             ) : (
-              <Logo src="/logo_white.svg" />
+              <>
+                <Logo src="/logo_white.svg" />
+                {!entry.image && <h3>{t("no-image", "No image available")}</h3>}
+              </>
             )}
-
-            <TimeLabel>
-              {moment.unix(firstTime + offset).format("HH:mm:ss")}
-            </TimeLabel>
+            {entry.firstImage?.length > 0 && (
+              <TimeLabel>
+                {moment.unix(firstTime + offset).format("HH:mm:ss")}
+              </TimeLabel>
+            )}
+            <LiveStreamBoxoverlay>
+              {entry.image?.length > 0 && (
+                <Button
+                  size="mini"
+                  icon
+                  labelPosition="left"
+                  onClick={() => setEnlarged(true)}
+                >
+                  <Icon name="expand" /> {t("enlarge", "Enlarge")}
+                </Button>
+              )}
+              {entry.firstImage?.length > 0 && (
+                <Button
+                  size="mini"
+                  color="blue"
+                  icon
+                  labelPosition="left"
+                  onClick={() => (playing ? setPlaying(false) : play())}
+                >
+                  <Icon name={playing ? "pause" : "play"} />
+                  {playing ? t("pause", "Pause") : t("play", "Play")}
+                </Button>
+              )}
+            </LiveStreamBoxoverlay>
           </LiveStreamBox>
-          <input
-            type="range"
-            id="points"
-            name="points"
-            min="0"
-            max={lastTime - firstTime}
-            value={offset}
-            onChange={(e) => setOffset(parseInt(e.target.value))}
-            style={{ width: 300, marginBottom: 20 }}
-          />
+          {entry.firstImage?.length > 0 && (
+            <input
+              type="range"
+              id="points"
+              name="points"
+              min="0"
+              max={lastTime - firstTime}
+              value={offset}
+              onChange={(e) => changeOffset(parseInt(e.target.value))}
+              style={{ width: 300, marginBottom: 20 }}
+            />
+          )}
         </LiveStreamColumn>
         <div
           style={{ flexGrow: 1, maxWidth: 400, minWidth: 300, paddingTop: 20 }}
