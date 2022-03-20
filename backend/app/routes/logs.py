@@ -54,7 +54,7 @@ class LogsView(MethodView):
       "user": l[2],
       "type": l[0].type,
       "typeLabel": l[0].type_label,
-      "code": l[0].code if is_admin or type == "plate" else None,
+      "code": l[0].code if is_admin or l[0].type == "plate" else None,
       "operation": l[0].operation,
       "result": l[0].result,
     } for l in logs]
@@ -83,7 +83,7 @@ class LogDetailsView(MethodView):
       "user": log[2],
       "type": log[0].type,
       "typeLabel": log[0].type_label,
-      "code": log[0].code if is_admin or type == "plate" else None,
+      "code": log[0].code if is_admin or log[0].type == "plate" else None,
       "operation": log[0].operation,
       "result": log[0].result,
       "image": log[0].image,

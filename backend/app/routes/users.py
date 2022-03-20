@@ -103,7 +103,7 @@ class UserDetailsView(MethodView):
         "type": m[0].type,
         "gate": m[1],
         "gateId": m[0].gate,
-        "code": m[0].code if is_admin or type == "plate" else None,
+        "code": m[0].code if is_admin or m[0].type == "plate" else None,
         "startDate": m[0].start_date.isoformat() if m[0].start_date else None,
         "endDate": m[0].end_date.isoformat() if m[0].end_date else None,
         "startHour": m[0].start_hour,
@@ -118,7 +118,7 @@ class UserDetailsView(MethodView):
         "user": l[2],
         "type": l[0].type,
         "typeLabel": l[0].type_label,
-        "code": l[0].code if is_admin else None,
+        "code": l[0].code if is_admin or l[0].type == "plate" else None,
         "operation": l[0].operation,
         "result": l[0].result,
       } for l in logs]

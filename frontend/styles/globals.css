@@ -13,7 +13,7 @@ body {
   background: #fafafa;
 }
 
-.modal.fullscreen.basic {
+.ui.modal.fullscreen.basic.visible.active {
   left: auto !important;
   width: fit-content !important;
 }

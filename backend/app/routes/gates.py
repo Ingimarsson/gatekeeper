@@ -154,7 +154,7 @@ class GateDetailsView(MethodView):
         "user": l[2],
         "type": l[0].type,
         "typeLabel": l[0].type_label,
-        "code": l[0].code if is_admin or type == "plate" else None,
+        "code": l[0].code if is_admin or l[0].type == "plate" else None,
         "operation": l[0].operation,
         "result": l[0].result,
       } for l in logs],
