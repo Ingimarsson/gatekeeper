@@ -1,0 +1,21 @@
+{
+  "add-gate": "Add Gate",
+  "any": "Any",
+  "web": "Web Interface",
+  "keypad": "Keypad",
+  "keypad-pin": "Keypad (PIN)",
+  "keypad-card": "Keypad (card)",
+  "keypad-both": "Keypad (both)",
+  "plate": "License Plate",
+  "button-1": "Button 1",
+  "button-2": "Button 2",
+  "button-3": "Button 3",
+  "online": "Online",
+  "offline": "Offline",
+  "not-setup": "Not Setup",
+  "always-enabled": "Always Enabled",
+  "always-disabled": "Always Disabled",
+  "time-controlled": "Time Controlled",
+  "open": "Open",
+  "close": "Close"
+}

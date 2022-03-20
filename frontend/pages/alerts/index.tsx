@@ -1,14 +1,14 @@
 import type { NextPage } from "next";
-import { AddEmailAlertModal, AddGateModal, Layout } from "../../components";
+import { AddEmailAlertModal, Layout } from "../../components";
 import React, { useState } from "react";
 import Head from "next/head";
 import { Alert, Gate, User } from "../../types";
 import { Button, Header, Icon, Label, Table } from "semantic-ui-react";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
-import { typeLabels } from "../../components/LogEntryTable";
 import api from "../../api";
 import { useRouter } from "next/router";
+import { useTranslation } from "react-i18next";
 
 interface AlertsProps {
   alerts: Alert[];
@@ -17,6 +17,8 @@ interface AlertsProps {
 }
 
 const Alerts: NextPage<AlertsProps> = ({ alerts, gates, users }) => {
+  const { t } = useTranslation();
+
   const [action, setAction] = useState<string>("");
   const [currentAlert, setCurrentAlert] = useState<number>();
 
@@ -90,7 +92,7 @@ const Alerts: NextPage<AlertsProps> = ({ alerts, gates, users }) => {
 
   return (
     <Layout
-      title="Email Alerts"
+      title={t("email-alerts", "Email Alerts")}
       segmented={false}
       buttons={
         <Button
@@ -101,12 +103,12 @@ const Alerts: NextPage<AlertsProps> = ({ alerts, gates, users }) => {
           onClick={() => setAction("add")}
         >
           <Icon name="plus" />
-          Add Alert
+          {t("add-alert", "Add Alert")}
         </Button>
       }
     >
       <Head>
-        <title>Email Alerts - Gatekeeper</title>
+        <title>{t("email-alerts", "Email Alerts")} - Gatekeeper</title>
       </Head>
       <AddEmailAlertModal
         submitAction={
@@ -134,33 +136,36 @@ const Alerts: NextPage<AlertsProps> = ({ alerts, gates, users }) => {
       />
       <Table>
         <Table.Header>
-          <Table.HeaderCell>Name</Table.HeaderCell>
-          <Table.HeaderCell>Gate</Table.HeaderCell>
-          <Table.HeaderCell>User</Table.HeaderCell>
-          <Table.HeaderCell>Method</Table.HeaderCell>
-          <Table.HeaderCell>Code</Table.HeaderCell>
-          <Table.HeaderCell>Time</Table.HeaderCell>
-          <Table.HeaderCell>Attempt Result</Table.HeaderCell>
-          <Table.HeaderCell>Enabled</Table.HeaderCell>
+          <Table.HeaderCell>{t("name", "Name")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("gate", "Gate")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("user", "User")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("method-type", "Method Type")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("code", "Code")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("time-limits", "Time Limits")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("result", "Result")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("enabled", "Enabled")}</Table.HeaderCell>
         </Table.Header>
         {alerts.map((alert) => (
           <Table.Row key={alert.id} onClick={() => openEditModal(alert.id)}>
             <Table.Cell>{alert.name}</Table.Cell>
-            <Table.Cell>{alert.gate ?? "All Gates"}</Table.Cell>
-            <Table.Cell>{alert.user ?? "All Users"}</Table.Cell>
+            <Table.Cell>{alert.gate ?? t("all-gates", "All Gates")}</Table.Cell>
+            <Table.Cell>{alert.user ?? t("all-users", "All users")}</Table.Cell>
             <Table.Cell>
-              {alert.type ? typeLabels[alert.type] : "All Methods"}
+              {alert.type ? t(alert.type) : t("all-types", "All Types")}
             </Table.Cell>
             <Table.Cell>{alert.code}</Table.Cell>
             <Table.Cell>
               {alert.timeLimits && `${alert.startHour} - ${alert.endHour}`}
             </Table.Cell>
             <Table.Cell>
-              {alert.failedAttempts ? "Successful / Failed" : "Successful"}
+              {t("granted", "Granted")}
+              {alert.failedAttempts && " / " + t("failed", "Failed")}
             </Table.Cell>
             <Table.Cell>
               <Label color={alert.enabled ? undefined : "red"}>
-                {alert.enabled ? "Enabled" : "Disabled"}
+                {alert.enabled
+                  ? t("enabled", "Enabled")
+                  : t("disabled", "Disabled")}
               </Label>
             </Table.Cell>
           </Table.Row>

@@ -17,12 +17,15 @@ import { Gate } from "../../types";
 import { ConfirmActionModal } from "../modals";
 import { ButtonLabel, CameraLabel, ControllerLabel } from "./GateLabels";
 import api from "../../api";
+import { useTranslation } from "react-i18next";
 
 interface GateBoxProps {
   gate: Gate;
 }
 
 export const GateBox = ({ gate }: { gate: Gate }) => {
+  const { t } = useTranslation();
+
   const [action, setAction] = useState<string>("");
   const [lastTime, setLastTime] = useState<number>(
     parseInt(gate.latestImage.split(".")[0]) - 1
@@ -115,7 +118,7 @@ export const GateBox = ({ gate }: { gate: Gate }) => {
                   onClick={() => setAction("open")}
                 >
                   <Icon name="unlock" />
-                  Open
+                  {t("open", "Open")}
                 </Button>
               )}
               {gate.supportsClose && (
@@ -126,7 +129,7 @@ export const GateBox = ({ gate }: { gate: Gate }) => {
                   onClick={() => setAction("close")}
                 >
                   <Icon name="lock" />
-                  Close
+                  {t("close", "Close")}
                 </Button>
               )}
             </ReverseButtonRow>

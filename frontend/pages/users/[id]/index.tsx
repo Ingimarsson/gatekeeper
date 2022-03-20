@@ -26,6 +26,7 @@ import api from "../../../api";
 import moment from "moment";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
+import { useTranslation } from "react-i18next";
 
 const serializeCode = (type: string, code: CodeType) => {
   if (type === "keypad-both") {
@@ -77,6 +78,7 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
   const [currentMethod, setCurrentMethod] = useState<number>();
 
   const router = useRouter();
+  const { t } = useTranslation();
 
   const editUser = (data: AddUserData) => {
     api()
@@ -201,7 +203,7 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
             onClick={() => setAction("edit")}
           >
             <Icon name="edit" />
-            Edit User
+            {t("edit-user", "Edit User")}
           </Button>
           <Button
             size="tiny"
@@ -211,13 +213,13 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
             onClick={() => setAction("change-password")}
           >
             <Icon name="lock" />
-            Change Password
+            {t("change-password", "Change Password")}
           </Button>
         </>
       }
     >
       <Head>
-        <title>User Details - Gatekeeper</title>
+        <title>{t("user-details", "User Details")} - Gatekeeper</title>
       </Head>
       <AddUserModal
         submitAction={(data) => editUser(data)}
@@ -263,96 +265,105 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
         <Table className="readonly">
           <Table.Row>
             <Table.Cell>
-              <b>Username</b>
+              <b>{t("username", "Username")}</b>
             </Table.Cell>
             <Table.Cell>{user.user.username}</Table.Cell>
           </Table.Row>
           <Table.Row>
             <Table.Cell>
-              <b>Email</b>
+              <b>{t("email", "Email")}</b>
             </Table.Cell>
             <Table.Cell>{user.user.email}</Table.Cell>
           </Table.Row>
           <Table.Row>
             <Table.Cell>
-              <b>Role</b>
+              <b>{t("role", "Role")}</b>
             </Table.Cell>
             <Table.Cell>
               <Label size="tiny" color={user.user.admin ? "green" : undefined}>
-                {user.user.admin ? "Admin" : "User"}
+                {user.user.admin ? t("admin", "Admin") : t("user", "User")}
               </Label>
             </Table.Cell>
           </Table.Row>
           <Table.Row>
             <Table.Cell>
-              <b>Web Access</b>
+              <b>{t("web-access", "Web Access")}</b>
             </Table.Cell>
             <Table.Cell>
               <Label
                 size="tiny"
                 color={user.user.webAccess ? undefined : "red"}
               >
-                {user.user.webAccess ? "Yes" : "No"}
+                {user.user.webAccess ? t("yes", "Yes") : t("no", "No")}
               </Label>
             </Table.Cell>
           </Table.Row>
           <Table.Row>
             <Table.Cell>
-              <b>Enabled</b>
+              <b>{t("enabled", "Enabled")}</b>
             </Table.Cell>
             <Table.Cell>
               <Label size="tiny" color={user.user.enabled ? undefined : "red"}>
-                {user.user.enabled ? "Enabled" : "Disabled"}
+                {user.user.enabled
+                  ? t("enabled", "Enabled")
+                  : t("disabled", "Disabled")}
               </Label>
             </Table.Cell>
           </Table.Row>
         </Table>
       </div>
-      <Header as="h3">Access Methods</Header>
+      <Header as="h3">{t("methods", "Access Methods")}</Header>
       <Table>
         <Table.Header>
-          <Table.HeaderCell>Type</Table.HeaderCell>
-          <Table.HeaderCell>Code</Table.HeaderCell>
-          <Table.HeaderCell>Gate</Table.HeaderCell>
-          <Table.HeaderCell>Time Limits</Table.HeaderCell>
-          <Table.HeaderCell>Comment</Table.HeaderCell>
-          <Table.HeaderCell>Enabled</Table.HeaderCell>
+          <Table.HeaderCell>{t("type", "Type")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("code", "Code")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("gate", "Gate")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("time-limits", "Time Limits")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("comment", "Comment")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("enabled", "Enabled")}</Table.HeaderCell>
         </Table.Header>
         <Table.Body>
           {user.methods.map((method) => (
             <Table.Row key={method.id} onClick={() => openEditModal(method.id)}>
-              <Table.Cell>{typeLabels[method.type]}</Table.Cell>
+              <Table.Cell>{t(method.type)}</Table.Cell>
               <Table.Cell>
                 <Code type={method.type} code={method.code} />
               </Table.Cell>
-              <Table.Cell>{method.gate ?? "All"}</Table.Cell>
+              <Table.Cell>
+                {method.gate ?? t("all-gates", "All Gates")}
+              </Table.Cell>
               <Table.Cell>
                 {method.startDate || method.startHour ? (
                   <div>
                     {method.startDate && (
                       <>
                         <div>
-                          From {moment(method.startDate).format("ll HH:mm")}
+                          {t("from", "From")}{" "}
+                          {moment(method.startDate).format("ll HH:mm")}
                         </div>
                         <div>
-                          Until {moment(method.endDate).format("ll HH:mm")}
+                          {t("until", "Until")}{" "}
+                          {moment(method.endDate).format("ll HH:mm")}
                         </div>
                       </>
                     )}
                     {method.startHour && (
                       <div>
-                        Between {method.startHour} - {method.endHour}
+                        {t("between", "Between")} {method.startHour} -{" "}
+                        {method.endHour}
                       </div>
                     )}
                   </div>
                 ) : (
-                  "None"
+                  t("none", "None")
                 )}
               </Table.Cell>
               <Table.Cell>{method.comment}</Table.Cell>
               <Table.Cell>
                 <Label color={method.enabled ? undefined : "red"}>
-                  {method.enabled ? "Enabled" : "Disabled"}
+                  {method.enabled
+                    ? t("enabled", "Enabled")
+                    : t("disabled", "Disabled")}
                 </Label>
               </Table.Cell>
             </Table.Row>
@@ -369,17 +380,17 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
             onClick={() => setAction("add-method")}
           >
             <Icon name="plus" />
-            Add Method
+            {t("add-method", "Add Method")}
           </Button>
         </div>
       </div>
-      <Header as="h3">History</Header>
+      <Header as="h3">{t("history", "History")}</Header>
       <LogEntryTable entries={user.logs} />
       <div style={{ display: "flex", flexFlow: "row-reverse" }}>
         <Link href={`/logs?user=${user.user.id}`} passHref={true}>
           <Button size="tiny" icon labelPosition="right" color="blue">
             <Icon name="arrow right" />
-            See All
+            {t("see-all", "See All")}
           </Button>
         </Link>
       </div>

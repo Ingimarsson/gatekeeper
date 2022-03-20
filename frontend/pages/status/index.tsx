@@ -7,6 +7,7 @@ import { Header, Label, Table } from "semantic-ui-react";
 import { GetServerSideProps } from "next";
 import api from "../../api";
 import moment from "moment";
+import { useTranslation } from "react-i18next";
 
 interface StatusProps {
   status: StatusType;
@@ -35,23 +36,33 @@ const formatUptime = (seconds: number) => {
 };
 
 const Status: NextPage<StatusProps> = ({ status }) => {
+  const { t } = useTranslation();
+
   return (
-    <Layout title="System Status" segmented={false} buttons={<></>}>
+    <Layout
+      title={t("system-status", "System Status")}
+      segmented={false}
+      buttons={<></>}
+    >
       <Head>
-        <title>System Status - Gatekeeper</title>
+        <title>{t("system-status", "System Status")} - Gatekeeper</title>
       </Head>
-      <Header as="h3">Camera Streams</Header>
+      <Header as="h3">{t("camera-streams", "Myndavélar")}</Header>
       <Table className="readonly">
         <Table.Header>
-          <Table.HeaderCell>Gate</Table.HeaderCell>
-          <Table.HeaderCell>Last update</Table.HeaderCell>
-          <Table.HeaderCell>Uptime</Table.HeaderCell>
+          <Table.HeaderCell>{t("gate", "Gate")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("last-update", "Last Update")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("uptime", "Uptime")}</Table.HeaderCell>
           <Table.HeaderCell>PID</Table.HeaderCell>
-          <Table.HeaderCell>CPU usage</Table.HeaderCell>
-          <Table.HeaderCell>Memory usage</Table.HeaderCell>
-          <Table.HeaderCell>Disk usage</Table.HeaderCell>
-          <Table.HeaderCell>Snapshot count</Table.HeaderCell>
-          <Table.HeaderCell>Is alive</Table.HeaderCell>
+          <Table.HeaderCell>{t("cpu-usage", "CPU usage")}</Table.HeaderCell>
+          <Table.HeaderCell>
+            {t("memory-usage", "Memory usage")}
+          </Table.HeaderCell>
+          <Table.HeaderCell>{t("disk-usage", "Disk usage")}</Table.HeaderCell>
+          <Table.HeaderCell>
+            {t("snapshot-count", "Snapshot count")}
+          </Table.HeaderCell>
+          <Table.HeaderCell>{t("is-alive", "Is alive")}</Table.HeaderCell>
         </Table.Header>
         {status.streams.map((stream) => (
           <Table.Row key={stream.gate}>
@@ -73,23 +84,23 @@ const Status: NextPage<StatusProps> = ({ status }) => {
             <Table.Cell>{stream.alive && stream.snapshotCount}</Table.Cell>
             <Table.Cell>
               {stream.alive ? (
-                <Label color="green">Running</Label>
+                <Label color="green">{t("running", "Running")}</Label>
               ) : (
-                <Label color="red">Dead</Label>
+                <Label color="red">{t("dead", "Dead")}</Label>
               )}
             </Table.Cell>
           </Table.Row>
         ))}
       </Table>
-      <Header as="h3">Controllers</Header>
+      <Header as="h3">{t("controllers", "Controllers")}</Header>
       <Table className="readonly">
         <Table.Header>
-          <Table.HeaderCell>Gate</Table.HeaderCell>
-          <Table.HeaderCell>Last update</Table.HeaderCell>
+          <Table.HeaderCell>{t("gate", "Gate")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("last-update", "Last update")}</Table.HeaderCell>
           <Table.HeaderCell>IP</Table.HeaderCell>
-          <Table.HeaderCell>Type</Table.HeaderCell>
-          <Table.HeaderCell>Uptime</Table.HeaderCell>
-          <Table.HeaderCell>Status</Table.HeaderCell>
+          <Table.HeaderCell>{t("type", "Type")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("uptime", "Uptime")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("status", "Status")}</Table.HeaderCell>
         </Table.Header>
         {status.controllers.map((controller) => (
           <Table.Row key={controller.gate}>
@@ -102,9 +113,9 @@ const Status: NextPage<StatusProps> = ({ status }) => {
             </Table.Cell>
             <Table.Cell>
               {controller.alive ? (
-                <Label color="green">Running</Label>
+                <Label color="green">{t("running", "Running")}</Label>
               ) : (
-                <Label color="red">Dead</Label>
+                <Label color="red">{t("dead", "Dead")}</Label>
               )}
             </Table.Cell>
           </Table.Row>

@@ -6,6 +6,7 @@ import styled from "styled-components";
 import Head from "next/head";
 import React, { useEffect, useState } from "react";
 import { getSession, signIn, signOut } from "next-auth/react";
+import { useTranslation } from "react-i18next";
 
 const Container = styled.div`
   background: #f8f8f8;
@@ -39,6 +40,8 @@ interface LoginProps {
 
 const Login: NextPage<LoginProps> = ({ signout = false }) => {
   const Router = useRouter();
+  const { t } = useTranslation();
+
   const [data, setData] = useState({
     email: process.env.NEXT_MOCKING ? "harrison" : "",
     password: process.env.NEXT_MOCKING ? "ford!?123" : "",
@@ -65,10 +68,12 @@ const Login: NextPage<LoginProps> = ({ signout = false }) => {
   return (
     <Container>
       <Head>
-        <title>Sign in - Gatekeeper</title>
+        <title>{t("sign-in", "Sign in")} - Gatekeeper</title>
       </Head>
       <Logo src="logo.svg"></Logo>
-      <Header as="h3">Sign in to your account</Header>
+      <Header as="h3">
+        {t("sign-in-to-account", "Sign in to your account")}
+      </Header>
       <Box>
         <Form size="large">
           <Form.Input
@@ -80,7 +85,7 @@ const Login: NextPage<LoginProps> = ({ signout = false }) => {
             fluid
             icon="user"
             iconPosition="left"
-            placeholder="Email"
+            placeholder={t("email", "Email")}
           />
           <Form.Input
             name="password"
@@ -91,19 +96,26 @@ const Login: NextPage<LoginProps> = ({ signout = false }) => {
             fluid
             icon="lock"
             iconPosition="left"
-            placeholder="Password"
+            placeholder={t("password", "Password")}
             type="password"
           />
           <Button primary fluid size="large" onClick={() => doSignIn()}>
-            Sign in
+            {t("sign-in", "Sign in")}
           </Button>
         </Form>
         {error && (
           <Message error icon>
             <Icon name="exclamation triangle" />
             <Message.Content>
-              <Message.Header>Sign in failed.</Message.Header>
-              <p>Make sure that your email and password are typed correctly.</p>
+              <Message.Header>
+                {t("sign-in-failed", "Sign in failed.")}
+              </Message.Header>
+              <p>
+                {t(
+                  "sign-in-failed-details",
+                  "Make sure that your email and password are typed correctly."
+                )}
+              </p>
             </Message.Content>
           </Message>
         )}

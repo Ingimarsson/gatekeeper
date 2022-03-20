@@ -7,6 +7,7 @@ import { LogEntry, User } from "../../types";
 import api from "../../api";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
+import { useTranslation } from "react-i18next";
 
 interface LogsProps {
   entries: LogEntry[];
@@ -14,6 +15,7 @@ interface LogsProps {
 
 const Logs: NextPage<LogsProps> = ({ entries }) => {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const [query, setQuery] = useState<string>(
     (router.query?.search ?? "") as string
@@ -60,12 +62,12 @@ const Logs: NextPage<LogsProps> = ({ entries }) => {
 
   return (
     <Layout
-      title="Access Log"
+      title={t("access-log", "Access Log")}
       segmented={false}
       buttons={
         <>
           <Checkbox
-            label="Show failed attempts"
+            label={t("show-failed", "Show failed attempts")}
             style={{ marginRight: 20 }}
             checked={showFailed}
             onChange={(e: any, d: { checked?: boolean | undefined }) =>
@@ -75,7 +77,7 @@ const Logs: NextPage<LogsProps> = ({ entries }) => {
           <Input
             style={{ height: "32px" }}
             type="text"
-            placeholder="Search..."
+            placeholder={t("search", "Search") + "..."}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             action
@@ -86,14 +88,14 @@ const Logs: NextPage<LogsProps> = ({ entries }) => {
               onClick={() => setQuery(searchInput)}
               type="submit"
             >
-              Search
+              {t("search", "Search")}
             </Button>
           </Input>
         </>
       }
     >
       <Head>
-        <title>Access Log - Gatekeeper</title>
+        <title>{t("access-log", "Access Log")} - Gatekeeper</title>
       </Head>
       <LogEntryTable entries={entries} />
       <div style={{ display: "flex", justifyContent: "center" }}>
@@ -102,7 +104,7 @@ const Logs: NextPage<LogsProps> = ({ entries }) => {
           onClick={() => setLimit(limit + 50)}
           disabled={entries.length < limit}
         >
-          Show more
+          {t("see-more", "See More")}
         </Button>
       </div>
     </Layout>

@@ -8,7 +8,7 @@ import api from "../../../api";
 import type { GetServerSideProps } from "next";
 import moment from "moment";
 import styled from "styled-components";
-import { typeLabels, capitalizeFirst } from "../../../components/LogEntryTable";
+import { useTranslation } from "react-i18next";
 
 interface LogEntryProps {
   entry: LogEntryDetails;
@@ -80,6 +80,8 @@ const TimeLabel = styled.div`
 `;
 
 const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
+  const { t } = useTranslation();
+
   const firstTime = useMemo(
     () => parseInt(entry.firstImage),
     [entry.timestamp]
@@ -91,9 +93,13 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
   );
 
   return (
-    <Layout title="Log Entry" segmented={false} buttons={<></>}>
+    <Layout
+      title={t("log-entry", "Log Entry")}
+      segmented={false}
+      buttons={<></>}
+    >
       <Head>
-        <title>Log Entry - Gatekeeper</title>
+        <title>{t("log-entry", "Log Entry")} - Gatekeeper</title>
       </Head>
       <Grid>
         <LiveStreamColumn>
@@ -135,7 +141,7 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
           <Table className="readonly">
             <Table.Row>
               <Table.Cell>
-                <b>Date</b>
+                <b>{t("date", "Date")}</b>
               </Table.Cell>
               <Table.Cell>
                 {moment(entry.timestamp).format("ll HH:mm:ss")}
@@ -143,28 +149,28 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
             </Table.Row>
             <Table.Row>
               <Table.Cell>
-                <b>User</b>
+                <b>{t("user", "User")}</b>
               </Table.Cell>
               <Table.Cell>{entry.user}</Table.Cell>
             </Table.Row>
             <Table.Row>
               <Table.Cell>
-                <b>Gate</b>
+                <b>{t("gate", "Gate")}</b>
               </Table.Cell>
               <Table.Cell>{entry.gate}</Table.Cell>
             </Table.Row>
             <Table.Row>
               <Table.Cell>
-                <b>Type</b>
+                <b>{t("type", "Type")}</b>
               </Table.Cell>
               <Table.Cell>
                 {!!entry.typeLabel && entry.typeLabel + " / "}
-                {typeLabels[entry.type]}
+                {t(entry.type)}
               </Table.Cell>
             </Table.Row>
             <Table.Row>
               <Table.Cell>
-                <b>Code</b>
+                <b>{t("code", "Code")}</b>
               </Table.Cell>
               <Table.Cell>
                 <Code type={entry.type} code={entry.code} />
@@ -172,19 +178,21 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
             </Table.Row>
             <Table.Row>
               <Table.Cell>
-                <b>Operation</b>
+                <b>{t("operation", "Operation")}</b>
               </Table.Cell>
               <Table.Cell>
-                <Label size="tiny">{capitalizeFirst(entry.operation)}</Label>
+                <Label size="tiny">{t(entry.operation)}</Label>
               </Table.Cell>
             </Table.Row>
             <Table.Row>
               <Table.Cell>
-                <b>Result</b>
+                <b>{t("result", "Result")}</b>
               </Table.Cell>
               <Table.Cell>
                 <Label size="tiny" color={entry.result ? "green" : undefined}>
-                  {entry.result ? "Granted" : "Failed"}
+                  {entry.result
+                    ? t("granted", "Granted")
+                    : t("failed", "Failed")}
                 </Label>
               </Table.Cell>
             </Table.Row>

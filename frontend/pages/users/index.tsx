@@ -9,6 +9,7 @@ import { User } from "../../types";
 import api from "../../api";
 import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { useTranslation } from "react-i18next";
 
 interface UsersProps {
   users: User[];
@@ -18,6 +19,7 @@ const Users: NextPage<UsersProps> = ({ users }) => {
   const [action, setAction] = useState<string>();
 
   const router = useRouter();
+  const { t } = useTranslation();
 
   const addUser = (data: AddUserData) => {
     api()
@@ -42,7 +44,7 @@ const Users: NextPage<UsersProps> = ({ users }) => {
 
   return (
     <Layout
-      title="Users"
+      title={t("users", "Users")}
       segmented={false}
       buttons={
         <Button
@@ -53,12 +55,12 @@ const Users: NextPage<UsersProps> = ({ users }) => {
           onClick={() => setAction("add")}
         >
           <Icon name="plus" />
-          Add User
+          {t("add-user", "Add User")}
         </Button>
       }
     >
       <Head>
-        <title>Users - Gatekeeper</title>
+        <title>{t("users", "Users")} - Gatekeeper</title>
       </Head>
       <AddUserModal
         submitAction={(data) => addUser(data)}
@@ -67,12 +69,12 @@ const Users: NextPage<UsersProps> = ({ users }) => {
       />
       <Table>
         <Table.Header>
-          <Table.HeaderCell>Name</Table.HeaderCell>
-          <Table.HeaderCell>Username</Table.HeaderCell>
-          <Table.HeaderCell>Email</Table.HeaderCell>
-          <Table.HeaderCell>Role</Table.HeaderCell>
-          <Table.HeaderCell>Web Access</Table.HeaderCell>
-          <Table.HeaderCell>Enabled</Table.HeaderCell>
+          <Table.HeaderCell>{t("name", "Name")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("username", "Username")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("email", "Email")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("role", "Role")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("web-access", "Web Access")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("enabled", "Enabled")}</Table.HeaderCell>
         </Table.Header>
         <Table.Body>
           {users.map((user) => (
@@ -83,17 +85,19 @@ const Users: NextPage<UsersProps> = ({ users }) => {
                 <Table.Cell>{user.email}</Table.Cell>
                 <Table.Cell>
                   <Label color={user.admin ? "green" : undefined}>
-                    {user.admin ? "Admin" : "User"}
+                    {user.admin ? t("admin", "Admin") : t("user", "User")}
                   </Label>
                 </Table.Cell>
                 <Table.Cell>
                   <Label color={user.webAccess ? undefined : "red"}>
-                    {user.webAccess ? "Yes" : "No"}
+                    {user.webAccess ? t("yes", "Yes") : t("no", "No")}
                   </Label>
                 </Table.Cell>
                 <Table.Cell>
                   <Label color={user.enabled ? undefined : "red"}>
-                    {user.enabled ? "Enabled" : "Disabled"}
+                    {user.enabled
+                      ? t("enabled", "Enabled")
+                      : t("disabled", "Disabled")}
                   </Label>
                 </Table.Cell>
               </Table.Row>

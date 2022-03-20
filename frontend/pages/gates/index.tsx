@@ -1,4 +1,5 @@
 import type { GetServerSideProps, NextPage } from "next";
+import { useTranslation } from "react-i18next";
 import Head from "next/head";
 import { Button, Grid, Icon } from "semantic-ui-react";
 import { AddGateModal, GateBox, Layout } from "../../components";
@@ -13,6 +14,7 @@ interface GatesProps {
 
 const Gates: NextPage<GatesProps> = ({ gates }) => {
   const router = useRouter();
+  const { t, i18n } = useTranslation();
 
   const [action, setAction] = useState<string>();
 
@@ -40,7 +42,7 @@ const Gates: NextPage<GatesProps> = ({ gates }) => {
 
   return (
     <Layout
-      title="Gates"
+      title={t("gates", "Gates")}
       segmented={false}
       buttons={
         <Button
@@ -51,12 +53,12 @@ const Gates: NextPage<GatesProps> = ({ gates }) => {
           onClick={() => setAction("add")}
         >
           <Icon name="plus" />
-          Add Gate
+          {t("add-gate", "Add Gate")}
         </Button>
       }
     >
       <Head>
-        <title>Gates - Gatekeeper</title>
+        <title>{t("gates", "Gates")} - Gatekeeper</title>
       </Head>
       <AddGateModal
         submitAction={(data) => addGate(data)}
@@ -78,8 +80,6 @@ const Gates: NextPage<GatesProps> = ({ gates }) => {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { data: response }: { data: Gate[] } = await api(context).get("/gate");
-
-  console.log(response);
 
   return {
     props: {

@@ -23,6 +23,7 @@ import { ConfigureButtonModal } from "../../../components/modals/ConfigureButton
 import api from "../../../api";
 import type { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
+import { useTranslation } from "react-i18next";
 
 interface GateDetailsProps {
   gate: GateDetailsType;
@@ -90,6 +91,7 @@ const ButtonRow = styled.div`
 
 const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const lastTime = useMemo(
     () => parseInt(gate.latestImage.split(".")[0]) - 1,
@@ -204,7 +206,7 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
             onClick={() => setAction("edit")}
           >
             <Icon name="edit" />
-            Edit Gate
+            {t("edit-gate", "Edit Gate")}
           </Button>
           <Button
             size="tiny"
@@ -214,13 +216,13 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
             onClick={() => setAction("button")}
           >
             <Icon name="hand point right" />
-            Configure Button
+            {t("configure-button", "Configure Button")}
           </Button>
         </>
       }
     >
       <Head>
-        <title>Gate - Gatekeeper</title>
+        <title>{t("gate", "Gate")} - Gatekeeper</title>
       </Head>
       <ConfirmActionModal
         action={() => execute(action)}
@@ -305,7 +307,7 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
               onClick={() => setAction("close")}
             >
               <Icon name="lock" />
-              Close
+              {t("close", "Close")}
             </Button>
           )}
           {gate.supportsOpen && (
@@ -317,18 +319,18 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
               onClick={() => setAction("open")}
             >
               <Icon name="unlock" />
-              Open
+              {t("open", "Open")}
             </Button>
           )}
         </ButtonRow>
       </div>
-      <Header as="h3">History</Header>
+      <Header as="h3">{t("history", "History")}</Header>
       <LogEntryTable entries={gate.logs} />
       <div style={{ display: "flex", flexFlow: "row-reverse" }}>
         <Link href={`/logs?gate=${gate.id}`} passHref={true}>
           <Button size="tiny" icon labelPosition="right" color="blue">
             <Icon name="arrow right" />
-            See All
+            {t("see-all", "See all")}
           </Button>
         </Link>
       </div>

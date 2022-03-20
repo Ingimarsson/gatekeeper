@@ -2,17 +2,19 @@ import React, { useEffect, useState } from "react";
 import {
   Container,
   Dropdown,
+  Flag,
   Header,
   Icon,
   Menu,
   Segment,
 } from "semantic-ui-react";
 import Link from "next/link";
-
+import i18n from "../../i18n";
 import * as style from "./Layout.style";
 import { ButtonBox } from "./Layout.style";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { useTranslation } from "react-i18next";
 
 interface LayoutProps {
   title: string;
@@ -28,6 +30,11 @@ export const Layout: React.FC<LayoutProps> = ({
 }) => {
   const router = useRouter();
   const session = useSession();
+  const { t } = useTranslation();
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+  };
 
   const [width, setWidth] = useState<number>(0);
   const handleWindowSizeChange = () => {
@@ -66,37 +73,47 @@ export const Layout: React.FC<LayoutProps> = ({
                   <Dropdown.Divider />
                   <Link href="/gates" passHref={true}>
                     <Dropdown.Item>
-                      <Icon name="unlock" /> Gates
+                      <Icon name="unlock" /> {t("gates", "Gates")}
                     </Dropdown.Item>
                   </Link>
                   <Link href="/users" passHref={true}>
                     <Dropdown.Item>
-                      <Icon name="users" /> Users
+                      <Icon name="users" /> {t("users", "Users")}
                     </Dropdown.Item>
                   </Link>
                   <Link href="/logs" passHref={true}>
                     <Dropdown.Item>
-                      <Icon name="list" /> Access Log
+                      <Icon name="list" /> {t("access-log", "Access Log")}
                     </Dropdown.Item>
                   </Link>
                   <Dropdown.Divider />
                   <Link href="/alerts" passHref={true}>
                     <Menu.Item>
-                      <Icon name="mail" /> Email Alerts
+                      <Icon name="mail" /> {t("email-alerts", "Email Alerts")}
                     </Menu.Item>
                   </Link>
                   <Link href="/status" passHref={true}>
                     <Menu.Item>
-                      <Icon name="hdd" /> System Status
+                      <Icon name="hdd" /> {t("system-status", "System Status")}
                     </Menu.Item>
                   </Link>
+                  <Dropdown.Divider />
+                  {i18n.language === "en" ? (
+                    <Menu.Item onClick={() => changeLanguage("is")}>
+                      <Flag name="is" /> Íslenska
+                    </Menu.Item>
+                  ) : (
+                    <Menu.Item onClick={() => changeLanguage("en")}>
+                      <Flag name="gb" /> English
+                    </Menu.Item>
+                  )}
                   <Dropdown.Divider />
                   <Dropdown.Item
                     onClick={() =>
                       signOut({ redirect: false }).then(() => router.push("/"))
                     }
                   >
-                    <Icon name="sign-out" /> Sign out
+                    <Icon name="sign-out" /> {t("sign-out", "Sign Out")}
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
@@ -105,17 +122,17 @@ export const Layout: React.FC<LayoutProps> = ({
             <>
               <Link href="/gates" passHref={true}>
                 <Menu.Item>
-                  <Icon name="unlock" /> Gates
+                  <Icon name="unlock" /> {t("gates", "Gates")}
                 </Menu.Item>
               </Link>
               <Link href="/users" passHref={true}>
                 <Menu.Item>
-                  <Icon name="users" /> Users
+                  <Icon name="users" /> {t("users", "Users")}
                 </Menu.Item>
               </Link>
               <Link href="/logs" passHref={true}>
                 <Menu.Item>
-                  <Icon name="list" /> Access Log
+                  <Icon name="list" /> {t("access-log", "Access Log")}
                 </Menu.Item>
               </Link>
               <Menu.Menu position="right">
@@ -133,14 +150,26 @@ export const Layout: React.FC<LayoutProps> = ({
                   style={{ display: "flex", flexDirection: "row-reverse" }}
                 >
                   <Dropdown.Menu>
+                    {" "}
+                    {i18n.language === "en" ? (
+                      <Menu.Item onClick={() => changeLanguage("is")}>
+                        <Flag name="is" /> Íslenska
+                      </Menu.Item>
+                    ) : (
+                      <Menu.Item onClick={() => changeLanguage("en")}>
+                        <Flag name="gb" /> English
+                      </Menu.Item>
+                    )}
+                    <Dropdown.Divider />
                     <Link href="/alerts" passHref={true}>
                       <Menu.Item>
-                        <Icon name="mail" /> Email Alerts
+                        <Icon name="mail" /> {t("email-alerts", "Email Alerts")}
                       </Menu.Item>
                     </Link>
                     <Link href="/status" passHref={true}>
                       <Menu.Item>
-                        <Icon name="hdd" /> System Status
+                        <Icon name="hdd" />{" "}
+                        {t("system-status", "System Status")}
                       </Menu.Item>
                     </Link>
                     <Dropdown.Divider />
@@ -151,7 +180,7 @@ export const Layout: React.FC<LayoutProps> = ({
                         )
                       }
                     >
-                      <Icon name="sign-out" /> Sign out
+                      <Icon name="sign-out" /> {t("sign-out", "Sign Out")}
                     </Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
