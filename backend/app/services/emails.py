@@ -1,6 +1,11 @@
 import smtplib, ssl
+import requests
+
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 from datetime import timedelta, datetime
+from flask import render_template
 
 from app import db, logger
 from app.models import Gate, User, Alert, AlertEvent, Log
@@ -64,12 +69,13 @@ class EmailService:
       .join(Owner, Alert.owner == Owner.id) \
       .outerjoin(User, Log.user == User.id) \
       .filter(Log.timestamp > datetime.now() - timedelta(days=1), AlertEvent.email_sent == False) \
-      .add_columns(Owner.email, Alert.name, Log.timestamp, Log.type, Gate.name, User.name) \
+      .add_columns(Owner.email, Alert.name, Log.timestamp, Log.type, Gate.name, User.name, Log.code, Gate.id, Log.image) \
       .all()
 
     for e in events:
       try:
-        self.send_alert(e[1], e[2], e[5], e[6], e[4], e[3])
+        snapshot_url = "http://nginx/data/camera_{}/snapshots/{}/{}.jpg".format(e[8], e[9], e[9])
+        self.send_alert(e[1], e[2], e[5], e[6], e[4], e[3], e[7], snapshot_url)
         logger.info("Sent an alert to {} (id: {})".format(e[1], e[0].id))
         e[0].email_sent = True
         db.session.commit()
@@ -78,20 +84,27 @@ class EmailService:
 
     return
 
-  def send_alert(self, to, name, gate, user, type, timestamp):
-    msg = MIMEText(f"""
-      <h1>Gatekeeper</h1>
-      <h2>Alert: {name}</h2>
-      <p>This alert is sent automatically from Gatekeeper. Details of event can be found in the Gatekeeper Cloud.</p>
-      <p>Time: {timestamp.ctime()}</p>
-      <p>Gate: {gate}</p>
-      <p>User: {user}</p>
-      <p>Type: {type}</p>
-    """, "html")
-
+  def send_alert(self, to, name, gate, user, type, timestamp, code, snapshot_url):
+    msg = MIMEMultipart('related')
     msg['Subject'] = 'Alert: ' + name
     msg['From'] = f'Gatekeeper <{self.smtp_email}>'
     msg['To'] = to
+
+    image_request = requests.get(snapshot_url)
+    if image_request.ok:
+      mimeImage = MIMEImage(image_request.content)
+      mimeImage.add_header('Content-ID', '<image1>')
+      msg.attach(mimeImage)
+
+    mimeHtml = MIMEText(render_template("email_alert.html", \
+      alert_name = name,
+      time = timestamp.strftime('%H:%M on %b %d, %Y'),
+      gate = gate,
+      user = user,
+      plate = code if type == "plate" else "",
+      image = image_request.ok,
+    ), "html")
+    msg.attach(mimeHtml)
 
     context = ssl.create_default_context()
 

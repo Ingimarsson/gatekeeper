@@ -1,0 +1,85 @@
+<!doctype html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            width: 100%;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            font-family: sans;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        p {
+            color: #333;
+        }
+        .label {
+            font-weight: 600;
+            padding: 6px;
+            padding-bottom: 0px;
+        }
+        .value {
+            padding: 6px;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+        }
+        .last {
+            border-bottom: none;
+        }
+        .grid {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #fff;
+            overflow: hidden;
+        }
+        .row {
+        }
+        img {
+            width: 100%;
+            min-height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gatekeeper</h1>
+        <h2>Email Alert</h2>
+        <p>A log entry that matches one of your alerts was just recorded.</p>
+        <div class="grid">
+            <div class="row">
+                <div class="label">Alert Name</div>
+                <div class="value">{{ alert_name }}</div>
+            </div>
+            <div class="row">
+                <div class="label">Time</div>
+                <div class="value">{{ time }}</div>
+            </div>
+            <div class="row">
+                <div class="label">Gate</div>
+                <div class="value">{{ gate }}</div>
+            </div>
+            <div class="row">
+                <div class="label">User</div>
+                <div class="value">{{ user }}</div>
+            </div>
+            {% if plate != "" %}
+            <div class="row">
+                <div class="label">Plate</div>
+                <div class="value">{{ plate }}</div>
+            </div>
+            {% endif %}
+            {% if image %}
+            <div class="row">
+                <div class="label">Snapshot</div>
+                <div class="value last">
+                    <img src="cid:image1">
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <p>Don't want this email? You can configure your alerts in the Gatekeeper Cloud.</p>
+    </div>
+</body>
