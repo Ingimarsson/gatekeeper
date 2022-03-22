@@ -1,6 +1,7 @@
 from app import scheduler, streams, controllers, emails, logger, db
 from app.models import Gate, Log, CameraStatus, ControllerStatus
 
+from flask import current_app
 from datetime import timedelta, datetime
 from sqlalchemy import func
 
@@ -10,15 +11,19 @@ def delete_old_images():
   Send request to Streaming Service to delete snapshots that are old to save disk space.
   """
   with scheduler.app.app_context():
-    log = Log.query.filter(Log.id < func.max(Log.id) - 40000).first()
+    keep_count = current_app.config['SNAPSHOT_KEEP_COUNT']
+
+    latest = Log.query.order_by(Log.id.desc()).limit(1).first()
+    log = Log.query.filter(Log.id <= latest.id - keep_count).order_by(Log.id.desc()).limit(1).first()
 
     if not log or not log.image:
-      logger.info("Found no images to delete")
+      logger.info("Found no images to delete, keeping last {} snapshots".format(keep_count))
       return
 
-    logger.info("Deleting images older than {}".format(log.timestamp))
-    streams.delete_old_images(log.image)
-    Log.query.filter(Log.id < log.id).update({'image': '', 'first_image': '', 'last_image': ''})
+    logger.info("Deleting images older than {}, keeping last {} snapshots".format(log.timestamp, keep_count))
+    streams.remove_old_snapshots(log.image)
+    Log.query.filter(Log.id <= log.id).update({'image': '', 'first_image': '', 'last_image': ''})
+    db.session.commit()
 
     return
 

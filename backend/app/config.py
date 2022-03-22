@@ -13,3 +13,4 @@ class Config:
   SMTP_PASSWORD = os.getenv('SMTP_PASSWORD', '')
   SMTP_HOST = os.getenv('SMTP_HOST', '')
   SMTP_PORT = int(os.getenv('SMTP_PORT', 465))
+  SNAPSHOT_KEEP_COUNT = int(os.getenv('SNAPSHOT_KEEP_COUNT', 40000))
