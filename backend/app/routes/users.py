@@ -218,12 +218,25 @@ class UserMethodsView(MethodView):
       'endHour': {'type': 'string', 'required': True, 'nullable': True},
       'comment': {'type': 'string', 'required': True},
       'enabled': {'type': 'boolean', 'required': True},
+      'forceAdd': {'type': 'boolean', 'required': False},
     })
 
     if not v.validate(request.json):
       return jsonify({'message': 'Input validation failed', 'errors': v.errors}), 400
 
     user = User.query.filter(User.id == id).first_or_404()
+
+    # Remove old codes if force adding
+    if request.json.get('forceAdd', False):
+      deleted_count = Method.query.filter(Method.code == request.json['code'], Method.type == request.json['type'], Method.is_deleted == False).update({'is_deleted': True})
+      db.session.commit()
+      if deleted_count > 0:
+        logger.info("Deleted {} methods while force-adding method.".format(deleted_count))
+
+    # Return an error if the code already exists
+    existing_methods = Method.query.filter(Method.code == request.json['code'], Method.type == request.json['type'], Method.is_deleted == False).count()
+    if existing_methods > 0:
+      return jsonify({'message': 'A method with this type and code already exists.'}), 400
 
     method = Method(
       user=id,
@@ -265,6 +278,11 @@ class UserMethodDetailsView(MethodView):
       return jsonify({'message': 'Input validation failed', 'errors': v.errors}), 400
 
     method = Method.query.filter(Method.id == id).first_or_404()
+
+    # Return an error if the code already exists
+    existing_methods = Method.query.filter(Method.code == request.json['code'], Method.type == request.json['type'], Method.id != method.id, Method.is_deleted == False).count()
+    if existing_methods > 0:
+      return jsonify({'message': 'A method with this type and code already exists.'}), 400
 
     method.type = request.json['type']
     method.code = request.json['code']
