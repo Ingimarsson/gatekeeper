@@ -71,7 +71,7 @@ export const GateBox = ({ gate }: { gate: Gate }) => {
               <LiveStreamBox>
                 {gate.cameraStatus === "online" ? (
                   <img
-                    src={`/data/camera_${gate.id}/live/${lastTime}.jpg`}
+                    src={`/data/camera_${gate.cameraGeneral}/live/${lastTime}.jpg`}
                     style={{
                       position: "absolute",
                       height: "100%",

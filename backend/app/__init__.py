@@ -57,5 +57,6 @@ def init_app():
     app.register_blueprint(routes.log_bp)
     app.register_blueprint(routes.system_bp)
     app.register_blueprint(routes.user_bp)
+    app.register_blueprint(routes.camera_bp)
 
     return app

@@ -1,7 +1,7 @@
 import requests
 
 from app import db, logger
-from app.models import Gate
+from app.models import Camera
 
 class StreamService:
   stream_host = ''
@@ -29,11 +29,11 @@ class StreamService:
     return response.ok
 
   def update_config(self):
-    gates = Gate.query.filter(Gate.is_deleted == False).all()
+    cameras = Camera.query.all()
     config = [{
-      "id": g.id,
-      "url": g.camera_uri
-    } for g in gates if g.camera_uri != '']
+      "id": c.id,
+      "url": c.camera_uri
+    } for c in cameras if c.camera_uri != '']
 
     response = self.request('POST', f'/config', json=config, timeout=10)
 

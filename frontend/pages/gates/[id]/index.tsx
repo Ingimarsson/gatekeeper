@@ -274,7 +274,7 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
           {gate.cameraStatus === "online" ? (
             <>
               <img
-                src={`/data/camera_${gate.id}/live/${
+                src={`/data/camera_${gate.cameraGeneral}/live/${
                   lastTime - 50 + offset + elapsedTime
                 }.jpg`}
                 style={{

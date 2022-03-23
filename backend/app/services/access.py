@@ -65,8 +65,8 @@ class AccessService:
 
       log.reason = 'success' if log.result else 'disabled'
 
-    if gate.camera_uri:
-      log.image = self.save_snapshot(gate.id)
+    if gate.camera_general:
+      log.image = self.save_snapshot(gate.camera_general)
     if gate.http_trigger:
       self.send_trigger_request(gate.http_trigger)
 
@@ -127,8 +127,8 @@ class AccessService:
         log.result = False
         log.reason = "wrong_dir"
 
-      if gate.camera_uri:
-        log.image = self.save_snapshot(gate.id)
+      if gate.camera_general:
+        log.image = self.save_snapshot(gate.camera_general)
       if gate.http_trigger:
         self.send_trigger_request(gate.http_trigger)
 
@@ -154,20 +154,21 @@ class AccessService:
     log = Log(
       gate=gate.id,
       result=True,
+      reason='success',
       operation=command,
       type='web',
-      user=user.id
+      user=user.id,
     )
 
-    db.session.add(log)
-    db.session.commit()
-
-    if gate.camera_uri:
-      log.image = self.save_snapshot(gate.id)
+    if gate.camera_general:
+      log.image = self.save_snapshot(gate.camera_general)
     if gate.http_trigger:
       self.send_trigger_request(gate.http_trigger)
 
     result = self.controllers.send_command(gate, command)
+
+    db.session.add(log)
+    db.session.commit()
 
     self.emails.register_alerts(log)
 
@@ -200,7 +201,7 @@ class AccessService:
     """
     Update saved snapshots that only have one image to having a series of images
     """
-    gates = Gate.query.filter(Gate.camera_uri != '', Gate.is_deleted == False).all()
+    gates = Gate.query.filter(Gate.camera_general != None, Gate.is_deleted == False).all()
     logs = Log.query \
       .filter(Log.image != None, Log.first_image == None) \
       .filter(Log.timestamp < datetime.now() - timedelta(seconds=40)) \
@@ -214,7 +215,7 @@ class AccessService:
 
     for g in gates:
       try:
-        latest_snapshots = self.streams.get_snapshots(g.id)
+        latest_snapshots = self.streams.get_snapshots(g.camera_general)
         for l in logs:
           if l.gate == g.id:
             for snapshot in latest_snapshots:

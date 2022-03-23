@@ -69,7 +69,7 @@ class EmailService:
       .join(Owner, Alert.owner == Owner.id) \
       .outerjoin(User, Log.user == User.id) \
       .filter(Log.timestamp > datetime.now() - timedelta(days=1), AlertEvent.email_sent == False) \
-      .add_columns(Owner.email, Alert.name, Log.timestamp, Log.type, Gate.name, User.name, Log.code, Gate.id, Log.image) \
+      .add_columns(Owner.email, Alert.name, Log.timestamp, Log.type, Gate.name, User.name, Log.code, Gate.camera_general, Log.image) \
       .all()
 
     for e in events:

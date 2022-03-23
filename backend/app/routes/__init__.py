@@ -5,3 +5,4 @@ from .gates import gate_bp
 from .logs import log_bp
 from .system import system_bp
 from .users import user_bp
+from .cameras import camera_bp

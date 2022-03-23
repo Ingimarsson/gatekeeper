@@ -42,7 +42,7 @@ def collect_statistics():
 
     for c in camera_status:
       status = CameraStatus(
-        gate=c['id'],
+        camera=c['id'],
         uptime=c['uptime'],
         pid=c['pid'],
         cpu_usage=int(c['cpu_percent']*10),

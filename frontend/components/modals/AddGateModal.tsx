@@ -30,7 +30,6 @@ const initialState: GateSettings = {
   controllerIP: "",
   uriOpen: "",
   uriClose: "",
-  cameraUri: "",
   httpTrigger: "",
 };
 
@@ -181,17 +180,6 @@ export const AddGateModal = ({
                 />
               </>
             )}
-            <Form.Field
-              name="cameraURL"
-              value={data.cameraUri}
-              onChange={(e: { target: { value: any } }) =>
-                setData({ ...data, cameraUri: e.target.value })
-              }
-              label="Camera Stream (RTSP)"
-              control={Input}
-              placeholder="Camera Stream (RTSP)"
-              fluid
-            />
             <Form.Field
               name="dvrTriggerURL"
               value={data.httpTrigger}

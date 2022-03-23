@@ -16,6 +16,7 @@ export interface Gate {
   supportsOpen: boolean;
   supportsClose: boolean;
   latestImage: string;
+  cameraGeneral: number;
   controllerStatus: "online" | "offline";
   cameraStatus: "online" | "offline" | "not-setup";
   buttonStatus: "disabled" | "enabled" | "timer";
@@ -30,6 +31,7 @@ export interface GateDetails {
   cameraStatus: Gate["cameraStatus"];
   buttonStatus: Gate["buttonStatus"];
   latestImage: string;
+  cameraGeneral: number;
   buttonTime: {
     startHour: string;
     endHour: string;
@@ -44,7 +46,6 @@ export interface GateSettings {
   controllerIP?: string;
   uriOpen?: string;
   uriClose?: string;
-  cameraUri: string;
   httpTrigger?: string;
 }
 
@@ -87,6 +88,7 @@ export interface LogEntryDetails {
   image: string;
   firstImage: string;
   lastImage: string;
+  cameraGeneral: number;
 }
 
 export interface CodeType {
@@ -157,4 +159,13 @@ export interface ControllerStatus {
 export interface Status {
   controllers: ControllerStatus[];
   streams: CameraStatus[];
+}
+
+export interface Camera {
+  id: number;
+  name: string;
+  isAlive: boolean;
+  isVisible: boolean;
+  cpuPercent: number;
+  ipAddress: string;
 }

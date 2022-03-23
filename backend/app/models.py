@@ -36,7 +36,8 @@ class Gate(db.Model):
     controller_ip = Column(String(64))
     uri_open = Column(String(256))
     uri_close = Column(String(256))
-    camera_uri = Column(String(256))
+    camera_general = Column(Integer, ForeignKey('camera.id'))
+    camera_alpr = Column(Integer, ForeignKey('camera.id'))
     http_trigger = Column(String(256))
     token = Column(String(64), nullable=False)
     button_type = Column(String(16), nullable=False, default='disabled')
@@ -44,6 +45,23 @@ class Gate(db.Model):
     button_end_hour = Column(String(16), nullable=False, default='20:00')
     settings = Column(JSON)
     is_deleted = Column(Boolean, default=False, nullable=False)
+
+
+class Camera(db.Model):
+    __tablename__ = 'camera'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(64), nullable=False)
+    camera_uri = Column(String(256))
+    is_visible = Column(Boolean, default=False, nullable=False)
+
+
+class Config(db.Model):
+    __tablename__ = 'config'
+
+    id = Column(Integer, primary_key=True)
+    key = Column(String(64), nullable=False)
+    value = Column(String(256), nullable=False)
 
 
 class Method(db.Model):
@@ -126,7 +144,7 @@ class CameraStatus(db.Model):
 
     id = Column(Integer, primary_key=True)
     timestamp = Column(DateTime(timezone=True), default=datetime.now, nullable=False)
-    gate = Column(Integer, ForeignKey('gate.id'))
+    camera = Column(Integer, ForeignKey('camera.id'))
     uptime = Column(Integer)
     pid = Column(Integer)
     cpu_usage = Column(Integer)

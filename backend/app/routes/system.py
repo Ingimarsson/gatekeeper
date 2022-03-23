@@ -5,7 +5,7 @@ from flask_jwt_extended import jwt_required
 from sqlalchemy import func
 
 from app import db
-from app.models import Gate, ControllerStatus, CameraStatus
+from app.models import Gate, Camera, ControllerStatus, CameraStatus
 
 system_bp = Blueprint('system_bp', __name__)
 
@@ -22,15 +22,13 @@ class SystemView(MethodView):
       .add_columns(Gate.name) \
       .all()
 
-    max_ids = db.session.query(func.max(CameraStatus.id)).group_by(CameraStatus.gate).all()
+    max_ids = db.session.query(func.max(CameraStatus.id)).group_by(CameraStatus.camera).all()
 
     stream_status = CameraStatus.query \
-      .join(Gate) \
-      .filter(Gate.is_deleted == False) \
-      .filter(Gate.camera_uri != '', Gate.camera_uri != None) \
+      .join(Camera) \
       .filter(CameraStatus.id.in_([m[0] for m in max_ids])) \
-      .order_by(Gate.id) \
-      .add_columns(Gate.name) \
+      .order_by(Camera.id) \
+      .add_columns(Camera.name) \
       .all()
 
     result = {

@@ -26,6 +26,7 @@ class GatesView(MethodView):
       'buttonStatus': g.button_type,
       'controllerStatus': 'offline',
       'cameraStatus': 'not-setup',
+      'cameraGeneral': g.camera_general,
       'latestImage': '',
       'supportsOpen': g.type == 'gatekeeper' or g.uri_open != '',
       'supportsClose': g.type == 'gatekeeper' or g.uri_close != '',
@@ -50,7 +51,7 @@ class GatesView(MethodView):
           result[idx]['controllerStatus'] = 'online' if c.is_alive else 'offline'
 
       for s in stream_status:
-        if s['id'] == r['id']:
+        if s['id'] == r['cameraGeneral']:
           result[idx]['latestImage'] = s['latest_image']
           result[idx]['cameraStatus'] = 'online' if s['is_alive'] else 'offline'
 
@@ -126,7 +127,7 @@ class GateDetailsView(MethodView):
     latest_image = ''
 
     for s in stream_statuses:
-      if s['id'] == gate.id:
+      if s['id'] == gate.camera_general:
           latest_image = s['latest_image']
           stream_status = 'online' if s['is_alive'] else 'offline'
 
@@ -142,6 +143,7 @@ class GateDetailsView(MethodView):
       "controllerStatus": controller_status,
       'supportsOpen': gate.type == 'gatekeeper' or gate.uri_open != '',
       'supportsClose': gate.type == 'gatekeeper' or gate.uri_close != '',
+      'cameraGeneral': gate.camera_general,
       'buttonStatus': gate.button_type,
       'buttonTime': {
         'startHour': gate.button_start_hour,
@@ -165,7 +167,6 @@ class GateDetailsView(MethodView):
         'controllerIP': gate.controller_ip,
         'uriOpen': gate.uri_open,
         'uriClose': gate.uri_close,
-        'cameraUri': gate.camera_uri,
         'httpTrigger': gate.http_trigger
       }
     }

@@ -70,7 +70,7 @@ class LogDetailsView(MethodView):
       .outerjoin(Gate, Log.gate == Gate.id) \
       .outerjoin(User, Log.user == User.id) \
       .filter(Log.id == id) \
-      .add_columns(Gate.name, User.name) \
+      .add_columns(Gate.name, User.name, Gate.camera_general) \
       .first_or_404()
 
     # We only show sensitive information to admins
@@ -91,6 +91,7 @@ class LogDetailsView(MethodView):
       "image": log[0].image,
       "firstImage": log[0].first_image,
       "lastImage": log[0].last_image,
+      "cameraGeneral": log[3],
     }
 
     return jsonify(result), 200
