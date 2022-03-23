@@ -9,7 +9,7 @@ from sqlalchemy import func
 from cerberus import Validator
 from datetime import timedelta, datetime
 
-from app import db, streams, logger, emails, controllers
+from app import db, streams, access, logger
 from app.utils import admin_required
 from app.models import Gate, Log, User, ControllerStatus
 
@@ -157,6 +157,7 @@ class GateDetailsView(MethodView):
         "code": l[0].code if is_admin or l[0].type == "plate" else None,
         "operation": l[0].operation,
         "result": l[0].result,
+        "reason": l[0].reason,
       } for l in logs],
       "settings": {
         'name': gate.name,
@@ -230,35 +231,16 @@ class GateCommandView(MethodView):
     user = User.query.filter(User.email == claims['email']).first_or_404()
     gate = Gate.query.filter(Gate.id == id).first_or_404()
 
-    # TODO: Send command and make a log record
-    log = Log(gate=gate.id, result=True, operation=request.json.get('command'), type='web', user=user.id)
+    result = access.handle_web_request(
+      gate_id=gate.id,
+      user_id=user.id,
+      command=request.json.get('command')
+    )
 
-    # Ask streaming service to save an image
-    if gate.camera_uri:
-      try:
-        log.image = streams.save_image(gate.id)
-      except:
-        logger.error("Could not save image for gate {} (id: {})".format(gate.name, gate.id))
-
-    # Try to call HTTP trigger
-    if gate.http_trigger:
-      try:
-        requests.request('GET', gate.http_trigger, timeout=2)
-      except:
-        logger.error("Could not call HTTP trigger for gate {} (id: {})".format(gate.name, gate.id))
-
-    # Tell controller to open gate
-    try:
-      controllers.send_command(gate, request.json.get('command'))
-    except:
-      logger.error("Could not get controller to open gate {} (id: {})".format(gate.name, gate.id))
-
-    db.session.add(log)
-    db.session.commit()
-
-    emails.register_alerts(log)
-
-    return jsonify({'message': 'Successful'}), 200
+    if result:
+      return jsonify({'message': 'Successful'}), 200
+    else:
+      return jsonify({'message': 'Could not send command'}), 400
 
 
 class GateButtonView(MethodView):

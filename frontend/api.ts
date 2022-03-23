@@ -23,7 +23,7 @@ const ApiClient = (context: GetServerSidePropsContext | null = null) => {
 
   instance.interceptors.response.use(
     (response) => {
-      if (response.status == 401) {
+      if (response.status == 401 || response.status == 422) {
         if (typeof window !== "undefined") {
           const router = useRouter();
           signOut({ redirect: false }).then(() => router.push("/"));

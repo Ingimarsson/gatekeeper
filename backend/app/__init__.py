@@ -15,11 +15,13 @@ scheduler = APScheduler()
 
 logger = logging.getLogger('gunicorn.error')
 
-from .services import StreamService, ControllerService, EmailService
+from .services import StreamService, ControllerService, EmailService, RedisService, AccessService
 
 streams = StreamService()
 controllers = ControllerService()
 emails = EmailService()
+redis = RedisService()
+access = AccessService()
 
 from . import models
 from . import jobs
@@ -35,9 +37,11 @@ def init_app():
   migrate.init_app(app, db)
   bcrypt.init_app(app)
   jwt.init_app(app)
+
   streams.init_app(app)
   controllers.init_app(app)
   emails.init_app(app)
+  access.init_app(app, streams, controllers, emails, redis)
 
   scheduler.init_app(app)
   scheduler.start()

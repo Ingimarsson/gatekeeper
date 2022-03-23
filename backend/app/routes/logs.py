@@ -57,6 +57,7 @@ class LogsView(MethodView):
       "code": l[0].code if is_admin or l[0].type == "plate" else None,
       "operation": l[0].operation,
       "result": l[0].result,
+      "reason": l[0].reason,
     } for l in logs]
 
     return jsonify(result), 200
@@ -86,6 +87,7 @@ class LogDetailsView(MethodView):
       "code": log[0].code if is_admin or log[0].type == "plate" else None,
       "operation": log[0].operation,
       "result": log[0].result,
+      "reason": log[0].reason,
       "image": log[0].image,
       "firstImage": log[0].first_image,
       "lastImage": log[0].last_image,

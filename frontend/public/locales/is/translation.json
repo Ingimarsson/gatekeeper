@@ -94,5 +94,10 @@
   "no-image": "Engin mynd tiltæk",
   "language": "Tungumál",
   "en": "Enska",
-  "is": "Íslenska"
+  "is": "Íslenska",
+  "success": "Heimilað",
+  "not_exist": "Ekki á skrá",
+  "disabled": "Óvirkt",
+  "expired": "Útrunnið",
+  "wrong_dir": "Útleið"
 }

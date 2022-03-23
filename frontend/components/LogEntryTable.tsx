@@ -10,19 +10,6 @@ interface LogEntryTableProps {
   entries: LogEntry[];
 }
 
-export const typeLabels = {
-  any: "Any",
-  web: "Web Interface",
-  keypad: "Keypad",
-  "keypad-pin": "Keypad (PIN)",
-  "keypad-card": "Keypad (Card)",
-  "keypad-both": "Keypad (Both)",
-  plate: "License Plate",
-  "button-1": "Button 1",
-  "button-2": "Button 2",
-  "button-3": "Button 3",
-};
-
 export const capitalizeFirst = (str: string) => {
   return str[0].toUpperCase() + str.slice(1);
 };
@@ -64,9 +51,7 @@ export const LogEntryTable = ({ entries }: LogEntryTableProps) => {
               </Table.Cell>
               <Table.Cell>
                 <Label color={entry.result ? "green" : undefined}>
-                  {entry.result
-                    ? t("granted", "Granted")
-                    : t("failed", "Failed")}
+                  {t(entry.reason)}
                 </Label>
               </Table.Cell>
             </Table.Row>

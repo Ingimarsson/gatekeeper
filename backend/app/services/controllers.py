@@ -6,25 +6,31 @@ class ControllerService:
     return
 
   def send_command(self, gate, command='open', conditional=False):
-    if gate.type == 'gatekeeper':
-      if command == 'open' and not conditional:
-        requests.get(f'http://{gate.controller_ip}/?a=open', timeout=2)
+    try:
+      if gate.type == 'gatekeeper':
+        if command == 'open' and not conditional:
+          requests.get(f'http://{gate.controller_ip}/?a=open', timeout=2)
 
-      elif command == 'close' and not conditional:
-        requests.get(f'http://{gate.controller_ip}/?a=close', timeout=2)
+        elif command == 'close' and not conditional:
+          requests.get(f'http://{gate.controller_ip}/?a=close', timeout=2)
 
-      elif command == 'open' and conditional:
-        requests.get(f'http://{gate.controller_ip}/?a=grant', timeout=2)
+        elif command == 'open' and conditional:
+          requests.get(f'http://{gate.controller_ip}/?a=grant', timeout=2)
 
-      elif command == 'close' and conditional:
-        requests.get(f'http://{gate.controller_ip}/?a=deny', timeout=2)
+        elif command == 'close' and conditional:
+          requests.get(f'http://{gate.controller_ip}/?a=deny', timeout=2)
 
-    elif gate.type == 'generic':
-      if command == 'open':
-        requests.get(gate.uri_open, timeout=2)
+      elif gate.type == 'generic':
+        if command == 'open':
+          requests.get(gate.uri_open, timeout=2)
 
-      if command == 'close':
-        requests.get(gate.uri_close, timeout=2)
+        if command == 'close':
+          requests.get(gate.uri_close, timeout=2)
+
+      return True
+
+    except:
+      return False
 
   def get_status(self, gate):
     if gate.type == 'gatekeeper':

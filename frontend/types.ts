@@ -69,6 +69,7 @@ export interface LogEntry {
   code: string | null;
   operation: string;
   result: boolean;
+  reason: string;
 }
 
 export interface LogEntryDetails {
@@ -82,6 +83,7 @@ export interface LogEntryDetails {
   code: string | null;
   operation: string;
   result: boolean;
+  reason: string;
   image: string;
   firstImage: string;
   lastImage: string;

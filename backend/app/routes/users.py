@@ -121,6 +121,7 @@ class UserDetailsView(MethodView):
         "code": l[0].code if is_admin or l[0].type == "plate" else None,
         "operation": l[0].operation,
         "result": l[0].result,
+        "reason": l[0].reason,
       } for l in logs]
     }
 

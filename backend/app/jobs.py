@@ -1,4 +1,4 @@
-from app import scheduler, streams, controllers, emails, logger, db
+from app import scheduler, streams, controllers, emails, access, logger, db
 from app.models import Gate, Log, CameraStatus, ControllerStatus
 
 from flask import current_app
@@ -94,29 +94,6 @@ def update_snapshots():
   Update log snapshots to include +N seconds after event
   """
   with scheduler.app.app_context():
-    gates = Gate.query.filter(Gate.camera_uri != '', Gate.is_deleted == False).all()
-    logs = Log.query \
-      .filter(Log.image != None, Log.first_image == None) \
-      .filter(Log.timestamp < datetime.now() - timedelta(seconds=40)) \
-      .filter(Log.timestamp > datetime.now() - timedelta(minutes=15)) \
-      .all()
-
-    if len(logs):
-      logger.info("Found {} snapshots that need to be updated".format(len(logs)))
-    else:
-      return
-
-    for g in gates:
-      try:
-        latest_snapshots = streams.get_snapshots(g.id)
-        for l in logs:
-          if l.gate == g.id:
-            for snapshot in latest_snapshots:
-              if str(snapshot['snapshot']) == l.image:
-                l.first_image = str(snapshot['first_image'])
-                l.last_image = str(snapshot['last_image'])
-                db.session.commit()
-      except:
-        logger.error("Could not update snapshots for gate {} (id: {})".format(g.name, g.id))
+    access.update_snapshots()
 
   return

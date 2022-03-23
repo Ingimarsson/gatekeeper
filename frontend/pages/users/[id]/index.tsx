@@ -8,10 +8,8 @@ import {
   ChangePasswordData,
   ChangePasswordModal,
   Code,
-  DeleteModal,
   Layout,
   LogEntryTable,
-  typeLabels,
 } from "../../../components";
 import React, { useState } from "react";
 import Head from "next/head";

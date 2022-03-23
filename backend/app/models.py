@@ -14,7 +14,7 @@ class User(db.Model):
     email = Column(String(64))
     password = Column(String(128), nullable=False)
     token = Column(String(256))
-    language = Column(String(64), default='en')
+    language = Column(String(64), default='en', nullable=False)
     is_admin = Column(Boolean, default=False, nullable=False)
     is_enabled = Column(Boolean, default=True, nullable=False)
     has_web_access = Column(Boolean, default=True, nullable=False)
@@ -91,6 +91,7 @@ class Log(db.Model):
     first_image = Column(String(64))
     last_image = Column(String(64))
     result = Column(Boolean, default=False, nullable=False)
+    reason = Column(String(64)) # Allowed values: success, not_exist, expired, disabled, wrong_dir
     is_deleted = Column(Boolean, default=False, nullable=False)
 
 
