@@ -1,9 +1,10 @@
-from app import scheduler, streams, controllers, emails, access, logger, db
-from app.models import Gate, Log, CameraStatus, ControllerStatus
+from app import scheduler, streams, controllers, emails, redis, access, logger, db
+from app.models import Gate, Log, CameraStatus, ControllerStatus, Config
 
 from flask import current_app
 from datetime import timedelta, datetime
 from sqlalchemy import func
+import requests
 
 @scheduler.task('cron', id='delete_old_images', day='*')
 def delete_old_images():
@@ -95,5 +96,25 @@ def update_snapshots():
   """
   with scheduler.app.app_context():
     access.update_snapshots()
+
+  return
+
+@scheduler.task('cron', id='update_snapshots', minute='*')
+def update_snapshots():
+  """
+  Update locally cached HTML bodies for information display.
+  """
+  with scheduler.app.app_context():
+    screen_1 = Config.query.filter(Config.key == 'screen_1_url').first()
+    if screen_1:
+      response = requests.get(screen_1.value, timeout=3)
+      redis.r.set('screen_1:last_fetch', datetime.now().isoformat())
+      redis.r.set('screen_1:body', response.text)
+
+    screen_2 = Config.query.filter(Config.key == 'screen_2_url').first()
+    if screen_2:
+      response = requests.get(screen_2.value, timeout=3)
+      redis.r.put('screen_2:last_fetch', datetime.now().isoformat())
+      redis.r.put('screen_2:body', response.text)
 
   return
