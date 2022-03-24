@@ -22,6 +22,7 @@ services:
       - ./backend/.env.secret
     depends_on:
       - db
+      - redis
   frontend:
     build: ./frontend
     expose:
@@ -51,6 +52,14 @@ services:
     restart: always
     expose:
       - 6379
+  websockets:
+    build: ./websockets
+    ports:
+      - 8767:8767
+    env_file:
+      - ./websockets/.env.secret
+    depends_on:
+      - redis
 
 volumes:
   gatekeeper_db:

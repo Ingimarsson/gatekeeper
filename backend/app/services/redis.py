@@ -25,5 +25,10 @@ class RedisService:
 
     return json.loads(self.r.get(key))
 
-  def publish_entry(self):
-    self.r.publish('gate_feed', json.dumps(data))
+  def publish_entry(self, gate_id, log_id):
+    data = {
+        'type': 'entry',
+        'gate_id': gate_id,
+        'log_id': log_id
+    }
+    self.r.publish('log_feed', json.dumps(data))

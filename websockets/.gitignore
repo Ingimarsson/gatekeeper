@@ -1,0 +1,5 @@
+__pycache__/
+*.py[cod]
+*.sw[po]
+.idea
+.env.secret

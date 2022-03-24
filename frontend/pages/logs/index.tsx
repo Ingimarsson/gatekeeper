@@ -8,6 +8,8 @@ import api from "../../api";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { useTranslation } from "react-i18next";
+import { useSession } from "next-auth/react";
+import WebsocketsClient from "../../websockets";
 
 interface LogsProps {
   entries: LogEntry[];
@@ -16,6 +18,7 @@ interface LogsProps {
 const Logs: NextPage<LogsProps> = ({ entries }) => {
   const router = useRouter();
   const { t } = useTranslation();
+  const session = useSession();
 
   const [query, setQuery] = useState<string>(
     (router.query?.search ?? "") as string
@@ -59,6 +62,28 @@ const Logs: NextPage<LogsProps> = ({ entries }) => {
       { scroll: false }
     );
   }, [query, limit, showFailed]);
+
+  const refreshWindow = () =>
+    router.push(router.asPath, undefined, {
+      scroll: false,
+    });
+
+  useEffect(() => {
+    if (((session?.data?.token as string) ?? "").length < 1) {
+      return;
+    }
+    const ws = WebsocketsClient(session?.data?.token as string);
+
+    ws.addEventListener("message", (e) => {
+      const data = JSON.parse(e.data);
+
+      if (data["type"] === "entry") {
+        refreshWindow();
+      }
+    });
+
+    return () => ws.close();
+  }, [session?.data?.token, router.query]);
 
   return (
     <Layout

@@ -76,6 +76,7 @@ class AccessService:
     db.session.add(log)
     db.session.commit()
 
+    self.redis.publish_entry(log.gate, log.id)
     self.emails.register_alerts(log)
 
     return log.result
@@ -138,6 +139,7 @@ class AccessService:
       db.session.add(log)
       db.session.commit()
 
+      self.redis.publish_entry(log.gate, log.id)
       self.emails.register_alerts(log)
 
       return {"message": "ok"}, 200
@@ -170,6 +172,7 @@ class AccessService:
     db.session.add(log)
     db.session.commit()
 
+    self.redis.publish_entry(log.gate, log.id)
     self.emails.register_alerts(log)
 
     return result

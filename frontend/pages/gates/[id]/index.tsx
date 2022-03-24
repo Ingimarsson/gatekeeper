@@ -25,6 +25,7 @@ import type { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { useTranslation } from "react-i18next";
 import { useSession } from "next-auth/react";
+import WebsocketsClient from "../../../websockets";
 
 interface GateDetailsProps {
   gate: GateDetailsType;
@@ -80,6 +81,22 @@ const TimeLabel = styled.div`
   }
 `;
 
+const AlprLabel = styled(TimeLabel)`
+  top: 10px;
+  right: 10px;
+  height: fit-content;
+  width: fit-content;
+  display: flex;
+  flex-flow: column;
+  gap: 6px;
+
+  @media (max-width: 600px) {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+`;
+
 const LiveStreamBoxOverlay = styled.div`
   position: absolute;
   top: 10px;
@@ -98,10 +115,44 @@ const ButtonRow = styled.div`
   }
 `;
 
+interface AlprData {
+  timestamp: number;
+  plate: string;
+  area: number;
+}
+
 const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
   const router = useRouter();
   const { t } = useTranslation();
   const session = useSession();
+
+  const [alprData, setAlprData] = useState<AlprData | null>(null);
+  const [debug, setDebug] = useState<boolean>(false);
+
+  const refreshWindow = () =>
+    router
+      .push(router.asPath, undefined, { scroll: false })
+      .then(() => setElapsedTime(0));
+
+  useEffect(() => {
+    if (((session?.data?.token as string) ?? "").length < 1) {
+      return;
+    }
+    const ws = WebsocketsClient(session?.data?.token as string);
+
+    ws.addEventListener("message", (e) => {
+      const data = JSON.parse(e.data);
+
+      if (data["type"] === "entry" && data["gate_id"] === gate.id) {
+        refreshWindow();
+      }
+      if (data["type"] === "plate" && data["gate_id"] === gate.id) {
+        setAlprData(data);
+      }
+    });
+
+    return () => ws.close();
+  }, [session?.data?.token]);
 
   const lastTime = useMemo(
     () => parseInt(gate.latestImage.split(".")[0]) - 1,
@@ -137,11 +188,7 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
   }, [elapsedTime, gate]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      router
-        .push(router.asPath, undefined, { scroll: false })
-        .then(() => setElapsedTime(0));
-    }, 5000);
+    const interval = setInterval(() => refreshWindow(), 5000);
     return () => {
       clearInterval(interval);
     };
@@ -289,9 +336,30 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
                   .unix(lastTime - 50 + offset + elapsedTime)
                   .format("HH:mm:ss")}
               </TimeLabel>
+              {!!debug && (
+                <AlprLabel>
+                  <div>
+                    Timestamp:{" "}
+                    {!!alprData?.timestamp &&
+                      moment.unix(alprData?.timestamp).format("HH:mm:ss.SS")}
+                  </div>
+                  <div>Area: {alprData?.area} </div>
+                  <div>Plate: {alprData?.plate}</div>
+                </AlprLabel>
+              )}
               <LiveStreamBoxOverlay>
-                <Button size="mini" icon labelPosition="left">
-                  <Icon name="expand" /> {t("full-screen", "Full Screen")}
+                <Link href={`/monitor?gate=${gate.id}`} passHref={true}>
+                  <Button size="mini" icon labelPosition="left">
+                    <Icon name="expand" /> {t("full-screen", "Full Screen")}
+                  </Button>
+                </Link>
+                <Button
+                  size="mini"
+                  icon
+                  labelPosition="left"
+                  onClick={() => setDebug(!debug)}
+                >
+                  <Icon name="bug" /> {t("debug-mode", "Debug Mode")}
                 </Button>
               </LiveStreamBoxOverlay>
             </>
