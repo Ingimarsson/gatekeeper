@@ -65,7 +65,6 @@ class GatesView(MethodView):
       'controllerIP': {'type': 'string', 'required': True},
       'uriOpen': {'type': 'string', 'required': True},
       'uriClose': {'type': 'string', 'required': True},
-      'cameraUri': {'type': 'string', 'required': True},
       'httpTrigger': {'type': 'string', 'required': True},
     })
 
@@ -81,7 +80,6 @@ class GatesView(MethodView):
       controller_ip = request.json['controllerIP'],
       uri_open = request.json['uriOpen'],
       uri_close = request.json['uriClose'],
-      camera_uri = request.json['cameraUri'],
       http_trigger = request.json['httpTrigger'],
       token = token
     )
@@ -181,7 +179,6 @@ class GateDetailsView(MethodView):
       'controllerIP': {'type': 'string', 'required': True},
       'uriOpen': {'type': 'string', 'required': True},
       'uriClose': {'type': 'string', 'required': True},
-      'cameraUri': {'type': 'string', 'required': True},
       'httpTrigger': {'type': 'string', 'required': True},
     })
 
@@ -194,7 +191,6 @@ class GateDetailsView(MethodView):
     gate.controller_ip = request.json['controllerIP']
     gate.uri_open = request.json['uriOpen']
     gate.uri_close = request.json['uriClose']
-    gate.camera_uri = request.json['cameraUri']
     gate.http_trigger = request.json['httpTrigger']
     db.session.commit()
 

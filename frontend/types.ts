@@ -164,6 +164,7 @@ export interface Status {
 export interface Camera {
   id: number;
   name: string;
+  latestImage: string;
   isAlive: boolean;
   isVisible: boolean;
   cpuPercent: number;

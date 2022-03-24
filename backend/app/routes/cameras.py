@@ -32,7 +32,7 @@ class CamerasView(MethodView):
       for s in stream_status:
         if s['id'] == r['id']:
           r['isAlive'] = s['is_alive']
-          r['latestImage'] = s['latest_image']
+          r['latestImage'] = s['latest_image'].split(".")[0]
           r['cpuPercent'] = s['cpu_percent']
 
     return jsonify(result), 200

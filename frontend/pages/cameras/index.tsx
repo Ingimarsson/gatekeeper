@@ -35,7 +35,7 @@ const Cameras: NextPage<CamerasProps> = ({ cameras }) => {
             <Table.Row key={camera.id}>
               <Table.Cell>{camera.name}</Table.Cell>
               <Table.Cell>{camera.cpuPercent} %</Table.Cell>
-              <Table.Cell>{camera.ipAddress} %</Table.Cell>
+              <Table.Cell>{camera.ipAddress}</Table.Cell>
               <Table.Cell>
                 <Label color={camera.isVisible ? undefined : "red"}>
                   {camera.isVisible ? t("yes", "Yes") : t("no", "No")}
