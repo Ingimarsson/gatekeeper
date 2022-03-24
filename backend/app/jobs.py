@@ -99,8 +99,8 @@ def update_snapshots():
 
   return
 
-@scheduler.task('cron', id='update_snapshots', minute='*')
-def update_snapshots():
+@scheduler.task('cron', id='fetch_external_screens', minute='*')
+def fetch_external_screens():
   """
   Update locally cached HTML bodies for information display.
   """

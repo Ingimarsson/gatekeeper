@@ -73,6 +73,10 @@ export const LiveStreamColumn = styled.div`
   margin: 20px 0;
   flex-flow: column;
   flex-grow: 1;
+
+  @media (max-width: 600px) {
+    width: 100%;
+  }
 `;
 
 const TimeLabel = styled.div`

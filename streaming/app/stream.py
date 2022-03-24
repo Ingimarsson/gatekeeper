@@ -77,6 +77,8 @@ class Stream:
 
     # Sometimes we get an /bin/sh instance first
     if p.name() != 'ffmpeg':
+      if len(p.children()) < 1:
+        return
       p = p.children()[0]
 
     self.cpu_usage = p.cpu_percent(interval=0.5)

@@ -50,7 +50,7 @@ class ConfigScreenView(MethodView):
     body = redis.r.get('screen_{}:body'.format(id))
 
     if body:
-        return body, 200
+        return body.decode('utf-8'), 200
     else:
         return "", 200
 
