@@ -27,6 +27,7 @@ class GatesView(MethodView):
       'controllerStatus': 'offline',
       'cameraStatus': 'not-setup',
       'cameraGeneral': g.camera_general,
+      'cameraALPR': g.camera_alpr,
       'latestImage': '',
       'supportsOpen': g.type == 'gatekeeper' or g.uri_open != '',
       'supportsClose': g.type == 'gatekeeper' or g.uri_close != '',

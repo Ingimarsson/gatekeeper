@@ -17,6 +17,7 @@ export interface Gate {
   supportsClose: boolean;
   latestImage: string;
   cameraGeneral: number;
+  cameraALPR: number;
   controllerStatus: "online" | "offline";
   cameraStatus: "online" | "offline" | "not-setup";
   buttonStatus: "disabled" | "enabled" | "timer";
@@ -169,4 +170,15 @@ export interface Camera {
   isVisible: boolean;
   cpuPercent: number;
   ipAddress: string;
+}
+
+export interface Screen {
+  lastFetch: string;
+  name: string;
+}
+
+export interface Config {
+  siteName?: string;
+  screen1: Screen | null;
+  screen2: Screen | null;
 }

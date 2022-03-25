@@ -143,13 +143,6 @@ export const Layout: React.FC<LayoutProps> = ({
                 </Menu.Item>
               </Link>
               <Menu.Menu position="right">
-                {/*
-                <Link href="/logs" passHref={true}>
-                  <Menu.Item>
-                    <Icon name="desktop" /> Live View
-                  </Menu.Item>
-                </Link>
-                */}
                 <Dropdown
                   item
                   icon="user"
@@ -166,6 +159,17 @@ export const Layout: React.FC<LayoutProps> = ({
                       <Menu.Item>
                         <Icon name="hdd" />{" "}
                         {t("system-status", "System Status")}
+                      </Menu.Item>
+                    </Link>
+                    <Dropdown.Divider />
+                    <Link href="/cameras" passHref={true}>
+                      <Menu.Item>
+                        <Icon name="camera" /> {t("cameras", "Cameras")}
+                      </Menu.Item>
+                    </Link>
+                    <Link href="/monitor" passHref={true}>
+                      <Menu.Item>
+                        <Icon name="th" /> {t("monitor", "Monitor")}
                       </Menu.Item>
                     </Link>
                     <Dropdown.Divider />

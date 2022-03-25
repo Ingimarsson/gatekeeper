@@ -97,7 +97,17 @@
   "is": "Íslenska",
   "success": "Heimilað",
   "not_exist": "Ekki á skrá",
-  "disabled": "Óvirkt",
-  "expired": "Útrunnið",
-  "wrong_dir": "Útleið"
+  "expired": "Útrunnin",
+  "wrong_dir": "Útleið",
+  "cameras": "Myndavélar",
+  "monitor": "Upplýsingaskjár",
+  "is-visible": "Sýnileg",
+  "debug-mode": "Aflúsun",
+  "full-screen": "Stækka skjá",
+  "fixed-screen": "Fastur skjár",
+  "rolling-screen": "Rúllandi skjár",
+  "no-metadata": "Engar ítarlegri upplýsingar",
+  "confirm-action": "Staðfesta aðgerð",
+  "confirm-open": "Ýtið á [ENTER] til að opna hlið eða [.] til að hætta við",
+  "confirm-close": "Ýtið á [ENTER] til að loka hliði eða [.] til að hætta við"
 }

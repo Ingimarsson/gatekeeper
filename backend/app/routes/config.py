@@ -16,41 +16,42 @@ class ConfigView(MethodView):
     # Get site name
     result = Config.query.filter(Config.key == 'site_name').first()
     if result:
-        config['site_name'] = result.value
+        config['siteName'] = result.value
 
     # Get screen 1
     result_url = Config.query.filter(Config.key == 'screen_1_url').first()
     result_name = Config.query.filter(Config.key == 'screen_1_name').first()
     if result_url and result_name:
-        config['screen_1'] = {
+        config['screen1'] = {
             "url": result_url.value,
             "name": result_name.value,
-            "last_fetch": redis.r.get('screen_1:last_fetch').decode('utf-8')
+            "lastFetch": redis.r.get('screen_1:last_fetch').decode('utf-8')
         }
     else:
-        config['screen_1'] = None
+        config['screen1'] = None
 
     # Get screen 2
     result_url = Config.query.filter(Config.key == 'screen_2_url').first()
     result_name = Config.query.filter(Config.key == 'screen_2_name').first()
     if result_url and result_name:
-        config['screen_2'] = {
+        config['screen2'] = {
             "url": result_url.value,
             "name": result_name.value,
-            "last_fetch": redis.r.get('screen_2:last_fetch').decode('utf-8')
+            "lastFetch": redis.r.get('screen_2:last_fetch').decode('utf-8')
         }
     else:
-        config['screen_2'] = None
+        config['screen2'] = None
 
     return jsonify(config), 200
 
 class ConfigScreenView(MethodView):
   @jwt_required()
   def get(self, id):
-    body = redis.r.get('screen_{}:body'.format(id))
+    body = redis.r.get('screen_{}:body'.format(id)).decode('utf-8')
+    last_fetch = redis.r.get('screen_{}:last_fetch'.format(id)).decode('utf-8')
 
     if body:
-        return body.decode('utf-8'), 200
+        return jsonify({"body": body, "lastFetch": last_fetch}), 200
     else:
         return "", 200
 

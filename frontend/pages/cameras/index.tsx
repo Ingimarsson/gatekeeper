@@ -25,8 +25,8 @@ const Cameras: NextPage<CamerasProps> = ({ cameras }) => {
       <Table>
         <Table.Header>
           <Table.HeaderCell>{t("name", "Name")}</Table.HeaderCell>
-          <Table.HeaderCell>{t("ip-address", "IP address")}</Table.HeaderCell>
           <Table.HeaderCell>{t("cpu-usage", "CPU usage")}</Table.HeaderCell>
+          <Table.HeaderCell>IP</Table.HeaderCell>
           <Table.HeaderCell>{t("is-visible", "Is visible")}</Table.HeaderCell>
           <Table.HeaderCell>{t("is-alive", "Is alive")}</Table.HeaderCell>
         </Table.Header>
