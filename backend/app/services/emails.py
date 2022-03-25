@@ -92,7 +92,7 @@ class EmailService:
 
     image_request = requests.get(snapshot_url)
     if image_request.ok:
-      mimeImage = MIMEImage(image_request.content)
+      mimeImage = MIMEImage(image_request.content, _subtype="jpeg")
       mimeImage.add_header('Content-ID', '<image1>')
       msg.attach(mimeImage)
 
