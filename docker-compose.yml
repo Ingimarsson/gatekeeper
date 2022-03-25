@@ -40,7 +40,7 @@ services:
   nginx:
     image: nginx
     ports:
-      - 9090:80
+      - 9000:80
     depends_on:
       - backend
       - frontend
