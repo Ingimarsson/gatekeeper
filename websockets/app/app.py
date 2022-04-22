@@ -38,7 +38,7 @@ async def browser_server(websocket, path):
     try:
         while True:
             # Wait until data is published to this channel
-            message = await channel.get_message(ignore_subscribe_messages=True)
+            message = await channel.get_message(ignore_subscribe_messages=True, timeout=0.01)
 
             # Send unicode decoded data over to the websocket client
             if message is not None:
@@ -46,9 +46,10 @@ async def browser_server(websocket, path):
 
     except websockets.exceptions.ConnectionClosed:
         # Free up channel if websocket goes down
+        print("Closing connection from {}".format(websocket.remote_address))
         await channel.unsubscribe('alpr_feed')
         await channel.unsubscribe('log_feed')
-        await conn.close()
+        conn.close()
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
