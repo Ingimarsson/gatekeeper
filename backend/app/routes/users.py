@@ -80,7 +80,7 @@ class UserDetailsView(MethodView):
       .order_by(Log.id.desc()) \
       .filter(Log.result == True, Log.is_deleted == False, User.id == id) \
       .limit(10) \
-      .add_columns(Gate.name, User.name) \
+      .add_columns(Gate.name, User.name, Gate.camera_general) \
       .all()
 
     # We only show sensitive information to admins
@@ -122,6 +122,8 @@ class UserDetailsView(MethodView):
         "operation": l[0].operation,
         "result": l[0].result,
         "reason": l[0].reason,
+        "image": l[0].image,
+        "cameraGeneral": l[3],
       } for l in logs]
     }
 
