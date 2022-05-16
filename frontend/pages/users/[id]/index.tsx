@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import { Button, Header, Icon, Label, Table } from "semantic-ui-react";
+import { Button, Header, Icon, Input, Label, Table } from "semantic-ui-react";
 import {
   AddMethodData,
   AddMethodModal,
@@ -11,7 +11,7 @@ import {
   Layout,
   LogEntryTable,
 } from "../../../components";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import {
@@ -76,9 +76,27 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
   const [action, setAction] = useState<string>();
   const [currentMethod, setCurrentMethod] = useState<number>();
 
+  const [searchInput, setSearchInput] = useState<string>("");
+  const [methodsPage, setMethodsPage] = useState<number>(1);
+
   const router = useRouter();
   const { t } = useTranslation();
   const session = useSession();
+
+  const resultMethods = useMemo(
+    () =>
+      user.methods.filter(
+        (method) =>
+          method.code?.toLowerCase().includes(searchInput.toLowerCase()) ||
+          method.comment.toLowerCase().includes(searchInput.toLowerCase())
+      ),
+    [searchInput, methodsPage, user]
+  );
+
+  const pageCount = useMemo(
+    () => Math.max(1, Math.ceil(resultMethods.length / 10)),
+    [resultMethods]
+  );
 
   const editUser = (data: AddUserData) => {
     api()
@@ -320,7 +338,48 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
           </Table.Row>
         </Table>
       </div>
-      <Header as="h3">{t("methods", "Access Methods")}</Header>
+      <div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "0.5em",
+            marginTop: "1em",
+          }}
+        >
+          <Header as="h3" style={{ margin: 0 }}>
+            {t("methods", "Access Methods")}
+          </Header>
+          <div>
+            <Input
+              icon="search"
+              placeholder="Search..."
+              size="mini"
+              className="search-input"
+              style={{ marginRight: "1em" }}
+              value={searchInput}
+              onChange={(e) => {
+                setMethodsPage(1);
+                setSearchInput(e.target.value);
+              }}
+            />
+            {session.data?.admin ? (
+              <Button
+                size="tiny"
+                icon
+                style={{ marginTop: "1px" }}
+                labelPosition="left"
+                color="blue"
+                onClick={() => setAction("add-method")}
+              >
+                <Icon name="plus" />
+                {t("add-method", "Add Method")}
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      </div>
       <Table className={session.data?.admin ? "" : "readonly"}>
         <Table.Header>
           <Table.HeaderCell>{t("type", "Type")}</Table.HeaderCell>
@@ -331,74 +390,96 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, gates }) => {
           <Table.HeaderCell>{t("enabled", "Enabled")}</Table.HeaderCell>
         </Table.Header>
         <Table.Body>
-          {user.methods.map((method) => (
-            <Table.Row
-              key={method.id}
-              onClick={() =>
-                session.data?.admin ? openEditModal(method.id) : null
-              }
-            >
-              <Table.Cell>{t(method.type)}</Table.Cell>
-              <Table.Cell>
-                <Code type={method.type} code={method.code} />
-              </Table.Cell>
-              <Table.Cell>
-                {method.gate ?? t("all-gates", "All Gates")}
-              </Table.Cell>
-              <Table.Cell>
-                {method.startDate || method.startHour ? (
-                  <div>
-                    {method.startDate && (
-                      <>
+          {resultMethods
+            .slice((methodsPage - 1) * 10, methodsPage * 10)
+            .map((method) => (
+              <Table.Row
+                key={method.id}
+                onClick={() =>
+                  session.data?.admin ? openEditModal(method.id) : null
+                }
+              >
+                <Table.Cell>{t(method.type)}</Table.Cell>
+                <Table.Cell>
+                  <Code type={method.type} code={method.code} />
+                </Table.Cell>
+                <Table.Cell>
+                  {method.gate ?? t("all-gates", "All Gates")}
+                </Table.Cell>
+                <Table.Cell>
+                  {method.startDate || method.startHour ? (
+                    <div>
+                      {method.startDate && (
+                        <>
+                          <div>
+                            {t("from", "From")}{" "}
+                            {moment(method.startDate).format("ll HH:mm")}
+                          </div>
+                          <div>
+                            {t("until", "Until")}{" "}
+                            {moment(method.endDate).format("ll HH:mm")}
+                          </div>
+                        </>
+                      )}
+                      {method.startHour && (
                         <div>
-                          {t("from", "From")}{" "}
-                          {moment(method.startDate).format("ll HH:mm")}
+                          {t("between", "Between")} {method.startHour} -{" "}
+                          {method.endHour}
                         </div>
-                        <div>
-                          {t("until", "Until")}{" "}
-                          {moment(method.endDate).format("ll HH:mm")}
-                        </div>
-                      </>
-                    )}
-                    {method.startHour && (
-                      <div>
-                        {t("between", "Between")} {method.startHour} -{" "}
-                        {method.endHour}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  t("none", "None")
-                )}
-              </Table.Cell>
-              <Table.Cell>{method.comment}</Table.Cell>
-              <Table.Cell>
-                <Label color={method.enabled ? undefined : "red"}>
-                  {method.enabled
-                    ? t("enabled", "Enabled")
-                    : t("disabled", "Disabled")}
-                </Label>
-              </Table.Cell>
-            </Table.Row>
-          ))}
+                      )}
+                    </div>
+                  ) : (
+                    t("none", "None")
+                  )}
+                </Table.Cell>
+                <Table.Cell>{method.comment}</Table.Cell>
+                <Table.Cell>
+                  <Label color={method.enabled ? undefined : "red"}>
+                    {method.enabled
+                      ? t("enabled", "Enabled")
+                      : t("disabled", "Disabled")}
+                  </Label>
+                </Table.Cell>
+              </Table.Row>
+            ))}
         </Table.Body>
       </Table>
-      <div>
-        <div style={{ display: "flex", flexFlow: "row-reverse" }}>
-          {session.data?.admin ? (
-            <Button
-              size="tiny"
-              icon
-              labelPosition="left"
-              color="blue"
-              onClick={() => setAction("add-method")}
-            >
-              <Icon name="plus" />
-              {t("add-method", "Add Method")}
+      {pageCount > 1 && (
+        <div
+          style={{
+            display: "flex",
+            flexFlow: "row-reverse",
+            alignItems: "center",
+            gap: "1em",
+          }}
+        >
+          <Button.Group size="tiny">
+            <Button icon onClick={() => setMethodsPage(1)}>
+              <Icon name="angle double left" />
             </Button>
-          ) : null}
+            <Button
+              icon
+              onClick={() => setMethodsPage(Math.max(1, methodsPage - 1))}
+            >
+              <Icon name="angle left" />
+            </Button>
+            <Button
+              icon
+              onClick={() =>
+                setMethodsPage(Math.min(pageCount, methodsPage + 1))
+              }
+            >
+              <Icon name="angle right" />
+            </Button>
+            <Button icon onClick={() => setMethodsPage(pageCount)}>
+              <Icon name="angle double right" />
+            </Button>
+          </Button.Group>
+          <span>
+            {resultMethods.length} methods (page {methodsPage} of {pageCount})
+          </span>
         </div>
-      </div>
+      )}
       <Header as="h3">{t("history", "History")}</Header>
       <LogEntryTable entries={user.logs} />
       <div style={{ display: "flex", flexFlow: "row-reverse" }}>

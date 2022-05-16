@@ -102,7 +102,7 @@ class GateDetailsView(MethodView):
       .outerjoin(User, Log.user == User.id) \
       .order_by(Log.id.desc()) \
       .filter(Log.is_deleted == False, Gate.id == id) \
-      .limit(20) \
+      .limit(10) \
       .add_columns(Gate.name, User.name) \
       .all()
 

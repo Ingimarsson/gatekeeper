@@ -18,6 +18,10 @@ body {
   width: fit-content !important;
 }
 
+.search-input input {
+  padding: 0.73em 1em !important;
+}
+
 @media (max-width: 768px) {
   thead {
     display: none !important;

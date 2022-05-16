@@ -79,7 +79,7 @@ class UserDetailsView(MethodView):
       .outerjoin(User, Log.user == User.id) \
       .order_by(Log.id.desc()) \
       .filter(Log.result == True, Log.is_deleted == False, User.id == id) \
-      .limit(20) \
+      .limit(10) \
       .add_columns(Gate.name, User.name) \
       .all()
 
