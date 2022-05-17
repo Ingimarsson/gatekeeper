@@ -47,11 +47,11 @@ class ConfigView(MethodView):
 class ConfigScreenView(MethodView):
   @jwt_required()
   def get(self, id):
-    body = redis.r.get('screen_{}:body'.format(id)).decode('utf-8')
-    last_fetch = redis.r.get('screen_{}:last_fetch'.format(id)).decode('utf-8')
+    body = redis.r.get('screen_{}:body'.format(id))
+    last_fetch = redis.r.get('screen_{}:last_fetch'.format(id))
 
     if body:
-        return jsonify({"body": body, "lastFetch": last_fetch}), 200
+        return jsonify({"body": body.decode('utf-8'), "lastFetch": last_fetch.decode('utf-8')}), 200
     else:
         return "", 200
 
