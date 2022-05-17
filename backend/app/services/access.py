@@ -72,8 +72,9 @@ class AccessService:
     if gate.http_trigger:
       self.send_trigger_request(gate.http_trigger)
 
-    if log.result:
-      self.controllers.send_command(gate, 'open')
+    # Gatekeeper opens if response is 200, no need to send an open request
+    # if log.result:
+    #   self.controllers.send_command(gate, 'open')
 
     db.session.add(log)
     db.session.commit()
