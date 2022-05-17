@@ -83,7 +83,11 @@ const Users: NextPage<UsersProps> = ({ users }) => {
           {users.map((user) => (
             <Link key={user.id} href={`/users/${user.id}`}>
               <Table.Row>
-                <Table.Cell>{user.name}</Table.Cell>
+                <Table.Cell>
+                  <Link href={`/users/${user.id}`} passHref={true}>
+                    <a>{user.name}</a>
+                  </Link>
+                </Table.Cell>
                 <Table.Cell>{user.username}</Table.Cell>
                 <Table.Cell>{user.email}</Table.Cell>
                 <Table.Cell>
