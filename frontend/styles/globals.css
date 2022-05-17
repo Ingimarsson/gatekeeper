@@ -22,6 +22,15 @@ body {
   padding: 0.73em 1em !important;
 }
 
+td a {
+  color: rgba(0,0,0,.87);
+}
+
+td a:hover {
+  color: rgba(0,0,0,.87);
+  text-decoration: underline;
+}
+
 @media (max-width: 768px) {
   thead {
     display: none !important;

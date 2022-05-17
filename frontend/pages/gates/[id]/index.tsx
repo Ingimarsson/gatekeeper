@@ -10,7 +10,11 @@ import {
 import React, { useEffect, useMemo, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
-import { GateDetails as GateDetailsType, GateSettings } from "../../../types";
+import {
+  GateDetails as GateDetailsType,
+  GateSettings,
+  UserSettings,
+} from "../../../types";
 import axios from "axios";
 import moment from "moment";
 import styled from "styled-components";
@@ -29,6 +33,7 @@ import WebsocketsClient from "../../../websockets";
 
 interface GateDetailsProps {
   gate: GateDetailsType;
+  user: UserSettings;
 }
 
 const LabelRow = styled.div`
@@ -121,7 +126,7 @@ interface AlprData {
   area: number;
 }
 
-const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
+const GateDetails: NextPage<GateDetailsProps> = ({ gate, user }) => {
   const router = useRouter();
   const { t } = useTranslation();
   const session = useSession();
@@ -389,7 +394,9 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
               size="tiny"
               icon
               labelPosition="left"
-              onClick={() => setAction("close")}
+              onClick={() =>
+                user.confirm_modal ? setAction("close") : execute("close")
+              }
             >
               <Icon name="lock" />
               {t("close", "Close")}
@@ -401,7 +408,9 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
               icon
               labelPosition="left"
               color="green"
-              onClick={() => setAction("open")}
+              onClick={() =>
+                user.confirm_modal ? setAction("open") : execute("open")
+              }
             >
               <Icon name="unlock" />
               {t("open", "Open")}
@@ -424,13 +433,17 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { data: response }: { data: GateDetailsType } = await api(context).get(
+  const { data: gate }: { data: GateDetailsType } = await api(context).get(
     "/gate/" + context.params?.id
+  );
+  const { data: user }: { data: UserSettings } = await api(context).get(
+    "/auth/user"
   );
 
   return {
     props: {
-      gate: response,
+      gate,
+      user,
     },
   };
 };

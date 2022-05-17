@@ -61,6 +61,14 @@ export interface User {
   enabled: boolean;
 }
 
+export interface UserSettings {
+  confirm_modal: boolean;
+  email: string;
+  is_admin: boolean;
+  language: "is" | "en";
+  name: string;
+}
+
 export interface LogEntry {
   id: number;
   timestamp: string;
@@ -72,6 +80,8 @@ export interface LogEntry {
   operation: string;
   result: boolean;
   reason: string;
+  image?: string;
+  cameraGeneral?: number;
 }
 
 export interface LogEntryDetails {

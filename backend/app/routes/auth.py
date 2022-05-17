@@ -54,11 +54,14 @@ class UserView(MethodView):
   def get(self):
     claims = get_jwt()
 
+    user = User.query.filter_by(email=claims['email']).first()
+
     return {
       "name": claims['name'],
       "email": claims['email'],
       "language": claims['language'],
-      "is_admin": claims['is_admin']
+      "is_admin": claims['is_admin'],
+      "confirm_modal": user.confirm_modal,
     }, 200
 
 auth_bp.add_url_rule('/auth/login', view_func=LoginView.as_view('login'))

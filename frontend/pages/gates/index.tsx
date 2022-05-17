@@ -4,16 +4,17 @@ import Head from "next/head";
 import { Button, Grid, Icon } from "semantic-ui-react";
 import { AddGateModal, GateBox, Layout } from "../../components";
 import React, { useEffect, useState } from "react";
-import { Gate, GateSettings } from "../../types";
+import { Gate, GateSettings, UserSettings } from "../../types";
 import api from "../../api";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 
 interface GatesProps {
   gates: Gate[];
+  user: UserSettings;
 }
 
-const Gates: NextPage<GatesProps> = ({ gates }) => {
+const Gates: NextPage<GatesProps> = ({ gates, user }) => {
   const router = useRouter();
   const { t } = useTranslation();
   const session = useSession();
@@ -75,7 +76,7 @@ const Gates: NextPage<GatesProps> = ({ gates }) => {
         <Grid.Row>
           {gates?.map((gate) => (
             <Grid.Column key={gate.id} mobile={16} tablet={16} computer={8}>
-              <GateBox gate={gate} />
+              <GateBox gate={gate} confirmModal={user.confirm_modal} />
             </Grid.Column>
           ))}
         </Grid.Row>
@@ -85,11 +86,15 @@ const Gates: NextPage<GatesProps> = ({ gates }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { data: response }: { data: Gate[] } = await api(context).get("/gate");
+  const { data: gates }: { data: Gate[] } = await api(context).get("/gate");
+  const { data: user }: { data: UserSettings } = await api(context).get(
+    "/auth/user"
+  );
 
   return {
     props: {
-      gates: response,
+      gates,
+      user,
     },
   };
 };

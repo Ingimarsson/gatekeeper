@@ -21,9 +21,10 @@ import { useTranslation } from "react-i18next";
 
 interface GateBoxProps {
   gate: Gate;
+  confirmModal?: boolean;
 }
 
-export const GateBox = ({ gate }: { gate: Gate }) => {
+export const GateBox = ({ gate, confirmModal = true }: GateBoxProps) => {
   const { t } = useTranslation();
 
   const [action, setAction] = useState<string>("");
@@ -115,7 +116,9 @@ export const GateBox = ({ gate }: { gate: Gate }) => {
                   icon
                   labelPosition="left"
                   color="green"
-                  onClick={() => setAction("open")}
+                  onClick={() =>
+                    confirmModal ? setAction("open") : execute("open")
+                  }
                 >
                   <Icon name="unlock" />
                   {t("open", "Open")}
@@ -126,7 +129,9 @@ export const GateBox = ({ gate }: { gate: Gate }) => {
                   size="tiny"
                   icon
                   labelPosition="left"
-                  onClick={() => setAction("close")}
+                  onClick={() =>
+                    confirmModal ? setAction("close") : execute("open")
+                  }
                 >
                   <Icon name="lock" />
                   {t("close", "Close")}
