@@ -1,3 +1,5 @@
+import requests
+
 from app import db, logger
 from app.models import Gate, Log, Method, User
 from app.utils import is_within_hours
