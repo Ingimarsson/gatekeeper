@@ -1,4 +1,6 @@
 from urllib.parse import urlparse
+from app import logger
+
 import requests
 
 class ControllerService:
@@ -30,6 +32,8 @@ class ControllerService:
       return True
 
     except:
+      logger.error("Could not send command to controller (gate: {})".format(gate.name))
+
       return False
 
   def get_status(self, gate):
