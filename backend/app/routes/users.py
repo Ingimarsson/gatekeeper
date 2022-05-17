@@ -259,7 +259,10 @@ class UserMethodsView(MethodView):
 
     logger.info("Added method (type: {}) for user {} (ID: {})".format(method.type, user.username, user.id))
 
-    return jsonify({'message': 'Successful'}), 200
+    return jsonify({
+      'message': 'Successful',
+      'method_id': method.id,
+    }), 200
 
 
 class UserMethodDetailsView(MethodView):
