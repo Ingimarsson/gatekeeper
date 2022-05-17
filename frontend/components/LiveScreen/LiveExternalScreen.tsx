@@ -4,6 +4,7 @@ import api from "../../api";
 import styled from "styled-components";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
+import { CameraLabel } from "./LiveScreen.style";
 
 interface LiveExternalScreenProps {
   screen: ScreenType;
@@ -11,6 +12,8 @@ interface LiveExternalScreenProps {
 
 const Container = styled.div`
   position: relative;
+  height: 100%;
+  width: 100%;
 `;
 
 const Label = styled.div`
@@ -37,31 +40,32 @@ export const LiveExternalScreen = ({ screen }: LiveExternalScreenProps) => {
     return;
   };
 
-  useEffect(() => updateScreen(), []);
+  useEffect(() => updateScreen(), [screen]);
 
   // Set up interval.
   useEffect(() => {
     const id = setInterval(() => updateScreen(), 2 * 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [screen]);
 
   return (
     <Container>
-      {screen.screenNumber}
       <iframe
         srcDoc={body}
+        scrolling="no"
         style={{
           width: "100vw",
           height: "100vh",
-          paddingTop: "8vh",
+          paddingTop: "6vh",
           boxSizing: "border-box",
           pointerEvents: "none",
+          overflowY: "hidden",
         }}
         frameBorder={0}
       />
-      <Label>
+      <CameraLabel style={{ right: 0, left: "unset" }}>
         {t("last-update", "Last update")}: {moment(lastFetch).format("HH:mm")}
-      </Label>
+      </CameraLabel>
     </Container>
   );
 };

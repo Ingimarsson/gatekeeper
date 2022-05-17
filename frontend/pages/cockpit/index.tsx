@@ -14,17 +14,20 @@ import { LiveExternalScreen } from "../../components/LiveScreen/LiveExternalScre
 import WebsocketsClient from "../../websockets";
 import { useSession } from "next-auth/react";
 import { LiveGateScreen } from "../../components/LiveScreen/LiveGateScreen";
+import { InstructionsModal } from "../../components/LiveScreen/InstructionsModal";
 
 export const Container = styled.div`
   background: #111;
   width: 100vw;
   height: 100vh;
   display: flex;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 700;
   font-family: Lato;
   flex-wrap: wrap-reverse;
   position: relative;
+  overflow-y: hidden;
+  cursor: none;
 `;
 
 export const Modal = styled.div`
@@ -33,7 +36,7 @@ export const Modal = styled.div`
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: #000c;
+  background: #000e;
   display: flex;
   flex-flow: column;
   justify-content: center;
@@ -46,33 +49,36 @@ export const Modal = styled.div`
   h2 {
     font-size: 3vh;
   }
+  h3 {
+    font-size: 2vh;
+  }
 `;
 
 export const TopLine = styled.div`
   position: absolute;
-  background: #0007;
+  background: #000;
   top: 0;
   left: 0;
   width: 100vw;
-  height: 8vh;
+  height: 6vh;
   z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 2vh;
+  padding: 1.5vh;
 
   h1 {
-    font-size: 3vh;
+    font-size: 2.5vh;
     margin: 0;
   }
 
   h2 {
-    font-size: 1.8vh;
+    font-size: 1.6vh;
     margin: 0;
   }
 
   img {
-    height: 3vh;
+    height: 2.7vh;
   }
 `;
 
@@ -87,7 +93,7 @@ export const TopLineHalf = styled.div<TopLineHalfProps>`
   flex-grow: 1;
   flex-basis: 0;
   justify-content: ${(props) => props.align ?? "left"};
-  gap: 50px;
+  gap: 30px;
   white-space: nowrap;
 `;
 
@@ -96,7 +102,7 @@ interface MonitorProps {
   config: Config;
 }
 
-type ModalType = "none" | "gate-open" | "gate-close";
+type ModalType = "none" | "gate-open" | "gate-close" | "instructions";
 
 const ROLL_SECONDS = 20;
 
@@ -111,10 +117,14 @@ const Monitor: NextPage<MonitorProps> = ({ gates, config }) => {
   const [countdown, setCountdown] = useState<number>(ROLL_SECONDS);
   const [offset, setOffset] = useState<number>(0);
   const [currentScreen, setCurrentScreen] = useState<number>(1);
-  const [modal, setModal] = useState<ModalType>("none");
-  const [rolling, setRolling] = useState<boolean>(true);
+  const [modal, setModal] = useState<ModalType>("instructions");
+  const [rotating, setRotating] = useState<boolean>(true);
   const [cameras, setCameras] = useState<Camera[]>([]);
   const [latestEntry, setLatestEntry] = useState<number | null>(null);
+
+  const refreshWindow = () => {
+    location.reload();
+  };
 
   const updateCameras = () =>
     api()
@@ -173,14 +183,13 @@ const Monitor: NextPage<MonitorProps> = ({ gates, config }) => {
         screenNumber: 1,
       });
     }
-    6;
     if (config.screen2) {
       screens.push({
         number: screens.length + 1,
         type: "external",
         title: config.screen2.name,
         lastFetch: config.screen2.lastFetch,
-        screenNumber: 1,
+        screenNumber: 2,
       });
     }
 
@@ -195,12 +204,12 @@ const Monitor: NextPage<MonitorProps> = ({ gates, config }) => {
       );
       if (screen) {
         setCurrentScreen(screen.number);
-        setRolling(false);
+        setRotating(false);
       }
     }
     if (router.query?.screen) {
       setCurrentScreen(parseInt(router.query?.screen as string) ?? 1);
-      setRolling(false);
+      setRotating(false);
     }
   }, [router, screens.length]);
 
@@ -227,7 +236,7 @@ const Monitor: NextPage<MonitorProps> = ({ gates, config }) => {
   // Set up the interval.
   useEffect(() => {
     const id = setInterval(() => {
-      if (rolling) {
+      if (rotating) {
         if (countdown <= 1) {
           setCountdown(ROLL_SECONDS);
           setCurrentScreen((currentScreen % screens.length) + 1);
@@ -238,30 +247,41 @@ const Monitor: NextPage<MonitorProps> = ({ gates, config }) => {
     }, 1000);
 
     return () => clearInterval(id);
-  }, [rolling, countdown, currentScreen, screens]);
+  }, [rotating, countdown, currentScreen, screens]);
 
   // Handle all keyboard input
   useEffect(() => {
     function handleKeyDown(e: any) {
       console.log(e.keyCode);
 
-      // Toggle rolling mode with [*]
+      if (modal === "instructions" && e.keyCode === 13) {
+        setModal("none");
+        return;
+      }
+
+      // Refresh window with [/]
+      if (e.keyCode == 111) {
+        refreshWindow();
+        return;
+      }
+
+      // Toggle rotating mode with [*]
       if (e.keyCode == 106) {
-        setRolling(!rolling);
+        setRotating(!rotating);
         setCountdown(ROLL_SECONDS);
         return;
       }
 
       // Open gate modal with [+]
       if (e.keyCode == 107 && screens[currentScreen - 1].type === "gate") {
-        setRolling(false);
+        setRotating(false);
         setCountdown(ROLL_SECONDS);
         setModal("gate-open");
         return;
       }
       // Close gate modal with [-]
       if (e.keyCode == 109 && screens[currentScreen - 1].type === "gate") {
-        setRolling(false);
+        setRotating(false);
         setCountdown(ROLL_SECONDS);
         setModal("gate-close");
         return;
@@ -303,7 +323,7 @@ const Monitor: NextPage<MonitorProps> = ({ gates, config }) => {
     return function cleanup() {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [currentScreen, screens, modal, rolling]);
+  }, [currentScreen, screens, modal, rotating]);
 
   useEffect(() => {
     if (((session?.data?.token as string) ?? "").length < 1) {
@@ -320,7 +340,7 @@ const Monitor: NextPage<MonitorProps> = ({ gates, config }) => {
         if (screen) {
           setCurrentScreen(screen.number);
           setCountdown(ROLL_SECONDS);
-          setRolling(true);
+          setRotating(true);
           setLatestEntry(data["log_id"]);
         }
       }
@@ -347,9 +367,9 @@ const Monitor: NextPage<MonitorProps> = ({ gates, config }) => {
         </TopLineHalf>
         <TopLineHalf align={"center"}>
           <h2>
-            {rolling
-              ? `${t("rolling-screen", "Rolling screen")} (${countdown})`
-              : t("fixed-screen", "Fixed screen")}
+            {rotating
+              ? `${t("rolling-screen", "Rotating")} (${countdown})`
+              : t("fixed-screen", "Fixed")}
           </h2>
         </TopLineHalf>
         <TopLineHalf align={"center"}>
@@ -389,6 +409,9 @@ const Monitor: NextPage<MonitorProps> = ({ gates, config }) => {
             {t("confirm-close", "Press [ENTER] to close gate or [.] to cancel")}
           </h2>
         </Modal>
+      )}
+      {modal === "instructions" && (
+        <InstructionsModal close={() => setModal("none")} />
       )}
     </Container>
   );

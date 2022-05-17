@@ -353,7 +353,7 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate, user }) => {
                 </AlprLabel>
               )}
               <LiveStreamBoxOverlay>
-                <Link href={`/monitor?gate=${gate.id}`} passHref={true}>
+                <Link href={`/cockpit?gate=${gate.id}`} passHref={true}>
                   <Button size="mini" icon labelPosition="left">
                     <Icon name="expand" /> {t("full-screen", "Full Screen")}
                   </Button>

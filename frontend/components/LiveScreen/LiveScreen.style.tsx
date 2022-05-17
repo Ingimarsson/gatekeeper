@@ -20,7 +20,7 @@ export const MainColumn = styled.div`
 
 export const SideColumn = styled.div`
   height: 100vh;
-  background: #262626;
+  background: #181818;
   flex-basis: 0;
   flex-grow: 1;
   display: flex;
@@ -42,13 +42,13 @@ export const Status = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #333;
+  background: #222;
   font-weight: 700;
 `;
 
 export const Reading = styled.div`
   display: flex;
-  background: #333;
+  background: #222;
 `;
 
 export const ReadingColumn = styled.div`
@@ -79,7 +79,7 @@ export const HistoryBox = styled.div`
   bottom: 0;
   font-size: 1.6vh;
   color: #ccc;
-  background: #333;
+  background: #222;
   tr {
     height: 3.3vh;
   }
@@ -93,18 +93,19 @@ export const LabelRow = styled.div`
 export const Image = styled.img`
   height: 100%;
   width: 100%;
-  object-fit: cover;
+  object-fit: contain;
   text-indent: -10000px;
 `;
 
 export const CameraColumn = styled.div`
-  height: 100vh;
+  margin-top: 6vh;
+  height: 94vh;
   flex-basis: 0;
   flex-grow: 1;
 `;
 
 export const CameraCell = styled.div`
-  height: 50vh;
+  height: 50%;
   width: 100%;
   position: relative;
 `;
@@ -114,7 +115,7 @@ export const CameraLabel = styled.div`
   left: 0;
   bottom: 0;
   color: #fff;
-  background: #0007;
+  background: #000b;
   padding: 1vh 1.5vh;
   font-size: 2vh;
   display: flex;

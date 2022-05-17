@@ -167,9 +167,10 @@ export const Layout: React.FC<LayoutProps> = ({
                         <Icon name="camera" /> {t("cameras", "Cameras")}
                       </Menu.Item>
                     </Link>
-                    <Link href="/monitor" passHref={true}>
+                    <Link href="/cockpit" passHref={true}>
                       <Menu.Item>
-                        <Icon name="th" /> {t("monitor", "Monitor")}
+                        <Icon name="fighter jet" />{" "}
+                        {t("cockpit", "Cockpit Mode")}
                       </Menu.Item>
                     </Link>
                     <Dropdown.Divider />
