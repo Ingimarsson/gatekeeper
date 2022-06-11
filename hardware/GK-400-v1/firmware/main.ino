@@ -29,13 +29,17 @@ void setup() {
   wdt_disable();
   
   Serial.begin(9600);
-  Serial.println("hello");
+  Serial.println("Gatekeeper GK-400 v1 - Starting");
 
   pinMode(RELAY1, OUTPUT);  // relay 1
   pinMode(RELAY2, OUTPUT);  // relay 2
   pinMode(RELAY3, OUTPUT);  // relay 3
   pinMode(RELAY4, OUTPUT);  // relay 4
 
+  // start with red light on
+  digitalWrite(RELAY3, 0);
+  digitalWrite(RELAY4, 1);
+ 
   // Register interrupt
   noInterrupts();
   TCCR1A = 0;
@@ -76,6 +80,8 @@ bool btn2 = false;
 bool btn3 = false;
 bool btn4 = false;
 
+bool detector = false;
+
 // a counter for each relay
 short int counter1 = 0;
 short int counter2 = 0;
@@ -85,6 +91,7 @@ short int counter4 = 0;
 long uptime = 0;
 int loop_timer = 0;
 int wg_timer = 0;
+int detector_timer = 0;
 
 // set to button number (1-3) when pressed
 short int buttonRequest = 0;
@@ -108,6 +115,8 @@ void loop() {
   if (client) {
     Serial.println("Client connected.");
 
+    char command = NULL;
+
     while (client.connected()) {
       if (client.available()) {
         char c = client.read();
@@ -130,10 +139,13 @@ void loop() {
           if (idx == 1) break;
           
           if (strstr(header, "GET") != NULL) {
-            if (header[8] == 'o') gate_open();
-            if (header[8] == 'c') gate_close();
-            if (header[8] == 'g') grant();
-            if (header[8] == 'd') deny();
+            command = header[8];
+            
+            if (command == 'o') gate_open();
+            else if (command == 'c') gate_close();
+            else if (command == 'g') grant();
+            else if (command == 'd') deny();
+            else command = NULL;
 
             if (header[5] == 'j') json_request = true;
           }
@@ -183,7 +195,13 @@ void loop() {
       save_settings();
     }
 
-    send_http(json_request);
+    if (command) {
+      send_json(command);
+    }
+    else {
+      send_http(json_request);
+    }
+
     json_request = false;
     handle_post = false;
             
@@ -200,7 +218,7 @@ void loop() {
     Serial.print(", Type W");
     Serial.println(wg.getWiegandType());
     
-    if (wg_idx < 8 && wg.getWiegandType() == 4 && wg.getCode() != 13) {
+    if (wg_idx < 8 && wg.getWiegandType() == 4 && wg.getCode() != 13 && wg.getCode() != 27) {
       wg_pin[wg_idx++] = wg.getCode() + '0';
     }
 
@@ -210,9 +228,11 @@ void loop() {
       if (check_remote_server(wg_pin, wg_card, 0)) gate_open();
     }
 
-    if (wg.getCode() == 13) {
+    // Pressing asterisk or hashtag means ENTER
+    if (wg.getCode() == 13 || wg.getCode() == 27) {
       // first check local pins and then remote server
-      if (check_local_pin(wg_pin) || check_remote_server(wg_pin, 0, 0)) gate_open(); 
+      if (check_local_pin(wg_pin)) gate_open(); 
+      if (check_remote_server(wg_pin, 0, 0)) gate_open(); 
       memset(wg_pin, 0, sizeof wg_pin);
       wg_idx = 0;
     }
@@ -245,6 +265,8 @@ bool check_remote_server(char* code, long card, short int button) {
   IPAddress server2;
   server2.fromString(cloud_ip);
 
+  bool response = false;
+
   memset(header, 0, sizeof header);
   idx = 0;
 
@@ -266,7 +288,7 @@ bool check_remote_server(char* code, long card, short int button) {
       client2.print("&button=");
       client2.print(button); 
     }
-    client2.println("");
+    client2.println(" HTTP/1.1");
     client2.println("Connection: close");
     client2.println();
 
@@ -277,17 +299,22 @@ bool check_remote_server(char* code, long card, short int button) {
         }
         else if (strstr(header, "200") != NULL) {
           Serial.println("Server responded with 200");
-          client2.stop();
-          return true;
+          response = true;
+          break;
         }
         else {
           Serial.println("Server did not respond with 200");
-          client2.stop();
-         return false;
+          break;
         }
       }
     }
   }
+
+  idx = 0;
+  delay(1);
+  client2.stop();
+
+  return response;
 }
 
 void save_settings() {
@@ -329,14 +356,18 @@ void turn_green() {
   digitalWrite(RELAY3, 1);
   digitalWrite(RELAY4, 0);
   counter3 = 1;
-  counter4 = 0;
 }
 
 void turn_red() {
   digitalWrite(RELAY3, 0);
   digitalWrite(RELAY4, 1);
   counter3 = 0;
-  counter4 = 1;
+}
+
+void turn_off() {
+  digitalWrite(RELAY3, 0);
+  digitalWrite(RELAY4, 0);
+  counter3 = 0;
 }
 
 // open gate if vehicle is present
@@ -346,7 +377,7 @@ void grant() {
 
 // turn on red light if vehicle is present
 void deny() {
-  if (btn4) turn_red();
+  if (detector) turn_red();
 }
 
 ISR(TIMER1_OVF_vect) {
@@ -389,14 +420,12 @@ void interrupt() {
     counter2 = 0;
   }
 
-  if (counter3 > 100) {
-    digitalWrite(RELAY3, 0);
-    counter3 = 0;
+  if (counter3 > 100 && !detector) {
+    turn_red();
   }
 
-  if (counter4 > 50) {
-    digitalWrite(RELAY4, 0);
-    counter4 = 0;
+  if (counter3 > 100 && detector) {
+    turn_off();
   }
 
   // if buttons go from low to high
@@ -404,14 +433,53 @@ void interrupt() {
   if (!btn2 && !digitalRead(BUTTON2)) buttonRequest = 2;
   if (!btn3 && !digitalRead(BUTTON3)) buttonRequest = 3;
 
-  // if button goes from high to low
-  if (btn4 && digitalRead(BUTTON4)) turn_red();
+  // when detector is clear again, turn red light back on
+  if (!btn4 && detector) turn_red();
+
+  // if detector loop 
+  if (btn4) { 
+    detector_timer++;
+  } else {
+    detector_timer = 0;
+    detector = false;
+  }
+
+  // only trigger sensor after 1 second of signal
+  if (detector_timer > 10 && !detector) {
+    turn_off();
+
+    detector = true;
+  }
 
   // read buttons
   btn1 = !digitalRead(BUTTON1);
   btn2 = !digitalRead(BUTTON2);
   btn3 = !digitalRead(BUTTON3);
   btn4 = !digitalRead(BUTTON4);
+}
+
+void send_json(char type) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: text/html");
+  client.println("Connection: close");
+  client.println();
+  
+  if (type == 'o') {
+    client.print("{\"command\": \"open\"}");
+  }
+  else if (type == 'c') {
+    client.print("{\"command\": \"close\"}");
+  }
+  else if (type == 'g') {
+    client.print("{\"command\": \"grant\", \"detector\": ");
+    client.print(detector ? "true" : "false");
+    client.print("}");
+  }
+  else if (type == 'd') {
+    client.print("{\"command\": \"deny\", \"detector\": ");
+    client.print(detector ? "true" : "false");
+    client.print("}");
+  }
 }
 
 void send_http(bool json) {
@@ -423,6 +491,8 @@ void send_http(bool json) {
   if (json) {
     client.print("{\"uptime\": ");
     client.print(uptime/10);
+    client.print(", \"detector\": ");
+    client.print(detector_timer);
     client.print("}");
   }
   else {
@@ -431,7 +501,9 @@ void send_http(bool json) {
     client.print("</div><div class=info><p><b>Gateway</b><p>");
     client.print(Ethernet.gatewayIP());
     client.print("</div><div class=info><p><b>Uptime</b><p>");
-    client.print(uptime / 36000);
+    client.print(uptime / 36000 / 24);
+    client.print("d ");
+    client.print((uptime / 36000) % 24);
     client.print("h ");
     client.print((uptime / 600) % 60);
     client.print("m</div><div class=info><p><b>Last PIN</b><p>");
@@ -453,3 +525,4 @@ void send_http(bool json) {
     client.print(F("'><hr><a onclick=\"fetch('/', {method: 'post', body: Array.from(document.getElementsByTagName('input')).map(x => x.value).join(';') + ';'}).catch(() => setTimeout(() => location.reload(), 2500));\" class=imp>SAVE</a><hr><p>Brynjar Ingimarsson &copy; 2020 - 2021</p><br><br></div>"));
   }
 }
+
