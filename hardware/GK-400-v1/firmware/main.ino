@@ -26,7 +26,7 @@ WIEGAND wg;
 void setup() {
   // clear watchdog timer
   MCUSR = 0;
-  wdt_disable();
+  wdt_enable(WDTO_1S);
   
   Serial.begin(9600);
   Serial.println("Gatekeeper GK-400 v1 - Starting");
@@ -35,10 +35,6 @@ void setup() {
   pinMode(RELAY2, OUTPUT);  // relay 2
   pinMode(RELAY3, OUTPUT);  // relay 3
   pinMode(RELAY4, OUTPUT);  // relay 4
-
-  // start with red light on
-  digitalWrite(RELAY3, 0);
-  digitalWrite(RELAY4, 1);
  
   // Register interrupt
   noInterrupts();
@@ -59,6 +55,10 @@ void setup() {
 
   Serial.print("IP address: ");
   Serial.println(Ethernet.localIP());
+
+  // start with red light on
+  digitalWrite(RELAY3, 0);
+  digitalWrite(RELAY4, 1);
 }
 
 // temporary buffers
@@ -207,7 +207,7 @@ void loop() {
             
     delay(1);
     client.stop();
-    Serial.println("Client disconnected");
+    Serial.println("DISCON");
   }
 
   if(wg.available()) {
@@ -273,7 +273,7 @@ bool check_remote_server(char* code, long card, short int button) {
   client2.stop();
 
   if (client2.connect(server2, 4123)) {
-    Serial.println("Server connection established");
+    Serial.println("CONN");
     client2.print("GET /api/endpoint?token=");
     client2.print(cloud_token);
     if (code[0] != 0) {
@@ -288,7 +288,7 @@ bool check_remote_server(char* code, long card, short int button) {
       client2.print("&button=");
       client2.print(button); 
     }
-    client2.println(" HTTP/1.1");
+    client2.println("");
     client2.println("Connection: close");
     client2.println();
 
@@ -298,12 +298,12 @@ bool check_remote_server(char* code, long card, short int button) {
           header[idx++] = client2.read();
         }
         else if (strstr(header, "200") != NULL) {
-          Serial.println("Server responded with 200");
+          Serial.println("RES !200");
           response = true;
           break;
         }
         else {
-          Serial.println("Server did not respond with 200");
+          Serial.println("RES 200");
           break;
         }
       }
@@ -318,14 +318,17 @@ bool check_remote_server(char* code, long card, short int button) {
 }
 
 void save_settings() {
-  EEPROM.put(0, cloud_ip);
-  EEPROM.put(16, cloud_token);
-  EEPROM.put(32, pin1);
-  EEPROM.put(40, pin2);
-  EEPROM.put(48, pin3);
-  EEPROM.put(56, pin4);
-
-  wdt_enable(WDTO_1S);
+  // Tiny validation on IP address
+  if (cloud_ip[0] <= '9' && cloud_ip[0] >= '1') {
+    EEPROM.put(0, cloud_ip);
+    EEPROM.put(16, cloud_token);
+    EEPROM.put(32, pin1);
+    EEPROM.put(40, pin2);
+    EEPROM.put(48, pin3);
+    EEPROM.put(56, pin4);
+  }
+  loop_timer = 100;
+  uptime = 600;
   while (1) {}
 }
 
@@ -392,9 +395,8 @@ void interrupt() {
   wg_timer++;
 
   // restart if loop is hanging
-  if (loop_timer > 50 && uptime > 300) {
-    wdt_enable(WDTO_1S);
-    while (1) {}
+  if (loop_timer < 50 || uptime < 300) {
+    wdt_reset();
   }
 
   // clear pin buffer if left for too long
@@ -429,8 +431,14 @@ void interrupt() {
   }
 
   // if buttons go from low to high
-  if (!btn1 && !digitalRead(BUTTON1)) buttonRequest = 1;
-  if (!btn2 && !digitalRead(BUTTON2)) buttonRequest = 2;
+  if (!btn1 && !digitalRead(BUTTON1)) { 
+    buttonRequest = 1;
+    gate_open();
+  }
+  if (!btn2 && !digitalRead(BUTTON2)) {
+    buttonRequest = 2;
+    gate_open();
+  }
   if (!btn3 && !digitalRead(BUTTON3)) buttonRequest = 3;
 
   // when detector is clear again, turn red light back on
@@ -459,33 +467,33 @@ void interrupt() {
 }
 
 void send_json(char type) {
-  client.println("HTTP/1.1 200 OK");
-  client.println("Content-Type: text/html");
-  client.println("Connection: close");
+  client.println(F("HTTP/1.1 200 OK"));
+  client.println(F("Content-Type: text/html"));
+  client.println(F("Connection: close"));
   client.println();
   
   if (type == 'o') {
-    client.print("{\"command\": \"open\"}");
+    client.print(F("{\"command\": \"open\"}"));
   }
   else if (type == 'c') {
-    client.print("{\"command\": \"close\"}");
+    client.print(F("{\"command\": \"close\"}"));
   }
   else if (type == 'g') {
-    client.print("{\"command\": \"grant\", \"detector\": ");
+    client.print(F("{\"command\": \"grant\", \"detector\": "));
     client.print(detector ? "true" : "false");
     client.print("}");
   }
   else if (type == 'd') {
-    client.print("{\"command\": \"deny\", \"detector\": ");
+    client.print(F("{\"command\": \"deny\", \"detector\": "));
     client.print(detector ? "true" : "false");
     client.print("}");
   }
 }
 
 void send_http(bool json) {
-  client.println("HTTP/1.1 200 OK");
-  client.println("Content-Type: text/html");
-  client.println("Connection: close");
+  client.println(F("HTTP/1.1 200 OK"));
+  client.println(F("Content-Type: text/html"));
+  client.println(F("Connection: close"));
   client.println();
 
   if (json) {
@@ -493,22 +501,24 @@ void send_http(bool json) {
     client.print(uptime/10);
     client.print(", \"detector\": ");
     client.print(detector_timer);
+    client.print(", \"freeMemory\": ");
+    client.print(freeMemory());
     client.print("}");
   }
   else {
     client.print(F("<!doctype html><title>GK-400</title><meta name=viewport content='width=300,initial-scale=1'><style>.container{width:300px;margin:0 auto;font-family:sans}a{display:block;width:100%;background-color:#a5a5a5;text-align:center;padding:10px 0;margin:8px 0;font-size:14px;font-weight:900;color:#fff;text-decoration:none;border-radius:6px;cursor:pointer;}.imp{background-color:#2196f3}.info{display:flex;justify-content:space-between}h1,h4{text-align:center}p{margin:6px 0}input,select{width:100%}hr{margin:20px 0}</style><div class=container><h1>Gatekeeper</h1><h4>GK-400 (v. 2021-06-25)</h4><hr><a onclick=\"fetch('?a=open');\">OPEN</a><a onclick=\"fetch('?a=close');\">CLOSE</a><h4>Information</h4><hr><div class=info><p><b>IP address</b><p>"));
     client.print(Ethernet.localIP());
-    client.print("</div><div class=info><p><b>Gateway</b><p>");
+    client.print(F("</div><div class=info><p><b>Gateway</b><p>"));
     client.print(Ethernet.gatewayIP());
-    client.print("</div><div class=info><p><b>Uptime</b><p>");
+    client.print(F("</div><div class=info><p><b>Uptime</b><p>"));
     client.print(uptime / 36000 / 24);
     client.print("d ");
     client.print((uptime / 36000) % 24);
     client.print("h ");
     client.print((uptime / 600) % 60);
-    client.print("m</div><div class=info><p><b>Last PIN</b><p>");
+    client.print(F("m</div><div class=info><p><b>Last PIN</b><p>"));
     client.print(wg_pin);
-    client.print("</div><div class=info><p><b>Last card</b><p>");
+    client.print(F("</div><div class=info><p><b>Last card</b><p>"));
     client.print(wg_card);
     client.print(F("</div><h4>Server</h4><hr><p>Gatekeeper IP address</p><input name='ip' value='"));
     client.print(cloud_ip);
@@ -526,3 +536,20 @@ void send_http(bool json) {
   }
 }
 
+#ifdef __arm__
+// should use uinstd.h to define sbrk but Due causes a conflict
+extern "C" char* sbrk(int incr);
+#else  // __ARM__
+extern char *__brkval;
+#endif  // __arm__
+
+int freeMemory() {
+  char top;
+#ifdef __arm__
+  return &top - reinterpret_cast<char*>(sbrk(0));
+#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
+  return &top - __brkval;
+#else  // __arm__
+  return __brkval ? &top - __brkval : &top - __malloc_heap_start;
+#endif  // __arm__
+}
