@@ -43,6 +43,7 @@ class Stream:
 
     os.makedirs(self.base_path, exist_ok=True)
     os.makedirs(self.live_path, exist_ok=True)
+    os.makedirs(self.snapshot_path, exist_ok=True)
 
     self.start_ffmpeg()
 
