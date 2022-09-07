@@ -130,7 +130,7 @@ export const GateBox = ({ gate, confirmModal = true }: GateBoxProps) => {
                   icon
                   labelPosition="left"
                   onClick={() =>
-                    confirmModal ? setAction("close") : execute("open")
+                    confirmModal ? setAction("close") : execute("close")
                   }
                 >
                   <Icon name="lock" />
