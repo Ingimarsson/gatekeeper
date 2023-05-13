@@ -15,6 +15,7 @@
 #define BUTTON4 14
 
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
+int reset_cause; 
 
 EthernetServer server(80);
 EthernetClient client;
@@ -24,6 +25,8 @@ EthernetClient client2;
 WIEGAND wg;
 
 void setup() {
+  read_reset_cause();
+  
   // clear watchdog timer
   MCUSR = 0;
   wdt_enable(WDTO_1S);
@@ -326,6 +329,7 @@ void save_settings() {
     EEPROM.put(40, pin2);
     EEPROM.put(48, pin3);
     EEPROM.put(56, pin4);
+    EEPROM.put(64, 0xFF);
   }
   loop_timer = 100;
   uptime = 600;
@@ -503,6 +507,8 @@ void send_http(bool json) {
     client.print(detector_timer);
     client.print(", \"freeMemory\": ");
     client.print(freeMemory());
+    client.print(", \"reset\": ");
+      client.print(reset_cause);
     client.print("}");
   }
   else {
@@ -534,6 +540,35 @@ void send_http(bool json) {
     client.print(pin4);
     client.print(F("'><hr><a onclick=\"fetch('/', {method: 'post', body: Array.from(document.getElementsByTagName('input')).map(x => x.value).join(';') + ';'}).catch(() => setTimeout(() => location.reload(), 2500));\" class=imp>SAVE</a><hr><p>Brynjar Ingimarsson &copy; 2020 - 2021</p><br><br></div>"));
   }
+}
+
+void read_reset_cause() {
+  char config_saved = EEPROM.read(64);
+
+  // Power on
+  if (MCUSR & (1 << PORF)) {
+    reset_cause = 0;
+  }
+  // External reset
+  else if (MCUSR & (1 << EXTRF)) {
+    reset_cause = 1;
+  }
+  // Brown-out detected
+  else if (MCUSR & (1 << BORF)) {
+    reset_cause = 2;
+  }
+  // Watchdog triggered
+  else if (MCUSR & (1 << WDRF)) {
+    if (config_saved == 0x00) {
+      reset_cause = 3;
+    }
+    else {
+      reset_cause = 4;
+    }
+  }
+
+  if (config_saved) EEPROM.put(64, 0x00);
+  MCUSR = 0;
 }
 
 #ifdef __arm__
