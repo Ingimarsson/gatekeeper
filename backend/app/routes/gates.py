@@ -29,6 +29,7 @@ class GatesView(MethodView):
       'cameraGeneral': g.camera_general,
       'cameraALPR': g.camera_alpr,
       'latestImage': '',
+      'indicators': [],
       'supportsOpen': g.type == 'gatekeeper' or g.uri_open != '',
       'supportsClose': g.type == 'gatekeeper' or g.uri_close != '',
     } for g in gates]
@@ -50,6 +51,8 @@ class GatesView(MethodView):
       for c in controller_status:
         if c.gate == r['id']:
           result[idx]['controllerStatus'] = 'online' if c.is_alive else 'offline'
+          if c.detector_time and abs(c.detector_time) > 3000:
+            result[idx]['indicators'].append('sensor_fault')
 
       for s in stream_status:
         if s['id'] == r['cameraGeneral']:
@@ -144,6 +147,7 @@ class GateDetailsView(MethodView):
       'supportsClose': gate.type == 'gatekeeper' or gate.uri_close != '',
       'cameraGeneral': gate.camera_general,
       'buttonStatus': gate.button_type,
+      'indicators': ['sensor_fault'] if controller_statuses.detector_time and abs(controller_statuses.detector_time) > 3000 else [],
       'buttonTime': {
         'startHour': gate.button_start_hour,
         'endHour': gate.button_end_hour

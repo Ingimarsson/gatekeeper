@@ -23,11 +23,11 @@ body {
 }
 
 td a {
-  color: rgba(0,0,0,.87);
+  color: rgba(0, 0, 0, 0.87);
 }
 
 td a:hover {
-  color: rgba(0,0,0,.87);
+  color: rgba(0, 0, 0, 0.87);
   text-decoration: underline;
 }
 

@@ -15,7 +15,12 @@ import {
 import Link from "next/link";
 import { Gate } from "../../types";
 import { ConfirmActionModal } from "../modals";
-import { ButtonLabel, CameraLabel, ControllerLabel } from "./GateLabels";
+import {
+  ButtonLabel,
+  CameraLabel,
+  ControllerLabel,
+  IndicatorLabel,
+} from "./GateLabels";
 import api from "../../api";
 import { useTranslation } from "react-i18next";
 
@@ -107,6 +112,9 @@ export const GateBox = ({ gate, confirmModal = true }: GateBoxProps) => {
               </ButtonRow>
               <ButtonRow>
                 <ButtonLabel status={gate.buttonStatus} />
+                {gate.indicators.map((indicator) => (
+                  <IndicatorLabel indicator={indicator} />
+                ))}
               </ButtonRow>
             </TopControlsBox>
             <ReverseButtonRow>

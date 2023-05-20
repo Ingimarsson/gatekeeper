@@ -162,6 +162,8 @@ class ControllerStatus(db.Model):
     timestamp = Column(DateTime(timezone=True), default=datetime.now, nullable=False)
     gate = Column(Integer, ForeignKey('gate.id'))
     uptime = Column(Integer)
+    detector_time = Column(Integer)
+    free_memory = Column(Integer)
     type = Column(String(16))
     ip_address = Column(String(64))
     is_alive = Column(Boolean, default=True, nullable=False)

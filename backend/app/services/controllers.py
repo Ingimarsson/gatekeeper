@@ -47,13 +47,24 @@ class ControllerService:
         return {'is_alive': False, 'controller_ip': gate.controller_ip}
 
       uptime = 0
+      detector_time = 0
+      free_memory = 0
+
       try:
         data = response.json()
-        uptime = data['uptime']
+        uptime = data.get('uptime', 0)
+        detector_time = data.get('detector', 0)
+        free_memory = data.get('freeMemory', 0)
       except:
         pass
 
-      return {'is_alive': True, 'controller_ip': gate.controller_ip, 'uptime': uptime}
+      return {
+        'is_alive': True, 
+        'controller_ip': gate.controller_ip, 
+        'uptime': uptime, 
+        'detector_time': detector_time, 
+        'free_memory': free_memory
+      }
 
     elif gate.type == 'generic':
       # If there is no open uri then we can't do much

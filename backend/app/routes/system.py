@@ -37,6 +37,8 @@ class SystemView(MethodView):
         'timestamp': c[0].timestamp,
         'alive': c[0].is_alive,
         'uptime': c[0].uptime if c[0].uptime else 0,
+        'detectorTime': c[0].detector_time if c[0].detector_time else 0,
+        'freeMemory': c[0].free_memory if c[0].free_memory else 0,
         'type': c[0].type,
         'ipAddress': c[0].ip_address
       } for c in controller_status],

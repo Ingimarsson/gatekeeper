@@ -22,6 +22,7 @@ import {
   ButtonLabel,
   CameraLabel,
   ControllerLabel,
+  IndicatorLabel,
 } from "../../../components/GateBox/GateLabels";
 import { ConfigureButtonModal } from "../../../components/modals/ConfigureButtonModal";
 import api from "../../../api";
@@ -376,6 +377,9 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate, user }) => {
           <ControllerLabel status={gate.controllerStatus} />
           <CameraLabel status={gate.cameraStatus} />
           <ButtonLabel status={gate.buttonStatus} />
+          {gate.indicators.map((indicator) => (
+            <IndicatorLabel indicator={indicator} />
+          ))}
         </LabelRow>
         {gate.cameraStatus === "online" && (
           <LiveStreamSlider

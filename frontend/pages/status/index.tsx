@@ -100,6 +100,10 @@ const Status: NextPage<StatusProps> = ({ status }) => {
           <Table.HeaderCell>IP</Table.HeaderCell>
           <Table.HeaderCell>{t("type", "Type")}</Table.HeaderCell>
           <Table.HeaderCell>{t("uptime", "Uptime")}</Table.HeaderCell>
+          <Table.HeaderCell>
+            {t("detector_time", "Detector time")}
+          </Table.HeaderCell>
+          <Table.HeaderCell>{t("free_memory", "Free memory")}</Table.HeaderCell>
           <Table.HeaderCell>{t("status", "Status")}</Table.HeaderCell>
         </Table.Header>
         {status.controllers.map((controller) => (
@@ -111,6 +115,10 @@ const Status: NextPage<StatusProps> = ({ status }) => {
             <Table.Cell>
               {controller.alive && formatUptime(controller.uptime)}
             </Table.Cell>
+            <Table.Cell>
+              {(controller.detectorTime / 10).toFixed(0)} s
+            </Table.Cell>
+            <Table.Cell>{controller.freeMemory} bytes</Table.Cell>
             <Table.Cell>
               {controller.alive ? (
                 <Label color="green">{t("running", "Running")}</Label>

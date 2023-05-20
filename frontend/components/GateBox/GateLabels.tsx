@@ -21,6 +21,10 @@ const buttonLabels = {
   timer: "time-controlled",
 };
 
+const indicatorColors = {
+  sensor_fault: "orange" as SemanticCOLORS,
+};
+
 export const ControllerLabel = ({
   status,
 }: {
@@ -56,6 +60,22 @@ export const ButtonLabel = ({ status }: { status: Gate["buttonStatus"] }) => {
       <Label size="tiny">
         <Icon name="hand point right" />
         {t(buttonLabels[status])}
+      </Label>
+    </span>
+  );
+};
+
+export const IndicatorLabel = ({
+  indicator,
+}: {
+  indicator: Gate["indicators"][0];
+}) => {
+  const { t } = useTranslation();
+  return (
+    <span title={t("indicator", "Indicator")}>
+      <Label size="tiny" color={indicatorColors[indicator]}>
+        <Icon name="warning circle" />
+        {t(indicator)}
       </Label>
     </span>
   );

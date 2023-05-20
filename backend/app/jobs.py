@@ -71,6 +71,10 @@ def collect_statistics():
         status.ip_address = controller_status['controller_ip']
       if 'uptime' in controller_status:
         status.uptime = controller_status['uptime']
+      if 'detector_time' in controller_status:
+        status.detector_time = controller_status['detector_time']
+      if 'free_memory' in controller_status:
+        status.free_memory = controller_status['free_memory']
 
       db.session.add(status)
       db.session.commit()

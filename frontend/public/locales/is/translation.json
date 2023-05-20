@@ -109,5 +109,6 @@
   "no-metadata": "Engar ítarlegri upplýsingar",
   "confirm-action": "Staðfesta aðgerð",
   "confirm-open": "Ýtið á [ENTER] til að opna hlið eða [.] til að hætta við",
-  "confirm-close": "Ýtið á [ENTER] til að loka hliði eða [.] til að hætta við"
+  "confirm-close": "Ýtið á [ENTER] til að loka hliði eða [.] til að hætta við",
+  "sensor_fault": "Villa í skynjara"
 }

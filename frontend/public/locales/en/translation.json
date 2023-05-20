@@ -24,5 +24,6 @@
   "not_exist": "Not Found",
   "disabled": "Disabled",
   "expired": "Expired",
-  "wrong_dir": "Outgoing"
+  "wrong_dir": "Outgoing",
+  "sensor_fault": "Sensor Fault"
 }

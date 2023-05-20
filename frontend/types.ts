@@ -21,6 +21,7 @@ export interface Gate {
   controllerStatus: "online" | "offline";
   cameraStatus: "online" | "offline" | "not-setup";
   buttonStatus: "disabled" | "enabled" | "timer";
+  indicators: Array<"sensor_fault">;
 }
 
 export interface GateDetails {
@@ -31,6 +32,7 @@ export interface GateDetails {
   controllerStatus: Gate["controllerStatus"];
   cameraStatus: Gate["cameraStatus"];
   buttonStatus: Gate["buttonStatus"];
+  indicators: Array<"sensor_fault">;
   latestImage: string;
   cameraGeneral: number;
   buttonTime: {
@@ -165,6 +167,8 @@ export interface ControllerStatus {
   timestamp: string;
   type: string;
   uptime: number;
+  detectorTime: number;
+  freeMemory: number;
 }
 
 export interface Status {
