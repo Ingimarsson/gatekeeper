@@ -72,6 +72,53 @@ export const SideBox = styled.div`
   }
 `;
 
+export const StringProperty = styled.div`
+  display: flex;
+
+  span {
+    display: block;
+    flex: 30% 0 0;
+    margin: 0;
+    font-size: 2vh;
+    color: #ccc;
+  }
+
+  h3 {
+    flex: 70% 0 0;
+    margin: 0;
+    font-size: 2.6vh;
+    line-height: 1;
+    margin-bottom: 1.7vh;
+    text-align: right;
+  }
+`;
+
+export const NumberProperties = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+`;
+
+export const NumberProperty = styled.div`
+  span {
+    display: block;
+    flex: 30% 0 0;
+    margin: 0;
+    margin-bottom: 0.3vh;
+    font-size: 2vh;
+    color: #ccc;
+    text-align: center;
+  }
+
+  h3 {
+    flex: 70% 0 0;
+    margin: 0;
+    font-size: 4.5vh;
+    line-height: 1;
+    margin-bottom: 1.9vh;
+    text-align: center;
+  }
+`;
+
 export const HistoryBox = styled.div`
   width: 100%;
   padding: 10px 20px;

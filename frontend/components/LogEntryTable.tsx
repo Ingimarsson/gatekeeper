@@ -96,6 +96,7 @@ export const LogEntryTable = ({ entries }: LogEntryTableProps) => {
           <Table.HeaderCell>{t("time", "Time")}</Table.HeaderCell>
           <Table.HeaderCell>{t("user", "User")}</Table.HeaderCell>
           <Table.HeaderCell>{t("gate", "Gate")}</Table.HeaderCell>
+          <Table.HeaderCell>{t("comment", "Comment")}</Table.HeaderCell>
           <Table.HeaderCell>{t("type", "Type")}</Table.HeaderCell>
           <Table.HeaderCell>{t("code", "Code")}</Table.HeaderCell>
           <Table.HeaderCell>{t("operation", "Operation")}</Table.HeaderCell>
@@ -119,6 +120,7 @@ export const LogEntryTable = ({ entries }: LogEntryTableProps) => {
                 </Table.Cell>
                 <Table.Cell>{entry.user}</Table.Cell>
                 <Table.Cell>{entry.gate}</Table.Cell>
+                <Table.Cell>{entry.methodComment}</Table.Cell>
                 <Table.Cell>
                   {!!entry.typeLabel && entry.typeLabel + " / "}
                   {t(entry.type)}

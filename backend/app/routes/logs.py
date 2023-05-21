@@ -37,10 +37,11 @@ class LogsView(MethodView):
 
     logs = query.outerjoin(Gate, Log.gate == Gate.id) \
       .outerjoin(User, Log.user == User.id) \
+      .outerjoin(Method, Log.method == Method.id) \
       .order_by(Log.id.desc()) \
       .filter(Log.is_deleted == False) \
       .limit(limit) \
-      .add_columns(Gate.name, User.name, Gate.camera_general) \
+      .add_columns(Gate.name, User.name, Gate.camera_general, Method.comment) \
       .all()
 
     # We only show sensitive information to admins
@@ -60,6 +61,7 @@ class LogsView(MethodView):
       "reason": l[0].reason,
       "image": l[0].image,
       "cameraGeneral": l[3],
+      "methodComment": l[4],
     } for l in logs]
 
     return jsonify(result), 200
@@ -71,8 +73,9 @@ class LogDetailsView(MethodView):
     log = Log.query \
       .outerjoin(Gate, Log.gate == Gate.id) \
       .outerjoin(User, Log.user == User.id) \
+      .outerjoin(Method, Log.method == Method.id) \
       .filter(Log.id == id) \
-      .add_columns(Gate.name, User.name, Gate.camera_general) \
+      .add_columns(Gate.name, User.name, Gate.camera_general, Method.start_date, Method.end_date, Method.comment, Method.data) \
       .first_or_404()
 
     # We only show sensitive information to admins
@@ -94,6 +97,12 @@ class LogDetailsView(MethodView):
       "firstImage": log[0].first_image,
       "lastImage": log[0].last_image,
       "cameraGeneral": log[3],
+      "method": {
+        "startDate": log[4],
+        "endDate": log[5],
+        "comment": log[6],
+        "data": log[7],
+      }
     }
 
     return jsonify(result), 200

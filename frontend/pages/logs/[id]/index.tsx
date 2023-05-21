@@ -304,6 +304,55 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
               </Table.Cell>
             </Table.Row>
           </Table>
+          <h3>{t("methodDetails", "Method Details")}</h3>
+          <Table className="readonly">
+            <Table.Row>
+              <Table.Cell>
+                <b>{t("startDate", "Start Date")}</b>
+              </Table.Cell>
+              <Table.Cell>
+                {!!entry.method?.startDate &&
+                  moment(entry.method.startDate).format("ll HH:mm")}
+              </Table.Cell>
+            </Table.Row>
+            <Table.Row>
+              <Table.Cell>
+                <b>{t("endDate", "End Date")}</b>
+              </Table.Cell>
+              <Table.Cell>
+                {!!entry.method?.endDate &&
+                  moment(entry.method.endDate).format("ll HH:mm")}
+              </Table.Cell>
+            </Table.Row>
+            <Table.Row>
+              <Table.Cell>
+                <b>{t("comment", "Comment")}</b>
+              </Table.Cell>
+              <Table.Cell>
+                {!!entry.method?.comment && entry.method.comment}
+              </Table.Cell>
+            </Table.Row>
+            <Table.Row>
+              <Table.Cell>
+                <b>{t("metadata", "Metadata")}</b>
+              </Table.Cell>
+              <Table.Cell
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 4,
+                }}
+              >
+                {!!entry.method?.data &&
+                  Object.entries(entry.method.data).map(([k, v]) => (
+                    <>
+                      <b>{k}</b>
+                      <span>{v as number|string}</span>
+                    </>
+                  ))}
+              </Table.Cell>
+            </Table.Row>
+          </Table>
         </div>
       </Grid>
     </Layout>

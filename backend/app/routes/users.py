@@ -222,6 +222,7 @@ class UserMethodsView(MethodView):
       'comment': {'type': 'string', 'required': True},
       'enabled': {'type': 'boolean', 'required': True},
       'forceAdd': {'type': 'boolean', 'required': False},
+      'data': {'type': 'dict', 'required': False},
     })
 
     if not v.validate(request.json):
@@ -252,6 +253,7 @@ class UserMethodsView(MethodView):
       end_hour=request.json['endHour'],
       comment=request.json['comment'],
       is_enabled=request.json['enabled'],
+      data=request.json.get('data', None),
     )
 
     db.session.add(method)

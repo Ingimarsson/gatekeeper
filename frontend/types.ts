@@ -84,6 +84,7 @@ export interface LogEntry {
   reason: string;
   image?: string;
   cameraGeneral?: number;
+  methodComment?: string;
 }
 
 export interface LogEntryDetails {
@@ -102,6 +103,12 @@ export interface LogEntryDetails {
   firstImage: string;
   lastImage: string;
   cameraGeneral: number;
+  method?: {
+    startDate?: string;
+    endDate?: string;
+    comment?: string;
+    data?: any;
+  };
 }
 
 export interface CodeType {
