@@ -123,6 +123,11 @@ class Stream:
     latest = int(images[-1].split(".")[0])
 
     path = os.path.join(self.snapshot_path, "{}/".format(latest))
+
+    # If snapshot was already created
+    if os.path.exists(path):
+      return latest
+
     os.makedirs(path)
 
     files = []
