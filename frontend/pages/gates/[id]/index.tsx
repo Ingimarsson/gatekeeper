@@ -377,8 +377,8 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate, user }) => {
           <ControllerLabel status={gate.controllerStatus} />
           <CameraLabel status={gate.cameraStatus} />
           <ButtonLabel status={gate.buttonStatus} />
-          {gate.indicators.map((indicator) => (
-            <IndicatorLabel indicator={indicator} />
+          {gate.indicators.map((indicator, idx) => (
+            <IndicatorLabel indicator={indicator} key={idx} />
           ))}
         </LabelRow>
         {gate.cameraStatus === "online" && (

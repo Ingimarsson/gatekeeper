@@ -112,8 +112,8 @@ export const GateBox = ({ gate, confirmModal = true }: GateBoxProps) => {
               </ButtonRow>
               <ButtonRow>
                 <ButtonLabel status={gate.buttonStatus} />
-                {gate.indicators.map((indicator) => (
-                  <IndicatorLabel indicator={indicator} />
+                {gate.indicators.map((indicator, idx) => (
+                  <IndicatorLabel indicator={indicator} key={idx} />
                 ))}
               </ButtonRow>
             </TopControlsBox>

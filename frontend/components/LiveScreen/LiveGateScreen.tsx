@@ -147,15 +147,15 @@ export const LiveGateScreen = ({
               <h3>{moment(entry.method.endDate).format("DD.MM.YY HH:mm")}</h3>
             </StringProperty>
           )}
-          {stringProperties.map((property) => (
-            <StringProperty>
+          {stringProperties.map((property, idx) => (
+            <StringProperty key={idx}>
               <span>{property.key}</span>
               <h3>{(property.value as string).substring(0, 20)}</h3>
             </StringProperty>
           ))}
           <NumberProperties>
-            {numberProperties.map((property) => (
-              <NumberProperty>
+            {numberProperties.map((property, idx) => (
+              <NumberProperty key={idx}>
                 <span>{property.key}</span>
                 <h3>{property.value as number}</h3>
               </NumberProperty>

@@ -347,7 +347,7 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
                   Object.entries(entry.method.data).map(([k, v]) => (
                     <>
                       <b>{k}</b>
-                      <span>{v as number|string}</span>
+                      <span>{v as number | string}</span>
                     </>
                   ))}
               </Table.Cell>
