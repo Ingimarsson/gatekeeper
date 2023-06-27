@@ -1,4 +1,5 @@
 import requests
+import json
 
 from app import db, logger
 from app.models import Gate, Log, Method, User
@@ -9,6 +10,10 @@ from sqlalchemy import or_
 from datetime import datetime, timedelta
 
 class AccessService:
+  AREA_THRESHOLD = 10000
+  TIME_MATCH = 3
+  TIME_COOLDOWN = 5
+
   streams = None
   controllers = None
   emails = None
@@ -96,14 +101,98 @@ class AccessService:
 
     # This type is sent for every frame from the video camera
     if type == 'alpr_results':
-      plate = self.openalpr_get_largest_plate(request_body.get('results', []))
+      result = self.openalpr_get_largest_plate(request_body.get('results', []))
 
-      self.redis.put_plate(gate.id, plate)
+      self.redis.put_plate(gate.id, result)
+
+      plate = result['plate']
+      area = result['area']
+
+      if area < self.AREA_THRESHOLD:
+        return {"message": "threshold"}, 200
+
+      timestamp = int(datetime.now().timestamp())
+
+      gate_timestamp = int(self.redis.r.get("gate:{}:timestamp".format(gate_id)) or 0)
+      gate_cooldown = True if self.redis.r.get("gate:{}:cooldown".format(gate_id)) else False
+
+      if timestamp == gate_timestamp:
+        plates = json.loads(self.redis.r.get("gate:{}:plates".format(gate_id)) or "[]")
+        plates.append(plate)
+
+        self.redis.r.set("gate:{}:plates".format(gate_id), json.dumps(plates))
+
+        return {"message": "timestamp"}, 200
+
+
+      plates = json.loads(self.redis.r.get("gate:{}:plates".format(gate_id)) or "[]")
+
+      self.redis.r.set("gate:{}:plates".format(gate_id), json.dumps([plate]))
+      self.redis.r.set("gate:{}:timestamp".format(gate_id), timestamp)
+
+      if len(plates) == 0:
+        return {"message": "noplate"}, 200
+
+      frequent_plate = max(set(plates), key=plates.count)
+
+      logger.info("Found plate {} {} times in last second (area {})".format(frequent_plate, plates.count(frequent_plate), area))
+
+      self.redis.r.set("gate:{}:plate_{}".format(gate_id, timestamp - 1), frequent_plate, 10)
+
+      for i in range(1, self.TIME_MATCH + 1):
+        p = self.redis.r.get("gate:{}:plate_{}".format(gate_id, timestamp - i)) or ""
+        logger.info("plate " + p)
+        if p != frequent_plate:
+          return {"message": "nomatch"}, 200
+
+      logger.info("Found {} sequential occurrences of plate {}".format(self.TIME_MATCH, frequent_plate))
+
+      if self.redis.r.get("gate:{}:cooldown".format(gate_id)):
+        logger.info("Cooldown enabled, doing nothing")
+        return {"message": "cooldown"}, 200
+
+      self.redis.r.set("gate:{}:cooldown".format(gate_id), "true", self.TIME_COOLDOWN)
+
+      log = Log(
+        gate=gate.id,
+        result=False,
+        operation='open',
+        code=frequent_plate,
+        type='plate'
+      )
+
+      # Looks up method and returns response (success, expired, etc.)
+      method, reason = self.get_method(gate.id, 'plate', frequent_plate)
+
+      log.reason = reason
+      log.method = method.id if method else None
+      log.result = True if reason == 'success' else False
+
+      if method:
+        user = User.query.filter(User.id == method.user).first()
+        log.user = user.id
+
+      if gate.camera_general:
+        log.image = self.save_snapshot(gate.camera_general)
+      if gate.http_trigger:
+        self.send_trigger_request(gate.http_trigger)
+
+      if log.result:
+        self.controllers.send_command(gate, 'open', conditional=True)
+
+      db.session.add(log)
+      db.session.commit()
+
+      self.redis.publish_entry(log.gate, log.id)
+      self.emails.register_alerts(log)
 
       return {"message": "ok"}, 200
 
     # This type is sent only once for each plate seen (includes travel direction)
     if type == 'alpr_group':
+      # Disable while we test new method
+      return {"message": "ok"}, 200
+
       plate = request_body.get('best_plate_number')
 
       log = Log(

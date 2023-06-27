@@ -6,7 +6,7 @@ class RedisService:
   r = None
 
   def __init__(self):
-    self.r = redis.Redis(host='redis', port=6379, db=0)
+    self.r = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
 
   #
   def put_plate(self, gate_id, data):
