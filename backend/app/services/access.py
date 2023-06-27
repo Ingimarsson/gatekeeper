@@ -10,8 +10,8 @@ from sqlalchemy import or_
 from datetime import datetime, timedelta
 
 class AccessService:
-  AREA_THRESHOLD = 10000
-  TIME_MATCH = 3
+  AREA_THRESHOLD = 15000
+  TIME_MATCH = 4
   TIME_COOLDOWN = 5
 
   streams = None
@@ -174,6 +174,10 @@ class AccessService:
 
       if gate.camera_general:
         log.image = self.save_snapshot(gate.camera_general)
+
+      if gate.camera_alpr:
+        log.image = self.save_snapshot(gate.camera_alpr)
+
       if gate.http_trigger:
         self.send_trigger_request(gate.http_trigger)
 

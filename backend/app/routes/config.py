@@ -25,7 +25,7 @@ class ConfigView(MethodView):
         config['screen1'] = {
             "url": result_url.value,
             "name": result_name.value,
-            "lastFetch": redis.r.get('screen_1:last_fetch').decode('utf-8')
+            "lastFetch": redis.r.get('screen_1:last_fetch')
         }
     else:
         config['screen1'] = None
@@ -37,7 +37,7 @@ class ConfigView(MethodView):
         config['screen2'] = {
             "url": result_url.value,
             "name": result_name.value,
-            "lastFetch": redis.r.get('screen_2:last_fetch').decode('utf-8')
+            "lastFetch": redis.r.get('screen_2:last_fetch')
         }
     else:
         config['screen2'] = None
@@ -51,7 +51,7 @@ class ConfigScreenView(MethodView):
     last_fetch = redis.r.get('screen_{}:last_fetch'.format(id))
 
     if body:
-        return jsonify({"body": body.decode('utf-8'), "lastFetch": last_fetch.decode('utf-8')}), 200
+        return jsonify({"body": body, "lastFetch": last_fetch}), 200
     else:
         return "", 200
 
