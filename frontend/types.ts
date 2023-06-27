@@ -103,6 +103,7 @@ export interface LogEntryDetails {
   firstImage: string;
   lastImage: string;
   cameraGeneral: number;
+  cameraAlpr?: number;
   method?: {
     startDate?: string;
     endDate?: string;

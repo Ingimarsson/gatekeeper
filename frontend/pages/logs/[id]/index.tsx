@@ -111,6 +111,9 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
     parseInt(entry.image) - firstTime
   );
   const [playing, setPlaying] = useState<boolean>(false);
+
+  const [alprView, setAlprView] = useState<boolean>(false);
+
   const [enlarged, setEnlarged] = useState<boolean>(false);
   const [preloaded, setPreloaded] = useState<boolean>(false);
 
@@ -139,7 +142,7 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
         images[firstTime - i] = new Image();
         images[
           firstTime - i
-        ].src = `/data/camera_${entry.cameraGeneral}/snapshots/${entry.image}/${i}.jpg`;
+        ].src = `/data/camera_${alprView ? entry.cameraAlpr : entry.cameraGeneral}/snapshots/${entry.image}/${i}.jpg`;
       }
       setPreloaded(true);
     }
@@ -167,7 +170,7 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
         basic
       >
         <img
-          src={`/data/camera_${entry.cameraGeneral}/snapshots/${entry.image}/${
+          src={`/data/camera_${alprView ? entry.cameraAlpr : entry.cameraGeneral}/snapshots/${entry.image}/${
             firstTime + offset
           }.jpg`}
           style={{
@@ -183,7 +186,7 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
           <LiveStreamBox>
             {entry.image ? (
               <img
-                src={`/data/camera_${entry.cameraGeneral}/snapshots/${
+                src={`/data/camera_${alprView ? entry.cameraAlpr : entry.cameraGeneral}/snapshots/${
                   entry.image
                 }/${firstTime + offset}.jpg`}
                 style={{
@@ -213,6 +216,16 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
                   onClick={() => setEnlarged(true)}
                 >
                   <Icon name="expand" /> {t("enlarge", "Enlarge")}
+                </Button>
+              )}
+              {entry.image?.length > 0 && entry.cameraAlpr && (
+                <Button
+                  size="mini"
+                  icon
+                  labelPosition="left"
+                  onClick={() => setAlprView(!alprView)}
+                >
+                  <Icon name="camera" /> {t("alpr", "ALPR")}
                 </Button>
               )}
               {entry.firstImage?.length > 0 && (

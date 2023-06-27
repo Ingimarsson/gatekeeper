@@ -75,7 +75,7 @@ class LogDetailsView(MethodView):
       .outerjoin(User, Log.user == User.id) \
       .outerjoin(Method, Log.method == Method.id) \
       .filter(Log.id == id) \
-      .add_columns(Gate.name, User.name, Gate.camera_general, Method.start_date, Method.end_date, Method.comment, Method.data) \
+      .add_columns(Gate.name, User.name, Gate.camera_general, Method.start_date, Method.end_date, Method.comment, Method.data, Gate.camera_alpr) \
       .first_or_404()
 
     # We only show sensitive information to admins
@@ -97,6 +97,7 @@ class LogDetailsView(MethodView):
       "firstImage": log[0].first_image,
       "lastImage": log[0].last_image,
       "cameraGeneral": log[3],
+      "cameraAlpr": log[8],
       "method": {
         "startDate": log[4],
         "endDate": log[5],

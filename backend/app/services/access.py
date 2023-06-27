@@ -176,7 +176,7 @@ class AccessService:
         log.image = self.save_snapshot(gate.camera_general)
 
       if gate.camera_alpr:
-        log.image = self.save_snapshot(gate.camera_alpr)
+        self.save_snapshot(gate.camera_alpr)
 
       if gate.http_trigger:
         self.send_trigger_request(gate.http_trigger)
