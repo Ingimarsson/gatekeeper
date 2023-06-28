@@ -25,6 +25,7 @@ const HoverBox = styled.div`
   padding: 4px;
   z-index: 100;
   display: flex;
+  gap: 4px;
 
   img {
     display: block;
