@@ -123,6 +123,7 @@ class UserDetailsView(MethodView):
         "result": l[0].result,
         "reason": l[0].reason,
         "image": l[0].image,
+        "alprImage": l[0].alpr_image,
         "cameraGeneral": l[3],
       } for l in logs]
     }

@@ -128,10 +128,15 @@ class GateDetailsView(MethodView):
     stream_status = 'not-setup'
     latest_image = ''
 
+    alpr_latest_image = ''
+
     for s in stream_statuses:
       if s['id'] == gate.camera_general:
           latest_image = s['latest_image']
           stream_status = 'online' if s['is_alive'] else 'offline'
+
+      if gate.camera_alpr and s['id'] == gate.camera_alpr:
+          alpr_latest_image = s['latest_image']
 
     # We only show sensitive information to admins
     claims = get_jwt()
@@ -141,11 +146,13 @@ class GateDetailsView(MethodView):
       "id": gate.id,
       "name": gate.name,
       "latestImage": latest_image,
+      "latestImageAlpr": alpr_latest_image,
       "cameraStatus": stream_status,
       "controllerStatus": controller_status,
       'supportsOpen': gate.type == 'gatekeeper' or gate.uri_open != '',
       'supportsClose': gate.type == 'gatekeeper' or gate.uri_close != '',
       'cameraGeneral': gate.camera_general,
+      'cameraAlpr': gate.camera_alpr,
       'buttonStatus': gate.button_type,
       'indicators': ['sensor_fault'] if controller_statuses.detector_time and abs(controller_statuses.detector_time) > 3000 else [],
       'buttonTime': {
@@ -164,6 +171,7 @@ class GateDetailsView(MethodView):
         "result": l[0].result,
         "reason": l[0].reason,
         "image": l[0].image,
+        "alprImage": l[0].alpr_image,
         "cameraGeneral": l[3],
       } for l in logs],
       "settings": {

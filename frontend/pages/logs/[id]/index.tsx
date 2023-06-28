@@ -142,7 +142,7 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
         images[firstTime - i] = new Image();
         images[firstTime - i].src = `/data/camera_${
           alprView ? entry.cameraAlpr : entry.cameraGeneral
-        }/snapshots/${entry.image}/${i}.jpg`;
+        }/snapshots/${alprView ? entry.alprImage : entry.image}/${i}.jpg`;
       }
       setPreloaded(true);
     }
@@ -172,7 +172,9 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
         <img
           src={`/data/camera_${
             alprView ? entry.cameraAlpr : entry.cameraGeneral
-          }/snapshots/${entry.image}/${firstTime + offset}.jpg`}
+          }/snapshots/${alprView ? entry.alprImage : entry.image}/${
+            firstTime + offset
+          }.jpg`}
           style={{
             background: "#999",
             width: "90vw",
@@ -188,7 +190,9 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
               <img
                 src={`/data/camera_${
                   alprView ? entry.cameraAlpr : entry.cameraGeneral
-                }/snapshots/${entry.image}/${firstTime + offset}.jpg`}
+                }/snapshots/${alprView ? entry.alprImage : entry.image}/${
+                  firstTime + offset
+                }.jpg`}
                 style={{
                   position: "absolute",
                   height: "100%",
@@ -218,14 +222,14 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
                   <Icon name="expand" /> {t("enlarge", "Enlarge")}
                 </Button>
               )}
-              {entry.image?.length > 0 && entry.cameraAlpr && (
+              {entry.alprImage && (
                 <Button
                   size="mini"
                   icon
                   labelPosition="left"
                   onClick={() => setAlprView(!alprView)}
                 >
-                  <Icon name="camera" /> {t("alpr", "ALPR")}
+                  <Icon name="video" /> {t("alpr", "ALPR")}
                 </Button>
               )}
               {entry.firstImage?.length > 0 && (

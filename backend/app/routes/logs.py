@@ -60,6 +60,7 @@ class LogsView(MethodView):
       "result": l[0].result,
       "reason": l[0].reason,
       "image": l[0].image,
+      "alprImage": l[0].alpr_image,
       "cameraGeneral": l[3],
       "methodComment": l[4],
     } for l in logs]
@@ -96,6 +97,7 @@ class LogDetailsView(MethodView):
       "image": log[0].image,
       "firstImage": log[0].first_image,
       "lastImage": log[0].last_image,
+      "alprImage": log[0].alpr_image,
       "cameraGeneral": log[3],
       "cameraAlpr": log[8],
       "method": {

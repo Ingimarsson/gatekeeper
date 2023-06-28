@@ -134,6 +134,7 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate, user }) => {
 
   const [alprData, setAlprData] = useState<AlprData | null>(null);
   const [debug, setDebug] = useState<boolean>(false);
+  const [alprView, setAlprView] = useState<boolean>(false);
 
   const refreshWindow = () =>
     router
@@ -161,8 +162,11 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate, user }) => {
   }, [session?.data?.token]);
 
   const lastTime = useMemo(
-    () => parseInt(gate.latestImage.split(".")[0]) - 1,
-    [gate]
+    () =>
+      parseInt(
+        (alprView ? gate.latestImageAlpr ?? "" : gate.latestImage).split(".")[0]
+      ) - 1,
+    [gate, alprView]
   );
 
   const [offset, setOffset] = useState<number>(50);
@@ -327,9 +331,9 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate, user }) => {
           {gate.cameraStatus === "online" ? (
             <>
               <img
-                src={`/data/camera_${gate.cameraGeneral}/live/${
-                  lastTime - 50 + offset + elapsedTime
-                }.jpg`}
+                src={`/data/camera_${
+                  alprView ? gate.cameraAlpr : gate.cameraGeneral
+                }/live/${lastTime - 50 + offset + elapsedTime}.jpg`}
                 style={{
                   position: "absolute",
                   height: "100%",
@@ -356,7 +360,7 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate, user }) => {
               <LiveStreamBoxOverlay>
                 <Link href={`/cockpit?gate=${gate.id}`} passHref={true}>
                   <Button size="mini" icon labelPosition="left">
-                    <Icon name="expand" /> {t("full-screen", "Full Screen")}
+                    <Icon name="expand" /> {t("full-screen", "Cockpit")}
                   </Button>
                 </Link>
                 <Button
@@ -365,8 +369,18 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate, user }) => {
                   labelPosition="left"
                   onClick={() => setDebug(!debug)}
                 >
-                  <Icon name="bug" /> {t("debug-mode", "Debug Mode")}
+                  <Icon name="bug" /> {t("debug-mode", "Debug")}
                 </Button>
+                {!!gate.cameraAlpr &&
+                <Button
+                  size="mini"
+                  icon
+                  labelPosition="left"
+                  color="blue"
+                  onClick={() => setAlprView(!alprView)}
+                >
+                  <Icon name="video" /> {t("alpr-view", "ALPR")}
+                </Button>}
               </LiveStreamBoxOverlay>
             </>
           ) : (

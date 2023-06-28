@@ -34,7 +34,9 @@ export interface GateDetails {
   buttonStatus: Gate["buttonStatus"];
   indicators: Array<"sensor_fault">;
   latestImage: string;
+  latestImageAlpr?: string;
   cameraGeneral: number;
+  cameraAlpr?: number;
   buttonTime: {
     startHour: string;
     endHour: string;
@@ -83,6 +85,7 @@ export interface LogEntry {
   result: boolean;
   reason: string;
   image?: string;
+  alprImage?: string;
   cameraGeneral?: number;
   methodComment?: string;
 }
@@ -102,6 +105,7 @@ export interface LogEntryDetails {
   image: string;
   firstImage: string;
   lastImage: string;
+  alprImage?: string;
   cameraGeneral: number;
   cameraAlpr?: number;
   method?: {
