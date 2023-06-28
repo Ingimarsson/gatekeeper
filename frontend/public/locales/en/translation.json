@@ -25,5 +25,6 @@
   "disabled": "Disabled",
   "expired": "Expired",
   "wrong_dir": "Outgoing",
+  "observed": "Observed",
   "sensor_fault": "Sensor Fault"
 }

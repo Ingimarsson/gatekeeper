@@ -74,6 +74,10 @@ class AccessService:
 
     if gate.camera_general:
       log.image = self.save_snapshot(gate.camera_general)
+
+    if gate.camera_alpr:
+      log.alpr_image = self.save_snapshot(gate.camera_alpr)
+      
     if gate.http_trigger:
       self.send_trigger_request(gate.http_trigger)
 
@@ -176,7 +180,7 @@ class AccessService:
         log.image = self.save_snapshot(gate.camera_general)
 
       if gate.camera_alpr:
-        self.save_snapshot(gate.camera_alpr)
+        log.alpr_image = self.save_snapshot(gate.camera_alpr)
 
       if gate.http_trigger:
         self.send_trigger_request(gate.http_trigger)
@@ -194,9 +198,6 @@ class AccessService:
 
     # This type is sent only once for each plate seen (includes travel direction)
     if type == 'alpr_group':
-      # Disable while we test new method
-      return {"message": "ok"}, 200
-
       plate = request_body.get('best_plate_number')
 
       log = Log(
@@ -210,9 +211,9 @@ class AccessService:
       # Looks up method and returns response (success, expired, etc.)
       method, reason = self.get_method(gate.id, 'plate', plate)
 
-      log.reason = reason
+      log.reason = "observed"
       log.method = method.id if method else None
-      log.result = True if reason == 'success' else False
+      log.result = False
 
       if method:
         user = User.query.filter(User.id == method.user).first()
@@ -226,11 +227,12 @@ class AccessService:
 
       if gate.camera_general:
         log.image = self.save_snapshot(gate.camera_general)
+
+      if gate.camera_alpr:
+        log.alpr_image = self.save_snapshot(gate.camera_alpr)
+
       if gate.http_trigger:
         self.send_trigger_request(gate.http_trigger)
-
-      if log.result:
-        self.controllers.send_command(gate, 'open', conditional=True)
 
       db.session.add(log)
       db.session.commit()
@@ -260,6 +262,10 @@ class AccessService:
 
     if gate.camera_general:
       log.image = self.save_snapshot(gate.camera_general)
+
+    if gate.camera_alpr:
+      log.alpr_image = self.save_snapshot(gate.camera_alpr)
+      
     if gate.http_trigger:
       self.send_trigger_request(gate.http_trigger)
 
@@ -331,7 +337,7 @@ class AccessService:
     """
     Returns a method if it exists, and a reason
 
-    Reason can be: success, not_exist, expired, disabled or wrong_dir
+    Reason can be: success, not_exist, expired, disabled, wrong_dir or observed
     """
     method = Method.query \
       .filter(Method.type == type, Method.code == code, Method.is_deleted == False) \
