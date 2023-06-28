@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Head from "next/head";
 import { Camera, Config, Gate } from "../../types";
 import api from "../../api";
@@ -121,6 +121,12 @@ const Monitor: NextPage<MonitorProps> = ({ gates, config }) => {
   const [rotating, setRotating] = useState<boolean>(true);
   const [cameras, setCameras] = useState<Camera[]>([]);
   const [latestEntry, setLatestEntry] = useState<number | null>(null);
+
+  const rotatingRef = useRef<boolean>();
+  rotatingRef.current = rotating;
+
+  const screenRef = useRef<number>();
+  screenRef.current = currentScreen;
 
   const refreshWindow = () => {
     location.reload();
@@ -336,11 +342,15 @@ const Monitor: NextPage<MonitorProps> = ({ gates, config }) => {
 
       if (data["type"] === "entry") {
         const screen = screens.find((s) => s.gateId === data["gate_id"]);
+        console.log(rotatingRef.current, screen?.number, screenRef.current);
 
-        if (screen) {
+        if (
+          screen &&
+          (rotatingRef.current || screen?.number === screenRef.current)
+        ) {
+          console.log(screen, rotatingRef.current);
           setCurrentScreen(screen.number);
           setCountdown(ROLL_SECONDS);
-          setRotating(true);
           setLatestEntry(data["log_id"]);
         }
       }

@@ -91,9 +91,9 @@ export const LiveGateScreen = ({
   const stringProperties = properties
     .filter((p) => typeof p.value === "string")
     .filter((p) => (p.value as string).length ?? 0 > 0);
-  const numberProperties = properties.filter(
-    (p) => typeof p.value === "number"
-  );
+  const numberProperties = properties
+    .filter((p) => typeof p.value === "number")
+    .sort((a, b) => b.key.localeCompare(a.key));
 
   return (
     <Container>
@@ -123,16 +123,18 @@ export const LiveGateScreen = ({
           </ReadingColumn>
         </Reading>
         <SideBox>
+          <NumberProperties>
+            {numberProperties.map((property, idx) => (
+              <NumberProperty key={idx}>
+                <span>{property.key}</span>
+                <h3>{property.value as number}</h3>
+              </NumberProperty>
+            ))}
+          </NumberProperties>
           {!!entry?.user && (
             <StringProperty>
               <span>User</span>
               <h3>{entry.user}</h3>
-            </StringProperty>
-          )}
-          {!!entry?.method?.comment && (
-            <StringProperty>
-              <span>Comment</span>
-              <h3>{entry.method.comment.substring(0, 20)}</h3>
             </StringProperty>
           )}
           {!!entry?.method?.startDate && (
@@ -147,20 +149,18 @@ export const LiveGateScreen = ({
               <h3>{moment(entry.method.endDate).format("DD.MM.YY HH:mm")}</h3>
             </StringProperty>
           )}
+          {!!entry?.method?.comment && (
+            <StringProperty>
+              <span>Comment</span>
+              <h3>{entry.method.comment.substring(0, 20)}</h3>
+            </StringProperty>
+          )}
           {stringProperties.map((property, idx) => (
             <StringProperty key={idx}>
               <span>{property.key}</span>
               <h3>{(property.value as string).substring(0, 20)}</h3>
             </StringProperty>
           ))}
-          <NumberProperties>
-            {numberProperties.map((property, idx) => (
-              <NumberProperty key={idx}>
-                <span>{property.key}</span>
-                <h3>{property.value as number}</h3>
-              </NumberProperty>
-            ))}
-          </NumberProperties>
         </SideBox>
         <HistoryBox>
           {" "}

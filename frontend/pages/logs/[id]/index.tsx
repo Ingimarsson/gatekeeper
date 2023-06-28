@@ -140,9 +140,9 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
       let images = new Array();
       for (let i = firstTime; i <= lastTime; i++) {
         images[firstTime - i] = new Image();
-        images[
-          firstTime - i
-        ].src = `/data/camera_${alprView ? entry.cameraAlpr : entry.cameraGeneral}/snapshots/${entry.image}/${i}.jpg`;
+        images[firstTime - i].src = `/data/camera_${
+          alprView ? entry.cameraAlpr : entry.cameraGeneral
+        }/snapshots/${entry.image}/${i}.jpg`;
       }
       setPreloaded(true);
     }
@@ -170,9 +170,9 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
         basic
       >
         <img
-          src={`/data/camera_${alprView ? entry.cameraAlpr : entry.cameraGeneral}/snapshots/${entry.image}/${
-            firstTime + offset
-          }.jpg`}
+          src={`/data/camera_${
+            alprView ? entry.cameraAlpr : entry.cameraGeneral
+          }/snapshots/${entry.image}/${firstTime + offset}.jpg`}
           style={{
             background: "#999",
             width: "90vw",
@@ -186,9 +186,9 @@ const LogEntry: NextPage<LogEntryProps> = ({ entry }) => {
           <LiveStreamBox>
             {entry.image ? (
               <img
-                src={`/data/camera_${alprView ? entry.cameraAlpr : entry.cameraGeneral}/snapshots/${
-                  entry.image
-                }/${firstTime + offset}.jpg`}
+                src={`/data/camera_${
+                  alprView ? entry.cameraAlpr : entry.cameraGeneral
+                }/snapshots/${entry.image}/${firstTime + offset}.jpg`}
                 style={{
                   position: "absolute",
                   height: "100%",
