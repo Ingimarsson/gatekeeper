@@ -371,16 +371,17 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate, user }) => {
                 >
                   <Icon name="bug" /> {t("debug-mode", "Debug")}
                 </Button>
-                {!!gate.cameraAlpr &&
-                <Button
-                  size="mini"
-                  icon
-                  labelPosition="left"
-                  color="blue"
-                  onClick={() => setAlprView(!alprView)}
-                >
-                  <Icon name="video" /> {t("alpr-view", "ALPR")}
-                </Button>}
+                {!!gate.cameraAlpr && (
+                  <Button
+                    size="mini"
+                    icon
+                    labelPosition="left"
+                    color="blue"
+                    onClick={() => setAlprView(!alprView)}
+                  >
+                    <Icon name="video" /> {t("alpr-view", "ALPR")}
+                  </Button>
+                )}
               </LiveStreamBoxOverlay>
             </>
           ) : (

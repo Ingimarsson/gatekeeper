@@ -24,6 +24,7 @@ const HoverBox = styled.div`
   overflow: hidden;
   padding: 4px;
   z-index: 100;
+  display: flex;
 
   img {
     display: block;
@@ -147,6 +148,12 @@ export const LogEntryTable = ({ entries }: LogEntryTableProps) => {
             alt=""
             src={`/data/camera_${hoveredRecord.cameraGeneral}/snapshots/${hoveredRecord.image}/${hoveredRecord.image}.jpg`}
           />
+          {!!hoveredRecord.alprImage && (
+            <img
+              alt=""
+              src={`/data/camera_${hoveredRecord.cameraAlpr}/snapshots/${hoveredRecord.alprImage}/${hoveredRecord.alprImage}.jpg`}
+            />
+          )}
         </HoverBox>
       )}
     </>

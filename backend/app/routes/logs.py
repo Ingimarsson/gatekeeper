@@ -41,7 +41,7 @@ class LogsView(MethodView):
       .order_by(Log.id.desc()) \
       .filter(Log.is_deleted == False) \
       .limit(limit) \
-      .add_columns(Gate.name, User.name, Gate.camera_general, Method.comment) \
+      .add_columns(Gate.name, User.name, Gate.camera_general, Gate.camera_alpr, Method.comment) \
       .all()
 
     # We only show sensitive information to admins
@@ -62,7 +62,8 @@ class LogsView(MethodView):
       "image": l[0].image,
       "alprImage": l[0].alpr_image,
       "cameraGeneral": l[3],
-      "methodComment": l[4],
+      "cameraAlpr": l[4],
+      "methodComment": l[5],
     } for l in logs]
 
     return jsonify(result), 200

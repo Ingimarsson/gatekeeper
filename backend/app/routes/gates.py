@@ -106,7 +106,7 @@ class GateDetailsView(MethodView):
       .order_by(Log.id.desc()) \
       .filter(Log.is_deleted == False, Gate.id == id) \
       .limit(10) \
-      .add_columns(Gate.name, User.name, Gate.camera_general) \
+      .add_columns(Gate.name, User.name, Gate.camera_general, Gate.camera_alpr) \
       .all()
 
     # TODO: Join with status tables to get online/offline
@@ -173,6 +173,7 @@ class GateDetailsView(MethodView):
         "image": l[0].image,
         "alprImage": l[0].alpr_image,
         "cameraGeneral": l[3],
+        "cameraAlpr": l[4],
       } for l in logs],
       "settings": {
         'name': gate.name,

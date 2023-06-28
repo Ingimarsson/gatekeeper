@@ -87,6 +87,7 @@ export interface LogEntry {
   image?: string;
   alprImage?: string;
   cameraGeneral?: number;
+  cameraAlpr?: number;
   methodComment?: string;
 }
 
