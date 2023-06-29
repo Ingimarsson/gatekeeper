@@ -211,9 +211,9 @@ class AccessService:
       # Looks up method and returns response (success, expired, etc.)
       method, reason = self.get_method(gate.id, 'plate', plate)
 
-      log.reason = "observed"
+      log.reason = reason
       log.method = method.id if method else None
-      log.result = False
+      log.result = True if reason == 'success' else False
 
       if method:
         user = User.query.filter(User.id == method.user).first()
@@ -225,6 +225,14 @@ class AccessService:
         log.result = False
         log.reason = "wrong_dir"
 
+      c = request_body.get('best_plate')['coordinates']
+      area = (max(c, key=lambda p:p['x'])['x'] - min(c, key=lambda p:p['x'])['x']) \
+        * (max(c, key=lambda p:p['y'])['y'] - min(c, key=lambda p:p['y'])['y'])
+
+      if area < self.AREA_THRESHOLD:
+        log.result = False
+        log.reason = "observed"
+
       if gate.camera_general:
         log.image = self.save_snapshot(gate.camera_general)
 
@@ -233,6 +241,9 @@ class AccessService:
 
       if gate.http_trigger:
         self.send_trigger_request(gate.http_trigger)
+
+      if log.result:
+        self.controllers.send_command(gate, 'open', conditional=True)
 
       db.session.add(log)
       db.session.commit()
