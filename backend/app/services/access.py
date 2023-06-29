@@ -230,6 +230,16 @@ class AccessService:
         * (max(c, key=lambda p:p['y'])['y'] - min(c, key=lambda p:p['y'])['y'])
 
       if area < self.AREA_THRESHOLD:
+        logger.info("alpr_group below threshold {}".format(area))
+
+        log.result = False
+        log.reason = "observed"
+
+      last_log = Log.query.filter(Log.gate == gate.id).order_by(Log.id.desc()).first()
+
+      if last_log != None and last_log.code == plate:
+        logger.info("alpr_group matches last plate {}".format(plate))
+
         log.result = False
         log.reason = "observed"
 
