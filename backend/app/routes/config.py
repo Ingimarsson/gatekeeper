@@ -47,11 +47,12 @@ class ConfigView(MethodView):
 class ConfigScreenView(MethodView):
   @jwt_required()
   def get(self, id):
+    url = redis.r.get('screen_{}:url'.format(id))
     body = redis.r.get('screen_{}:body'.format(id))
     last_fetch = redis.r.get('screen_{}:last_fetch'.format(id))
 
     if body:
-        return jsonify({"body": body, "lastFetch": last_fetch}), 200
+        return jsonify({"url": url, "body": body, "lastFetch": last_fetch}), 200
     else:
         return "", 200
 

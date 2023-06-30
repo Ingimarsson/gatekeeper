@@ -28,6 +28,7 @@ export const LiveExternalScreen = ({ screen }: LiveExternalScreenProps) => {
   const { t } = useTranslation();
 
   const [body, setBody] = useState<string>("");
+  const [url, setUrl] = useState<string>("");
   const [lastFetch, setLastFetch] = useState<string>("");
 
   const updateScreen = () => {
@@ -35,6 +36,7 @@ export const LiveExternalScreen = ({ screen }: LiveExternalScreenProps) => {
       .get(`/config/screen/${screen.screenNumber}`)
       .then((res) => {
         setBody(res.data.body);
+        setUrl(res.data.url);
         setLastFetch(res.data.lastFetch);
       });
     return;
@@ -51,7 +53,7 @@ export const LiveExternalScreen = ({ screen }: LiveExternalScreenProps) => {
   return (
     <Container>
       <iframe
-        srcDoc={body}
+        src={url}
         scrolling="no"
         style={{
           width: "100vw",

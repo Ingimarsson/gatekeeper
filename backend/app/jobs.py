@@ -115,6 +115,7 @@ def fetch_external_screens():
         response = requests.get(screen_1.value, timeout=3)
         redis.r.set('screen_1:last_fetch', datetime.now().isoformat())
         redis.r.set('screen_1:body', response.content.decode('utf-8'))
+        redis.r.set('screen_1:url', screen_1.value)
       except:
         logger.error("Failed to fetch content for cockpit screen 1")
 
@@ -124,6 +125,7 @@ def fetch_external_screens():
         response = requests.get(screen_2.value, timeout=3)
         redis.r.set('screen_2:last_fetch', datetime.now().isoformat())
         redis.r.set('screen_2:body', response.content.decode('utf-8'))
+        redis.r.set('screen_2:url', screen_2.value)
       except:
         logger.error("Failed to fetch content for cockpit screen 2")
   return
