@@ -13,6 +13,7 @@ services:
       - gatekeeper_db:/var/lib/postgresql/data
   backend:
     build: ./backend
+    restart: always
     volumes:
       - gatekeeper_data:/data
     expose:
@@ -25,6 +26,7 @@ services:
       - redis
   frontend:
     build: ./frontend
+    restart: always
     expose:
       - 3000
     env_file:
@@ -39,6 +41,7 @@ services:
       - 8000
   nginx:
     image: nginx
+    restart: always
     ports:
       - 9000:80
     depends_on:
@@ -54,6 +57,7 @@ services:
       - 6379
   websockets:
     build: ./websockets
+    restart: always
     ports:
       - 8767:8767
     env_file:

@@ -10,7 +10,7 @@ from sqlalchemy import or_
 from datetime import datetime, timedelta
 
 class AccessService:
-  AREA_THRESHOLD = 15000
+  AREA_THRESHOLD = 10000
   TIME_MATCH = 4
   TIME_COOLDOWN = 5
 

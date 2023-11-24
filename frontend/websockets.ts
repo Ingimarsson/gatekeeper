@@ -1,5 +1,10 @@
 const WebsocketsClient = (token: string) => {
-  const ws = new WebSocket(`ws://${window.location.hostname}:8767`);
+  const server =
+    window.location.protocol === "https:"
+      ? `wss://${window.location.hostname}/ws`
+      : `ws://${window.location.hostname}:8767`;
+
+  const ws = new WebSocket(server);
 
   ws.addEventListener("open", () => {
     ws.send(JSON.stringify({ token: token }));

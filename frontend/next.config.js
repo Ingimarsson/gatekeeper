@@ -5,7 +5,10 @@ const nextConfig = {
     NEXT_MOCKING: process.env.NEXT_MOCKING,
   },
   async rewrites() {
-    return [{ source: "/auth/:path*", destination: "/api/auth/:path*" }];
+    return [
+      { source: "/auth/:path*", destination: "/api/auth/:path*" },
+      { source: "/auth-check", destination: "/api/check" },
+    ];
   },
 };
 
