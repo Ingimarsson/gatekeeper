@@ -14,7 +14,7 @@
 #define BUTTON3 15
 #define BUTTON4 14
 
-byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
+byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xE0};
 int reset_cause; 
 
 EthernetServer server(80);
@@ -96,6 +96,11 @@ int loop_timer = 0;
 int wg_timer = 0;
 int detector_timer = 0;
 
+long last_wiznet_check = 0;
+
+// has detector HTTP notification been sent
+bool detector_sent = false;
+
 // set to button number (1-3) when pressed
 short int buttonRequest = 0;
 
@@ -113,6 +118,25 @@ void loop() {
   loop_timer = 0;
 
   client = server.available();
+
+  // check if server socket is bad and restart if needed
+  if (last_wiznet_check + 50 < uptime) {
+    last_wiznet_check = uptime;
+
+    for (int i=0; i < MAX_SOCK_NUM; i++) {
+      if (EthernetClass::_server_port[i] == 80) {
+        
+        // Use infinite loop to cause reset if TCP registers incorrect
+        if (w5500.readSnMR(i) != SnMR::TCP) {
+          while (true) {}
+        }
+
+        if (w5500.readSnSR(i) != SnSR::LISTEN) {
+          while (true) {}
+        }
+      }
+    }
+  }
 
   // check for server connections
   if (client) {
@@ -268,7 +292,7 @@ bool check_remote_server(char* code, long card, short int button) {
   IPAddress server2;
   server2.fromString(cloud_ip);
 
-  bool response = false;
+  int response = 0;
 
   memset(header, 0, sizeof header);
   idx = 0;
@@ -301,23 +325,33 @@ bool check_remote_server(char* code, long card, short int button) {
           header[idx++] = client2.read();
         }
         else if (strstr(header, "200") != NULL) {
-          Serial.println("RES !200");
-          response = true;
+          Serial.println("RES 200");
+          response = 200;
+          break;
+        }
+        else if (strstr(header, "403") != NULL) {
+          Serial.println("RES 403");
+          response = 403;
           break;
         }
         else {
-          Serial.println("RES 200");
           break;
         }
       }
     }
   }
 
+  // if response is not 200 or 403, restart the device
+  if (!response) {
+    uptime = 600;
+    while (true) {}
+  }
+
   idx = 0;
   delay(1);
   client2.stop();
 
-  return response;
+  return response == 200;
 }
 
 void save_settings() {
@@ -454,13 +488,21 @@ void interrupt() {
   } else {
     detector_timer = 0;
     detector = false;
+    detector_sent = false;
   }
 
   // only trigger sensor after 1 second of signal
   if (detector_timer > 10 && !detector) {
     turn_off();
 
+    buttonRequest = 8;
     detector = true;
+  }
+
+  // send a detector notification after 7.5 sec
+  if (detector_timer > 75 && !detector_sent) {
+    buttonRequest = 9;
+    detector_sent = true;
   }
 
   // read buttons
