@@ -1,7 +1,7 @@
 import requests
 import json
 
-from app import db, logger
+from app import db, logger, matrix
 from app.models import Gate, Log, Method, User
 from app.utils import is_within_hours
 
@@ -35,6 +35,21 @@ class AccessService:
     """
     gate = Gate.query.filter(Gate.id == gate_id).first()
     settings = gate.settings if gate.settings else {}
+
+    # Ignore button timer messages
+    if type in ['button-8', 'button-9']:
+
+      # Check if no recent log, then send message
+      if type == 'button-9':
+        count = Log.query.filter(Log.gate == gate.id) \
+          .filter(Log.type == 'plate') \
+          .filter(Log.timestamp > datetime.now() - timedelta(seconds=5)) \
+          .count()
+        
+        if count:
+          matrix.send_detector_message()
+
+      return True
 
     log = Log(gate=gate.id, result=False, operation='open', code=code, type=type)
 
@@ -141,6 +156,8 @@ class AccessService:
 
       logger.info("Found plate {} {} times in last second (area {})".format(frequent_plate, plates.count(frequent_plate), area))
 
+      matrix.send_processing_message(frequent_plate)
+
       self.redis.r.set("gate:{}:plate_{}".format(gate_id, timestamp - 1), frequent_plate, 10)
 
       for i in range(1, self.TIME_MATCH + 1):
@@ -172,6 +189,8 @@ class AccessService:
       log.method = method.id if method else None
       log.result = True if reason == 'success' else False
 
+      user = None
+
       if method:
         user = User.query.filter(User.id == method.user).first()
         log.user = user.id
@@ -186,10 +205,16 @@ class AccessService:
         self.send_trigger_request(gate.http_trigger)
 
       if log.result:
-        self.controllers.send_command(gate, 'open', conditional=True)
+        detector = self.controllers.send_command(gate, 'open', conditional=True)
+
+        if not detector:
+          log.reason = 'not_detected'
+          log.result = False
 
       db.session.add(log)
       db.session.commit()
+
+      matrix.send_result_message(log, method, user)
 
       self.redis.publish_entry(log.gate, log.id)
       self.emails.register_alerts(log)
@@ -372,6 +397,9 @@ class AccessService:
 
     if not user:
       return None, "not_exist"
+
+    if method.start_hour and method.end_hour and not is_within_hours(method.start_hour, method.end_hour):
+      return method, "close_time"
 
     if not method.check_dates():
       return method, "expired"

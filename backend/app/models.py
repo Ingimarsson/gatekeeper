@@ -111,7 +111,7 @@ class Log(db.Model):
     last_image = Column(String(64))
     alpr_image = Column(String(64))
     result = Column(Boolean, default=False, nullable=False)
-    reason = Column(String(64)) # Allowed values: success, not_exist, expired, disabled, wrong_dir, observed
+    reason = Column(String(64)) # Allowed values: success, not_exist, expired, disabled, wrong_dir, observed, close_time, not_detected
     is_deleted = Column(Boolean, default=False, nullable=False)
 
 

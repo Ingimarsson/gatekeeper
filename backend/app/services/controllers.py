@@ -8,19 +8,21 @@ class ControllerService:
     return
 
   def send_command(self, gate, command='open', conditional=False):
+    response = None
+
     try:
       if gate.type == 'gatekeeper':
         if command == 'open' and not conditional:
-          requests.get(f'http://{gate.controller_ip}/?a=open', timeout=2)
+          response = requests.get(f'http://{gate.controller_ip}/?a=open', timeout=2)
 
         elif command == 'close' and not conditional:
-          requests.get(f'http://{gate.controller_ip}/?a=close', timeout=2)
+          response = requests.get(f'http://{gate.controller_ip}/?a=close', timeout=2)
 
         elif command == 'open' and conditional:
-          requests.get(f'http://{gate.controller_ip}/?a=grant', timeout=2)
+          response = requests.get(f'http://{gate.controller_ip}/?a=grant', timeout=2)
 
         elif command == 'close' and conditional:
-          requests.get(f'http://{gate.controller_ip}/?a=deny', timeout=2)
+          response = requests.get(f'http://{gate.controller_ip}/?a=deny', timeout=2)
 
       elif gate.type == 'generic':
         if command == 'open':
@@ -28,6 +30,12 @@ class ControllerService:
 
         if command == 'close':
           requests.get(gate.uri_close, timeout=2)
+
+      if response:
+        data = response.json()
+
+        if 'detector' in data.keys():
+          return (bool) (data['detector'])
 
       return True
 

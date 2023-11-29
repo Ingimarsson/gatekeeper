@@ -15,13 +15,14 @@ scheduler = APScheduler()
 
 logger = logging.getLogger('gunicorn.error')
 
-from .services import StreamService, ControllerService, EmailService, RedisService, AccessService
+from .services import StreamService, ControllerService, EmailService, RedisService, AccessService, MatrixService
 
 streams = StreamService()
 controllers = ControllerService()
 emails = EmailService()
 redis = RedisService()
 access = AccessService()
+matrix = MatrixService()
 
 from . import models
 from . import jobs
