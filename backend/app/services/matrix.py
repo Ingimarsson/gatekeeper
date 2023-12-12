@@ -7,7 +7,7 @@ from app.models import Log, Method, User
 
 class MatrixService:
     CHARACTER_MAPPING = {'Á': 'A', 'Ð': 'D', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U', 'Ý': 'Y', 'Þ': 'TH', 'Æ': 'AE', 'Ö': 'O'}
-    REASON_MAPPING = {'granted': 'granted', 'expired': 'expired', 'close_time': 'close time', 'not_found': 'not found', 'disabled': 'disabled'}
+    REASON_MAPPING = {'granted': 'granted', 'expired': 'expired', 'close_time': 'close time', 'not_exist': 'not found', 'disabled': 'disabled'}
 
     COLOR_WHITE = 0
     COLOR_YELLOW = 1
@@ -54,7 +54,7 @@ class MatrixService:
         if log_entry.reason not in self.REASON_MAPPING.keys():
             return
         
-        if log_entry.reason in ['expired', 'close_time', 'not_found', 'disabled']:
+        if log_entry.reason in ['expired', 'close_time', 'not_exist', 'disabled']:
             lines[1] = self.format_matrix_text(self.REASON_MAPPING[log_entry.reason])
             color = self.COLOR_RED
 

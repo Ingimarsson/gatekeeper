@@ -26,5 +26,7 @@
   "expired": "Expired",
   "wrong_dir": "Outgoing",
   "observed": "Observed",
+  "close_time": "Closing Hours",
+  "not_detected": "Not Detected",
   "sensor_fault": "Sensor Fault"
 }
