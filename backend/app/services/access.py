@@ -46,7 +46,7 @@ class AccessService:
           .filter(Log.timestamp > datetime.now() - timedelta(seconds=5)) \
           .count()
         
-        if count:
+        if not count:
           matrix.send_detector_message()
 
       return True
@@ -156,14 +156,14 @@ class AccessService:
 
       logger.info("Found plate {} {} times in last second (area {})".format(frequent_plate, plates.count(frequent_plate), area))
 
-      matrix.send_processing_message(frequent_plate)
-
       self.redis.r.set("gate:{}:plate_{}".format(gate_id, timestamp - 1), frequent_plate, 10)
 
       for i in range(1, self.TIME_MATCH + 1):
         p = self.redis.r.get("gate:{}:plate_{}".format(gate_id, timestamp - i)) or ""
         logger.info("plate " + p)
         if p != frequent_plate:
+          matrix.send_processing_message(frequent_plate, i - 1, self.TIME_MATCH)
+
           return {"message": "nomatch"}, 200
 
       logger.info("Found {} sequential occurrences of plate {}".format(self.TIME_MATCH, frequent_plate))

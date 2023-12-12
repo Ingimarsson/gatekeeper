@@ -2,6 +2,7 @@ import datetime
 import socket
 import json
 
+from app import logger
 from app.models import Log, Method, User
 
 class MatrixService:
@@ -13,14 +14,15 @@ class MatrixService:
     COLOR_GREEN = 2
     COLOR_RED = 3
 
-    MATRIX_HOST = "192.168.107.190"
-    MATRIX_PORT = 8085
+    MATRIX_HOST = "192.168.1.147"
+    MATRIX_PORT = 8185
 
-    def send_message(self, ttl, priority, lines):
+    def send_message(self, ttl, priority, color, lines):
         message = {
             'ttl': ttl,
             'priority': priority,
-            'lines': lines
+            'color': color,
+            'lines': map(lambda text: {'text': text}, lines)
         }
 
         payload = json.dumps(message).encode("ascii")
@@ -29,99 +31,61 @@ class MatrixService:
         sock.bind(('0.0.0.0', 28123))
         sock.sendto(payload, (self.MATRIX_HOST, self.MATRIX_PORT))
 
+        logger.info("Sent to matrix '{}'".format(payload))
+
     def send_result_message(self, log_entry: Log, method: Method, user: User):
         if log_entry.reason == 'not_detected':
             lines = [
-                {
-                    'text': self.format_matrix_text(log_entry.code),
-                    'color': self.COLOR_WHITE
-                },
-                {
-                    'text': 'too far'.upper(),
-                    'color': self.COLOR_YELLOW
-                },
-                {
-                    'text': 'from gate'.upper(),
-                    'color': self.COLOR_YELLOW
-                }
+                self.format_matrix_text(log_entry.code),
+                'too far'.upper(),
+                'from gate'.upper()
             ]
-            self.send_message(10, 30, lines)
+            self.send_message(10, 30, self.COLOR_WHITE, lines)
+
+            return
 
         lines = [
-            {
-                'text': self.format_matrix_text(log_entry.code),
-                'color': self.COLOR_WHITE
-            },
-            {
-                'text': self.REASON_MAPPING['granted'].upper(),
-                'color': self.COLOR_GREEN
-            },
-            {
-                'text': self.format_matrix_text(user.name),
-                'color': self.COLOR_YELLOW
-            }
+            self.format_matrix_text(log_entry.code),
+            self.REASON_MAPPING['granted'].upper(),
+            self.format_matrix_text(user.name),
         ]
+        color = self.COLOR_WHITE
 
         if log_entry.reason not in self.REASON_MAPPING.keys():
             return
         
         if log_entry.reason in ['expired', 'close_time', 'not_found', 'disabled']:
-            lines[1] = {
-                'text': self.format_matrix_text(self.REASON_MAPPING[log_entry.reason]),
-                'color': self.COLOR_RED
-            }
+            lines[1] = self.format_matrix_text(self.REASON_MAPPING[log_entry.reason])
+            color = self.COLOR_RED
 
         if method.end_date:
-            lines[2] = {
-                'text': self.format_matrix_text('TIL {}'.format(method.end_date.strftime('%d %b'))),
-                'color': self.COLOR_YELLOW
-            }
+            lines[2] = self.format_matrix_text('TIL {}'.format(method.end_date.strftime('%d %b')))
 
         # Show expiry hour instead of date if expires today
         if method.end_hour and method.end_date.date() == datetime.datetime.today().date():
-            lines[2] = {
-                'text': 'TIL {}'.format(method.end_hour.strftime('%H:%M')),
-                'color': self.COLOR_YELLOW
-            }
+            lines[2] = 'TIL {}'.format(method.end_hour.strftime('%H:%M'))
 
         if method.end_hour and log_entry.reason == 'close_time':
-            lines[2] = {
-                'text': 'OPEN {}'.format(method.start_hour.strftime('%H:%M')),
-                'color': self.COLOR_YELLOW
-            }
+            lines[2] = 'OPEN {}'.format(method.start_hour.strftime('%H:%M'))
+            lines[3] = ''
 
-        self.send_message(10, 30, lines)
+        self.send_message(10, 30, color, lines)
 
-    def send_processing_message(self, plate: str):
+    def send_processing_message(self, plate: str, num: int, needed: int):
         lines = [
-            {
-                'text': self.format_matrix_text(plate),
-                'color': self.COLOR_WHITE
-            },
-            {
-                'text': 'processing'.upper(),
-                'color': self.COLOR_YELLOW
-            }
+            self.format_matrix_text(plate),
+            num * '.' + (needed - num) * '_'
         ]
 
-        self.send_message(2, 20, lines)
+        self.send_message(2, 20, self.COLOR_WHITE, lines)
 
     def send_detector_message(self):
         lines = [
-            {
-                'text': 'stop in'.upper(),
-                'color': self.COLOR_YELLOW
-            },
-            {
-                'text': 'front of'.upper(),
-                'color': self.COLOR_YELLOW
-            },
-            {
-                'text': 'camera'.upper(),
-                'color': self.COLOR_YELLOW
-            }
+            'stop in'.upper(),
+            'front of'.upper(),
+            'camera'.upper(),
         ]
-        self.send_message(10, 10, lines)
+        self.send_message(10, 10, self.COLOR_WHITE, lines)
 
     def format_matrix_text(self, text: str):
         mapping = str.maketrans(self.CHARACTER_MAPPING)
