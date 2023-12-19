@@ -7,22 +7,26 @@ from app.models import Log, Method, User
 
 class MatrixService:
     CHARACTER_MAPPING = {'Á': 'A', 'Ð': 'D', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U', 'Ý': 'Y', 'Þ': 'TH', 'Æ': 'AE', 'Ö': 'O'}
-    REASON_MAPPING = {'granted': 'granted', 'expired': 'expired', 'close_time': 'close time', 'not_exist': 'not found', 'disabled': 'disabled'}
+    REASON_MAPPING = {'success': 'granted', 'expired': 'expired', 'close_time': 'close time', 'not_exist': 'not found', 'disabled': 'disabled'}
 
     COLOR_WHITE = 0
-    COLOR_YELLOW = 1
+    COLOR_RED = 1
     COLOR_GREEN = 2
-    COLOR_RED = 3
+    COLOR_BLUE = 3
+    COLOR_YELLOW = 4
 
     MATRIX_HOST = "192.168.1.147"
     MATRIX_PORT = 8185
+
+    def init_app(self, app):
+        return
 
     def send_message(self, ttl, priority, color, lines):
         message = {
             'ttl': ttl,
             'priority': priority,
             'color': color,
-            'lines': map(lambda text: {'text': text}, lines)
+            'lines': list(map(lambda text: {'text': text}, lines))
         }
 
         payload = json.dumps(message).encode("ascii")
@@ -46,8 +50,8 @@ class MatrixService:
 
         lines = [
             self.format_matrix_text(log_entry.code),
-            self.REASON_MAPPING['granted'].upper(),
-            self.format_matrix_text(user.name),
+            self.REASON_MAPPING['success'].upper(),
+            self.format_matrix_text(user.name if user else ""),
         ]
         color = self.COLOR_WHITE
 

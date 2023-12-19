@@ -1,7 +1,7 @@
 import requests
 import json
 
-from app import db, logger, matrix
+from app import db, logger
 from app.models import Gate, Log, Method, User
 from app.utils import is_within_hours
 
@@ -18,12 +18,14 @@ class AccessService:
   controllers = None
   emails = None
   redis = None
+  matrix = None
 
-  def init_app(self, app, streams, controllers, emails, redis):
+  def init_app(self, app, streams, controllers, emails, redis, matrix):
     self.streams = streams
     self.controllers = controllers
     self.emails = emails
     self.redis = redis
+    self.matrix = matrix
 
     return
 
@@ -47,9 +49,9 @@ class AccessService:
           .count()
         
         if not count:
-          matrix.send_detector_message()
+          self.matrix.send_detector_message()
 
-      return True
+      return False
 
     log = Log(gate=gate.id, result=False, operation='open', code=code, type=type)
 
@@ -162,7 +164,7 @@ class AccessService:
         p = self.redis.r.get("gate:{}:plate_{}".format(gate_id, timestamp - i)) or ""
         logger.info("plate " + p)
         if p != frequent_plate:
-          matrix.send_processing_message(frequent_plate, i - 1, self.TIME_MATCH)
+          self.matrix.send_processing_message(frequent_plate, i - 1, self.TIME_MATCH)
 
           return {"message": "nomatch"}, 200
 
@@ -214,7 +216,7 @@ class AccessService:
       db.session.add(log)
       db.session.commit()
 
-      matrix.send_result_message(log, method, user)
+      self.matrix.send_result_message(log, method, user)
 
       self.redis.publish_entry(log.gate, log.id)
       self.emails.register_alerts(log)

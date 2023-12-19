@@ -21,8 +21,8 @@ streams = StreamService()
 controllers = ControllerService()
 emails = EmailService()
 redis = RedisService()
-access = AccessService()
 matrix = MatrixService()
+access = AccessService()
 
 from . import models
 from . import jobs
@@ -42,7 +42,8 @@ def init_app():
   streams.init_app(app)
   controllers.init_app(app)
   emails.init_app(app)
-  access.init_app(app, streams, controllers, emails, redis)
+  matrix.init_app(app)
+  access.init_app(app, streams, controllers, emails, redis, matrix)
 
   scheduler.init_app(app)
   scheduler.start()
