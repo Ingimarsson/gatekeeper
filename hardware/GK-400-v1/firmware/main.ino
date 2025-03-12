@@ -14,7 +14,7 @@
 #define BUTTON3 15
 #define BUTTON4 14
 
-byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xE0};
+byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xB4};
 int reset_cause; 
 
 EthernetServer server(80);
@@ -44,7 +44,9 @@ void setup() {
   TCCR1A = 0;
   TCCR1B = 0;
 
-  TCNT1 = 63974;
+  // TCNT1 = 63974; // 16 MHZ external
+  TCNT1 = 64755; // 8 MHZ internal
+
   TCCR1B |= (1 << CS10) | (1 << CS12);
   TIMSK1 |= (1 << TOIE1);
   interrupts();
@@ -422,7 +424,8 @@ void deny() {
 }
 
 ISR(TIMER1_OVF_vect) {
-  TCNT1 = 63974;
+  // TCNT1 = 63974; // 16 MHZ external
+  TCNT1 = 64755; // 8 MHZ internal
   interrupt();
 }
 
@@ -630,3 +633,4 @@ int freeMemory() {
   return __brkval ? &top - __brkval : &top - __malloc_heap_start;
 #endif  // __arm__
 }
+
