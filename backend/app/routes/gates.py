@@ -182,7 +182,13 @@ class GateDetailsView(MethodView):
         'uriOpen': gate.uri_open,
         'uriClose': gate.uri_close,
         'httpTrigger': gate.http_trigger
-      }
+      },
+      'boundingBox': {
+        'minX': gate.settings.get('min_x', 0),
+        'maxX': gate.settings.get('max_x', 100),
+        'minY': gate.settings.get('min_y', 0),
+        'maxY': gate.settings.get('max_y', 100),
+      } if gate.settings and 'min_x' in gate.settings.keys() else None,
     }
 
     return jsonify(result), 200

@@ -43,6 +43,12 @@ export interface GateDetails {
   };
   settings: GateSettings;
   logs: LogEntry[];
+  boundingBox: null | {
+    minX: number;
+    maxX: number;
+    minY: number;
+    maxY: number;
+  }
 }
 
 export interface GateSettings {

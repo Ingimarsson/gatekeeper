@@ -103,6 +103,11 @@ class AccessService:
     settings = gate.settings if gate.settings else {}
     type = request_body.get('data_type')
 
+    min_x = settings.get('min_x', 0)
+    max_x = settings.get('max_x', 100)
+    min_y = settings.get('min_y', 0)
+    max_y = settings.get('max_y', 100)
+
     # This type is sent for every frame from the video camera
     if type == 'alpr_results':
       result = self.openalpr_get_largest_plate(request_body.get('results', []))
@@ -156,6 +161,23 @@ class AccessService:
         return {"message": "cooldown"}, 200
 
       self.redis.r.set("gate:{}:cooldown".format(gate_id), "true", self.TIME_COOLDOWN)
+
+      # Check bounding box
+      image_height = request_body.get('img_height')
+      image_width = request_body.get('img_width')
+
+      center_x = result['center_x']
+      center_y = result['center_y']
+
+      logger.info("alpr_plate: image_height={} image_width={} center_x={} center_y={}".format(image_height, image_width, center_x, center_y))
+
+      cx = center_x / image_width * 100
+      cy = center_y / image_height * 100
+
+      if cx < min_x or cx > max_x or cy < min_y or cy > max_y:
+        logger.info("alpr_plate outside bounding box")
+
+        return {"message": "bounding_box"}, 200
 
       log = Log(
         gate=gate.id,
@@ -228,6 +250,23 @@ class AccessService:
       c = request_body.get('best_plate')['coordinates']
       area = (max(c, key=lambda p:p['x'])['x'] - min(c, key=lambda p:p['x'])['x']) \
         * (max(c, key=lambda p:p['y'])['y'] - min(c, key=lambda p:p['y'])['y'])
+
+      image_height = request_body.get('best_image_height')
+      image_width = request_body.get('best_image_width')
+
+      center_x = sum([p['x'] for p in c]) / 4
+      center_y = sum([p['y'] for p in c]) / 4
+
+      logger.info("alpr_group: image_height={} image_width={} center_x={} center_y={} travel_direction={}".format(image_height, image_width, center_x, center_y, travel_direction))
+
+      cx = center_x / image_width * 100
+      cy = center_y / image_height * 100
+
+      if cx < min_x or cx > max_x or cy < min_y or cy > max_y:
+        logger.info("alpr_group outside bounding box")
+
+        log.result = False
+        log.reason = "observed"
 
       if area < self.AREA_THRESHOLD:
         logger.info("alpr_group below threshold {}".format(area))
@@ -389,8 +428,12 @@ class AccessService:
     plates = []
     for r in results:
       c = r['coordinates']
+
+      center_x = sum([p['x'] for p in c]) / 4
+      center_y = sum([p['y'] for p in c]) / 4
+
       area = (max(c, key=lambda p:p['x'])['x'] - min(c, key=lambda p:p['x'])['x']) \
         * (max(c, key=lambda p:p['y'])['y'] - min(c, key=lambda p:p['y'])['y'])
-      plates.append({"plate": r['plate'], "area": area})
+      plates.append({"plate": r['plate'], "area": area, "center_x": center_x, "center_y": center_y})
 
     return max(plates, key=lambda p:p['area'])

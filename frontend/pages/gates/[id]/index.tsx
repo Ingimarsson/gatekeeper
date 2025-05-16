@@ -87,6 +87,12 @@ const TimeLabel = styled.div`
   }
 `;
 
+const BoundingBox = styled.div`
+  position: absolute;
+  background: #ff000022;
+  border: 2px solid #ff0000;
+`;
+
 const AlprLabel = styled(TimeLabel)`
   top: 10px;
   right: 10px;
@@ -346,6 +352,12 @@ const GateDetails: NextPage<GateDetailsProps> = ({ gate, user }) => {
                   .unix(lastTime - 50 + offset + elapsedTime)
                   .format("HH:mm:ss")}
               </TimeLabel>
+              {!!debug && gate.boundingBox && <BoundingBox style={{
+                height: `${gate.boundingBox.maxY - gate.boundingBox.minY}%`,
+                width: `${gate.boundingBox.maxX - gate.boundingBox.minX}%`,
+                top: `${gate.boundingBox.minY}%`,
+                left: `${gate.boundingBox.minX}%`
+              }}/>}
               {!!debug && (
                 <AlprLabel>
                   <div>
