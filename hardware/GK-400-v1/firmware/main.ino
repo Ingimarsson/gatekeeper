@@ -14,7 +14,7 @@
 #define BUTTON3 15
 #define BUTTON4 14
 
-byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xB4};
+byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xD8};
 int reset_cause; 
 
 EthernetServer server(80);
@@ -75,7 +75,7 @@ int idx = 0;
 char itoa_buf[12];
 char last_byte = 0;
 
-char wg_pin[8];   // Wiegand PIN (WG-8)
+char wg_pin[9];   // Wiegand PIN (up to 8 digits + terminator)
 int wg_idx = 0;   // Wiegand PIN position
 long wg_card = 0;  // Wiegand card (WG-26)
 
@@ -110,10 +110,10 @@ short int buttonRequest = 0;
 char cloud_ip[16] = {0};
 char cloud_token[16] = {0};
 
-char pin1[8] = {0};
-char pin2[8] = {0};
-char pin3[8] = {0};
-char pin4[8] = {0};
+char pin1[9] = {0};
+char pin2[9] = {0};
+char pin3[9] = {0};
+char pin4[9] = {0};
 
 void loop() {
   Ethernet.maintain();
@@ -208,10 +208,10 @@ void loop() {
             Serial.println(header);
             if (n == 0) strncpy(cloud_ip, header, 16);
             if (n == 1) strncpy(cloud_token, header, 16);
-            if (n == 2) strncpy(pin1, header, 8);
-            if (n == 3) strncpy(pin2, header, 8);
-            if (n == 4) strncpy(pin3, header, 8);
-            if (n == 5) strncpy(pin4, header, 8);
+            if (n == 2) strncpy(pin1, header, sizeof(pin1) - 1);
+            if (n == 3) strncpy(pin2, header, sizeof(pin2) - 1);
+            if (n == 4) strncpy(pin3, header, sizeof(pin3) - 1);
+            if (n == 5) strncpy(pin4, header, sizeof(pin4) - 1);
             n++;
             
             memset(header, 0, sizeof header);
@@ -240,25 +240,29 @@ void loop() {
   }
 
   if(wg.available()) {
+    int wg_code = wg.getCode();
+    int wg_type = wg.getWiegandType();
     wg_timer = 0;
 
     Serial.print("WG DECIMAL INPUT = ");
-    Serial.print(wg.getCode());
+    Serial.print(wg_code);
     Serial.print(", Type W");
-    Serial.println(wg.getWiegandType());
+    Serial.println(wg_type);
     
-    if (wg_idx < 8 && wg.getWiegandType() == 4 && wg.getCode() != 13 && wg.getCode() != 27) {
-      wg_pin[wg_idx++] = wg.getCode() + '0';
+    if (wg_type == 4 && wg_code >= 0 && wg_code <= 9 && wg_idx < sizeof(wg_pin) - 1) {
+      wg_pin[wg_idx++] = wg_code + '0';
     }
 
-    if (wg.getWiegandType() == 26) {
-      wg_card = wg.getCode();
+    if (wg_type > 4) {
+      wg_card = wg_code;
       // check remote server
       if (check_remote_server(wg_pin, wg_card, 0)) gate_open();
+      memset(wg_pin, 0, sizeof wg_pin);
+      wg_idx = 0;
     }
 
-    // Pressing asterisk or hashtag means ENTER
-    if (wg.getCode() == 13 || wg.getCode() == 27) {
+    // Treat any non-digit keypad code as ENTER once at least one digit is buffered.
+    if (wg_type == 4 && wg_code > 9 && wg_idx > 0) {
       // first check local pins and then remote server
       if (check_local_pin(wg_pin)) gate_open(); 
       if (check_remote_server(wg_pin, 0, 0)) gate_open(); 
@@ -295,9 +299,9 @@ bool check_remote_server(char* code, long card, short int button) {
   server2.fromString(cloud_ip);
 
   int response = 0;
-
-  memset(header, 0, sizeof header);
-  idx = 0;
+  char status_line[32] = {0};
+  int status_idx = 0;
+  unsigned long started_at = millis();
 
   client2.stop();
 
@@ -317,29 +321,37 @@ bool check_remote_server(char* code, long card, short int button) {
       client2.print("&button=");
       client2.print(button); 
     }
-    client2.println("");
+    client2.println(" HTTP/1.1");
+    client2.print("Host: ");
+    client2.println(cloud_ip);
     client2.println("Connection: close");
     client2.println();
 
-    while (client2.connected()) {
+    while ((client2.connected() || client2.available()) && millis() - started_at < 3000) {
       if (client2.available()) {
-        if (idx < 16) {
-          header[idx++] = client2.read();
+        char c = client2.read();
+
+        if (c == '\r') {
+          continue;
         }
-        else if (strstr(header, "200") != NULL) {
-          Serial.println("RES 200");
-          response = 200;
+
+        if (c == '\n') {
           break;
         }
-        else if (strstr(header, "403") != NULL) {
-          Serial.println("RES 403");
-          response = 403;
-          break;
-        }
-        else {
-          break;
+
+        if (status_idx < sizeof(status_line) - 1) {
+          status_line[status_idx++] = c;
         }
       }
+    }
+
+    if (strstr(status_line, " 200 ") != NULL) {
+      Serial.println("RES 200");
+      response = 200;
+    }
+    else if (strstr(status_line, " 403 ") != NULL) {
+      Serial.println("RES 403");
+      response = 403;
     }
   }
 
@@ -357,14 +369,23 @@ bool check_remote_server(char* code, long card, short int button) {
 }
 
 void save_settings() {
+  char pin_buf[8] = {0};
+
   // Tiny validation on IP address
   if (cloud_ip[0] <= '9' && cloud_ip[0] >= '1') {
     EEPROM.put(0, cloud_ip);
     EEPROM.put(16, cloud_token);
-    EEPROM.put(32, pin1);
-    EEPROM.put(40, pin2);
-    EEPROM.put(48, pin3);
-    EEPROM.put(56, pin4);
+    memcpy(pin_buf, pin1, 8);
+    EEPROM.put(32, pin_buf);
+    memset(pin_buf, 0, sizeof pin_buf);
+    memcpy(pin_buf, pin2, 8);
+    EEPROM.put(40, pin_buf);
+    memset(pin_buf, 0, sizeof pin_buf);
+    memcpy(pin_buf, pin3, 8);
+    EEPROM.put(48, pin_buf);
+    memset(pin_buf, 0, sizeof pin_buf);
+    memcpy(pin_buf, pin4, 8);
+    EEPROM.put(56, pin_buf);
     EEPROM.put(64, 0xFF);
   }
   loop_timer = 100;
@@ -373,12 +394,25 @@ void save_settings() {
 }
 
 void load_settings() {
+  char pin_buf[8] = {0};
+
   EEPROM.get(0, cloud_ip);
   EEPROM.get(16, cloud_token);
-  EEPROM.get(32, pin1);
-  EEPROM.get(40, pin2);
-  EEPROM.get(48, pin3);
-  EEPROM.get(56, pin4);
+  EEPROM.get(32, pin_buf);
+  memcpy(pin1, pin_buf, 8);
+  pin1[8] = 0;
+  memset(pin_buf, 0, sizeof pin_buf);
+  EEPROM.get(40, pin_buf);
+  memcpy(pin2, pin_buf, 8);
+  pin2[8] = 0;
+  memset(pin_buf, 0, sizeof pin_buf);
+  EEPROM.get(48, pin_buf);
+  memcpy(pin3, pin_buf, 8);
+  pin3[8] = 0;
+  memset(pin_buf, 0, sizeof pin_buf);
+  EEPROM.get(56, pin_buf);
+  memcpy(pin4, pin_buf, 8);
+  pin4[8] = 0;
 }
 
 void gate_open() {
