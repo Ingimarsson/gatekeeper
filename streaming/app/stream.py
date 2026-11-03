@@ -20,6 +20,7 @@ class Stream:
   mem_usage = 0
   disk_usage = 0
   snapshot_count = 0
+  disk_stats_at = 0
 
   base_path = None
   live_path = None
@@ -55,7 +56,13 @@ class Stream:
     """
     Start an ffmpeg process that saves timestamped images to the data directory.
     """
-    command = "ffmpeg -i '{}' -f image2 -vf scale=w='min(1280\, iw*3/2):h=-1' -q:v 8 -r 2 -strftime 1 {}/%s.jpg".format(self.url, self.live_path)
+    if config['FFMPEG_HWACCEL'] == 'vaapi':
+      # Decode and scale on the Intel GPU (QuickSync); only the 2 fps output is copied back for JPEG encoding
+      command = ("ffmpeg -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi -i '{}' -f image2 "
+                 "-vf \"fps=2,scale_vaapi=w='min(1280,iw*3/2)':h=-2:format=nv12,hwdownload,format=nv12\" "
+                 "-q:v 8 -r 2 -strftime 1 {}/%s.jpg").format(self.url, self.live_path)
+    else:
+      command = "ffmpeg -i '{}' -f image2 -vf scale=w='min(1280\, iw*3/2):h=-1' -q:v 8 -r 2 -strftime 1 {}/%s.jpg".format(self.url, self.live_path)
 
     self.process = subprocess.Popen(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -85,8 +92,11 @@ class Stream:
     try:
       self.cpu_usage = p.cpu_percent(interval=0.5)
       self.mem_usage = p.memory_info().rss
-      self.disk_usage = int(subprocess.check_output(['du','-s', self.base_path]).split()[0].decode('utf-8'))*1024
-      self.snapshot_count = int(subprocess.check_output(['sh','-c', f'ls -lh {self.snapshot_path} | wc -l']))
+      # du walks every snapshot file; the backend only reads these every 5 minutes
+      if time.time() - self.disk_stats_at > config['DISK_STATS_INTERVAL']:
+        self.disk_usage = int(subprocess.check_output(['nice', '-n', '19', 'du', '-s', self.base_path]).split()[0].decode('utf-8'))*1024
+        self.snapshot_count = len(os.listdir(self.snapshot_path))
+        self.disk_stats_at = time.time()
     except:
       self.cpu_usage = 0
       self.mem_usage = 0
